@@ -1,0 +1,29 @@
+Package: CooRTnet
+Version: 1.0.0
+Date: 2022-08-23
+Type: Package
+Title: Detect coordinated behavior on Twitter
+Description: The packages detects a variety of coordinated actions on Twitter and outputs the network of coordinated users along with related information.
+Author: Nicola Righetti
+Maintainer: Nicola Righetti <nicola.righetti@univie.ac.at>
+URL: https://github.com/nicolarighetti/CooRTnet
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+  utils (>= 2.11.0),
+  academictwitteR (>= 0.2.1),
+  dplyr (>= 1.0.7),
+  parallel (>= 4.1.1),
+  foreach (>= 1.5.1),
+  doSNOW (>= 1.0.19),
+  igraph (>= 1.2.6),
+  lubridate (>= 1.7.10),
+  purrr (>= 0.3.4),
+  tidyr (>= 1.1.4),
+  tidytable (>= 0.8.1), 
+  stringr (>= 1.4.0),
+  visNetwork (>= 2.1.0),
+  rlang (>= 1.0.5)
+
