@@ -140,7 +140,8 @@ data_wrangling <- function(tweets,
       dplyr::mutate(group_id = dplyr::cur_group_id())
   }
 
-  # keep groups with at least two elements (no coordination is possible with less than two elements)
+  # keep content tweeded by at least two users
+  # (no coordination is possible for pieces of content tweeted by less than two users)
   group_n <- dset_rt |>
     dplyr::group_by(group_id) |>
     dplyr::summarize(n = dplyr::n()) |>

@@ -5,7 +5,7 @@
 #' @param dset_rt the grouped data frame to detect coordination.
 #' @param time_window the number of seconds within which considering a tweet to be coordinated (default to 60 seconds).
 #' @param parallel_cores number of cores to be used in parallel computing. Default to all available cores -1.
-#' @param simplified Default to FALSE. If TRUE, a simplified and less computationally intensive algorithm is implemented to identify coordinated users.
+#' @param quick Default to FALSE. If TRUE, a quick and less computationally intensive algorithm is implemented to identify coordinated users.
 #'
 #' @return a dataframe of tweets marked with coordinated to be used in the subsequent coordination analysis.
 #'
@@ -39,7 +39,7 @@ utils::globalVariables(
     "author_id_y",
     "weight",
     "author_id_xy",
-    "simplified",
+    "quick",
     "count",
     "tweet_date",
     "value"
@@ -51,7 +51,7 @@ coord_network_detection <- function(dset_rt,
                                      min_repetition,
                                      parallel_cores,
                                      coord_time_distribution,
-                                     simplified) {
+                                     quick) {
   # setup parallel backend
   if (is.null(parallel_cores)) {
     cores <- parallel::detectCores() - 1
@@ -72,8 +72,9 @@ coord_network_detection <- function(dset_rt,
 
   progress_bar <- list(progress = progress)
 
-  # simplified FALSE ####
-  if (simplified == FALSE) {
+  # quick FALSE ####
+  if (quick == FALSE) {
+
     # cycle trough all URLs to find entities that shared the same link within the coordination internal
     edge_list_summary <-
       foreach::foreach(
@@ -100,7 +101,8 @@ coord_network_detection <- function(dset_rt,
             dset_rt_i, m = 2, simplify = T
           )))
         }
-      } ####
+      }
+
     parallel::stopCluster(cl)
 
     edge_list <- tidytable::bind_rows.(edge_list_summary)
@@ -159,24 +161,6 @@ coord_network_detection <- function(dset_rt,
       stop()
     }
 
-   # tidyr version - unusuble with R 4.0.0 because too slow # # #
-   # edge_list <- edge_list |> #dset_rt_i <- dset_rt_i |>
-   #   tidyr::separate(
-   #     col = V1,
-   #     into = c("author_id_x", "created_time_x", "tweet_id_x", "group_id")
-   #   ) |>
-   #   tidyr::separate(
-   #     col = V2,
-   #     into = c("author_id_y", "created_time_y", "tweet_id_y", "group_id")
-   #   ) |>
-   #   dplyr::mutate(
-   #     created_time_x = as.numeric(created_time_x),
-   #     created_time_y = as.numeric(created_time_y)
-   #   ) |>
-   #   dplyr::mutate(group_id = group_id) |>
-   #   dplyr::mutate(time_diff = abs(created_time_x - created_time_y)) |>
-   #   dplyr::filter(time_diff <= time_window)
-
     el_df <- edge_list |>
       dplyr::mutate(
         created_time_x = as.character(created_time_x),
@@ -192,8 +176,10 @@ coord_network_detection <- function(dset_rt,
       dplyr::select(author_id, group_id)
   }
 
-  # simplified TRUE ####
-  if (simplified == TRUE) {
+
+
+  # quick TRUE ####
+  if (quick == TRUE) {
     edge_list_summary <-
       foreach::foreach(
         i = seq(1:groups_n),
@@ -293,7 +279,7 @@ coord_network_detection <- function(dset_rt,
   }
 
   # mark coordinated tweets
-  if (simplified == FALSE) {
+  if (quick == FALSE) {
     el <- el_df |>
       dplyr::mutate(name = dplyr::case_when(
         name %in% c("author_id_x", "author_id_y") ~ "author_id",
@@ -309,7 +295,7 @@ coord_network_detection <- function(dset_rt,
   el <- el |>
     dplyr::filter(author_id %in% igraph::V(coord_graph)$name)
 
-  if (simplified == TRUE) {
+  if (quick == TRUE) {
     el$group_id <- sub("g", "", el$group_id)
   }
 

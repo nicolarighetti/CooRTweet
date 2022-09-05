@@ -1,8 +1,8 @@
-Package: CooRTnet
+Package: CooRTweet
 Version: 1.0.0
 Date: 2022-08-23
 Type: Package
-Title: Detect coordinated behavior on Twitter
+Title: Detect coordinated networks on Twitter
 Description: The packages detects a variety of coordinated actions on Twitter and outputs the network of coordinated users along with related information.
 Author: Nicola Righetti
 Maintainer: Nicola Righetti <nicola.righetti@univie.ac.at>

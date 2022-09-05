@@ -1,2 +1,71 @@
-# CooRTnet
-An R package to detect coordinated behavior on Twitter
+# CooRTweet
+
+CooRTweet is an R package to detect coordinated behavior on Twitter, a strategy employed for political astroturfing (Keller et al., 2020) and the spread of problematic content online (Giglietto et al., 2020).
+
+This package enables users to perform a variety of analyses to detect possible coordinated newtorks on Twitter. The core function performs a network analysis where users are represented as nodes and a link between nodes is created when users perfom the same action at least *n* times within a predefined time threshold. The user can set the value of *n* by using the paramenter *min_repetition*, and the time threshold by using the paramenter *time_window* (in seconds).
+
+The package works with data retrieved from the Twitter Academic API, in the JSON format provided by the function *get_all_tweets* of the R package [academictwitteR](https://github.com/cjbarrie/academictwitteR), which retrieves at once tweets and users' information.
+
+Currently, the package detects a variety of possibly coordinated actions focused on different types of content by using the following functions, which can be set by using the option *coord_function*: 
+
+  - **get_coretweet** (Keller et al., 2020), which detects networks of accounts that repeatedly shared the same retweet in a predefined time interval;
+  - **get_cotweet** (Keller et al., 2020), which detects networks of accounts that repeatedly published the same tweet in a predefined time interval;
+  - **get_coreply**, which has to be used with the option *reple_type* that takes on the values "same_text" or "same_user"), and detects networks of accounts that repeatedly replied with the same text (same_text) or to the same user (same_user) in a predefined time interval;
+  - **get_clsb** (Giglietto et al., 2020), which detects networks of accounts that repeatedly shared the same URLs (the name of the function refers to Coordinated Link Sharing Behavior, CLSB, as defined in Giglietto et al., 2020) in a predefined time interval;
+  - **get_cohashtag**, which detects networks of accounts that repeatedly shared the same hashtag in a predefined time interval;
+
+To identify coordinated networks, all pairs of users that performed the same action in the predefined time window are computed, and the resulting list is then filtered according to the parameter time_window and min_repetition. Given a set of n action performed in the same time window, the possible pairs of users are given by n!/k!(n-k)! base::choose(n, k=2). The number of possible combinations thuse increases exponentially with the n number of actions, requiring increasing computational power.
+
+An alternative algorithm can be implemented by setting *quick = TRUE*, which cuts the period of time from the first to the last action in t period of length equals to time_window, and defines as coordinated the accounts that performed the same action within the same time window. The algorithm has been originally implemented in [CooRnet](https://github.com/fabiogiglietto/CooRnet) (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram and can be especially useful when dealing with large datasets, for example to performe a first analysis before deciding to run a more computationally intensive algorithm. 
+
+## Examples
+
+```
+academictwitteR::get_all_tweets(
+  query = "BLM",
+  start_tweets = "2020-01-01T00:00:00Z",
+  end_tweets = "2020-01-05T00:00:00Z",
+  bearer_token = academictwitteR::get_bearer(),
+  data_path = "data_tweets",
+  n = 10000
+)
+               
+res <- CooRTweet::get_coordinated_tweets(data_path = "data_tweets",
+                                         coord_function = "get_coretweet",
+                                         time_window = 60,
+                                         min_repetition = 5,
+                                         chart = TRUE)            
+```
+
+The package can be used to analyze Coordinated Link Sharing Behavior on Twitter (Giglietto et al., 2020), starting from a list of URLs.
+
+```
+urls <- c("kiwifarms.com",
+          "kiwifarms.ru",
+          "kiwifarms.net") 
+
+academictwitteR::get_all_tweets(
+    academictwitteR::build_query(url = c(urls)),
+    start_tweets = "2022-01-01T00:00:00Z",
+    end_tweets = "2022-09-05T00:00:00Z",
+    bearer_token = academictwitteR::get_bearer(),
+    data_path = "data_urls",
+    n = 200000
+  )
+}
+               
+res <- CooRTweet::get_coordinated_tweets(data_path = "data_urls",
+                                         coord_function = "get_clsb",
+                                         time_window = 60,
+                                         min_repetition = 2,
+                                         chart = TRUE)            
+```
+
+
+## References
+
+Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. *Information, Communication & Society*, 23(6), 867-891. https://doi.org/10.1080/1369118X.2020.1739732
+
+Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2020). Political astroturfing on Twitter: How to coordinate a disinformation campaign. *Political Communication*, 37(2), 256-280. https://doi.org/10.1080/10584609.2019.1661888 
+
+Barrie, Christopher and Ho, Justin Chun-ting. (2021). academictwitteR: an R package to access the Twitter Academic Research Product Track v2 API endpoint. *Journal of Open Source Software*, 6(62), 3272, https://doi.org/10.21105/joss.03272

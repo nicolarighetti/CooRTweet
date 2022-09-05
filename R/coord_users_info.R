@@ -36,12 +36,12 @@ utils::globalVariables(
 
 
 coord_users_info <- function(data_path,
-                                       out_list,
-                                       dset_list,
-                                       tweets,
-                                       coord_function,
-                                       reply_type,
-                                       simplified) {
+                             out_list,
+                             dset_list,
+                             tweets,
+                             coord_function,
+                             reply_type,
+                             quick) {
   edge_list <- out_list[[1]]
   dset_rt <- out_list[[2]]
   coord_graph <- out_list[[3]]
@@ -51,7 +51,7 @@ coord_users_info <- function(data_path,
     igraph::as_data_frame(coord_graph, "vertices")
 
   # calculate users' average coordinated actions rapidity
-  if (simplified == FALSE) {
+  if (quick == FALSE) {
     time_diff_summary <- data.frame(
       name = c(edge_list$author_id_x,
                edge_list$author_id_y),

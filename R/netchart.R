@@ -1,4 +1,4 @@
-#' get_chart
+#' netchart
 #'
 #' Create the coordinated network chart.
 #'
@@ -8,7 +8,7 @@
 #'
 #' @importFrom visNetwork toVisNetworkData visNetwork visNodes visEdges visIgraphLayout
 
-get_chart <- function(coord_graph = coord_graph) {
+netchart <- function(coord_graph = coord_graph) {
   vis_net <- visNetwork::toVisNetworkData(coord_graph)
 
   vis_net$nodes <- vis_net$nodes
