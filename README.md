@@ -26,7 +26,7 @@ Currently, the package detects a variety of possibly coordinated actions focused
 
 To identify coordinated networks, all pairs of users that performed the same action in the predefined time window are computed, and the resulting list is then filtered according to the parameter time_window and min_repetition. Given a set of n action performed in the same time window, the possible pairs of users are given by n!/k!(n-k)! base::choose(n, k=2). The number of possible combinations thuse increases exponentially with the n number of actions, requiring increasing computational power.
 
-An alternative algorithm can be implemented by setting *quick = TRUE*, which cuts the period of time from the first to the last action in t period of length equals to time_window, and defines as coordinated the accounts that performed the same action within the same time window. The algorithm has been originally implemented in [CooRnet](https://github.com/fabiogiglietto/CooRnet) (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram and can be especially useful when dealing with large datasets, for example to performe a first analysis before deciding to run a more computationally intensive algorithm. 
+An alternative algorithm can be implemented by setting *quick = TRUE*, which cuts the period of time from the first to the last action in t period of length equals to *time_window*, and defines as coordinated the accounts that performed the same action within the same time window. The algorithm has been originally implemented in [CooRnet](https://github.com/fabiogiglietto/CooRnet) (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram and can be especially useful when dealing with large datasets. 
 
 ## Examples
 
