@@ -1,8 +1,15 @@
 # CooRTweet
 
-CooRTweet is an R package to detect coordinated behavior on Twitter, a strategy employed for political astroturfing (Keller et al., 2020) and the spread of problematic content online (Giglietto et al., 2020).
+Coordinated behavior has been proved to be a strategy widely employed for political astroturfing (Keller et al., 2020) and the spread of problematic content online (Giglietto et al., 2020). Sotftware for academic and journalistic use have been developed in the last few years, such as the [CooRnet](https://github.com/fabiogiglietto/CooRnet) R package by Fabio Giglietto, Nicola Righetti, & Luca Rossi (2020) (see also the [CooRnet website](http://coornet.org)), to detect Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Twitter, and the [Coordination Network Toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit/blob/main/README.md) by Timothy Graham (Graham, QUT Digital Observatory, 2020)), a command line tool for studying coordination networks in Twitter and other social media data.
 
-This package enables users to perform a variety of analyses to detect possible coordinated newtorks on Twitter. The core function performs a network analysis where users are represented as nodes and a link between nodes is created when users perfom the same action at least *n* times within a predefined time threshold. The user can set the value of *n* by using the paramenter *min_repetition*, and the time threshold by using the paramenter *time_window* (in seconds).
+The **CooRTweet** package builds on the experience of CooRnet and other packages to provide R users with an easy tool to perform a variety of analyses to detect possible coordinated newtorks on Twitter. The core function performs a network analysis where users are represented as nodes and a link between nodes is created when users perfom the same action at least *n* times within a predefined time threshold. The user can set the value of *n* by using the paramenter *min_repetition*, and the time threshold by using the paramenter *time_window* (in seconds).
+
+```
+# install.packages("devtools")
+
+library("devtools")
+devtools::install_github("https://github.com/nicolarighetti/CooRTweet")
+```
 
 The package works with data retrieved from the Twitter Academic API, in the JSON format provided by the function *get_all_tweets* of the R package [academictwitteR](https://github.com/cjbarrie/academictwitteR), which retrieves at once tweets and users' information.
 
@@ -127,3 +134,5 @@ Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village 
 Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2020). Political astroturfing on Twitter: How to coordinate a disinformation campaign. *Political Communication*, 37(2), 256-280. https://doi.org/10.1080/10584609.2019.1661888 
 
 Barrie, Christopher and Ho, Justin Chun-ting. (2021). academictwitteR: an R package to access the Twitter Academic Research Product Track v2 API endpoint. *Journal of Open Source Software*, 6(62), 3272, https://doi.org/10.21105/joss.03272
+
+Graham, Timothy; QUT Digital Observatory; (2020): Coordination Network Toolkit. Queensland University of Technology. (Software) https://doi.org/10.25912/RDF_1632782596538
