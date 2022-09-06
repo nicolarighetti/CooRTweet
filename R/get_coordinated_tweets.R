@@ -116,7 +116,8 @@ get_coordinated_tweets <- function(data_path = NULL,
     "seconds from each other: N =",
     igraph::gorder(coord_list[[2]]),
     "\nNetwork componets: N =",
-    max(igraph::V(out_list[[3]])$component)
+    max(igraph::V(out_list[[3]])$component),
+    "\n"
   )
 
   # chart
