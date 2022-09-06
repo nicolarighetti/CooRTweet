@@ -2,7 +2,7 @@
 
 Coordinated behavior has been proved to be a strategy widely employed for political astroturfing (Keller et al., 2020) and the spread of problematic content online (Giglietto et al., 2020). Sotftware for academic and journalistic use have been developed in the last few years, such as the [CooRnet](https://github.com/fabiogiglietto/CooRnet) R package by Fabio Giglietto, Nicola Righetti, & Luca Rossi (2020), to detect Coordinated Link Sharing Behavior (CLSB)  and Coordinated Image Sharing on Facebook and Twitter ([CooRnet website](http://coornet.org)), and the [Coordination Network Toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit/blob/main/README.md) by Timothy Graham (Graham, QUT Digital Observatory, 2020)), a command line tool for studying coordination networks in Twitter and other social media data.
 
-The **CooRTweet** package builds on the experience of CooRnet and other packages to provide R users with an easy tool to perform a variety of analyses to detect possible coordinated newtorks on Twitter. The core function performs a network analysis where users are represented as nodes and a link between nodes is created when users perfom the same action at least *n* times within a predefined time threshold. The user can set the value of *n* by using the paramenter *min_repetition*, and the time threshold by using the paramenter *time_window* (in seconds).
+The **CooRTweet** package builds on the experience of CooRnet and other packages to provide R users with an easy tool to perform a variety of analyses to detect possible coordinated newtorks on Twitter. 
 
 ```
 # install.packages("devtools")
@@ -10,8 +10,9 @@ The **CooRTweet** package builds on the experience of CooRnet and other packages
 library("devtools")
 devtools::install_github("https://github.com/nicolarighetti/CooRTweet")
 ```
-
 The package works with data retrieved from the Twitter Academic API, in the JSON format provided by the function *get_all_tweets* of the R package [academictwitteR](https://github.com/cjbarrie/academictwitteR), which retrieves at once tweets and users' information.
+
+The core function *get_coordinated_tweets* performs a network analysis (SNA) where users are represented as nodes and a link between nodes is created when users perfom the same action at least *n* times within a predefined time threshold. The user can set the value of *n* by using the paramenter *min_repetition*, and the time threshold by using the paramenter *time_window* (in seconds).
 
 ![Structure of the CooRTweet package](additional_documentation/CooRTweet_scheme.png)
 
