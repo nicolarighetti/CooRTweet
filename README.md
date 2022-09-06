@@ -20,7 +20,7 @@ Currently, the package detects a variety of possibly coordinated actions focused
 
   - **get_coretweet** (Keller et al., 2020), which detects networks of accounts that repeatedly shared the same retweet in a predefined time interval;
   - **get_cotweet** (Keller et al., 2020), which detects networks of accounts that repeatedly published the same tweet in a predefined time interval;
-  - **get_coreply**, which has to be used with the option *reple_type* that takes on the values "same_text" or "same_user"), and detects networks of accounts that repeatedly replied with the same text (same_text) or to the same user (same_user) in a predefined time interval;
+  - **get_coreply** (Righetti, forthcoming), which has to be used with the option *reple_type* that takes on the values "same_text" or "same_user"), and detects networks of accounts that repeatedly replied with the same text (same_text) or to the same user (same_user) in a predefined time interval;
   - **get_clsb** (Giglietto et al., 2020), which detects networks of accounts that repeatedly shared the same URLs (the name of the function refers to Coordinated Link Sharing Behavior, CLSB, as defined in Giglietto et al., 2020) in a predefined time interval;
   - **get_cohashtag**, which detects networks of accounts that repeatedly shared the same hashtag in a predefined time interval;
 
