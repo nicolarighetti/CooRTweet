@@ -6,7 +6,7 @@ This package enables users to perform a variety of analyses to detect possible c
 
 The package works with data retrieved from the Twitter Academic API, in the JSON format provided by the function *get_all_tweets* of the R package [academictwitteR](https://github.com/cjbarrie/academictwitteR), which retrieves at once tweets and users' information.
 
-![Structure of the CooRTweet package](additional documentation/CooRTweet scheme.png)
+![Structure of the CooRTweet package](additional_documentation/CooRTweet_scheme.png)
 
 Currently, the package detects a variety of possibly coordinated actions focused on different types of content by using the following functions, which can be set by using the option *coord_function*: 
 
