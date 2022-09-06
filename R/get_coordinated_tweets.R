@@ -121,7 +121,7 @@ get_coordinated_tweets <- function(data_path = NULL,
 
   # chart
   if (chart == TRUE) {
-    net_chart <- netchart(coord_graph = coord_list[[2]])
+    net_chart <- net_viz(coord_graph = coord_list[[2]])
     print(net_chart)
   }
 

@@ -6,6 +6,8 @@ This package enables users to perform a variety of analyses to detect possible c
 
 The package works with data retrieved from the Twitter Academic API, in the JSON format provided by the function *get_all_tweets* of the R package [academictwitteR](https://github.com/cjbarrie/academictwitteR), which retrieves at once tweets and users' information.
 
+![Structure of the CooRTweet package](additional documentation/CooRTweet scheme.png)
+
 Currently, the package detects a variety of possibly coordinated actions focused on different types of content by using the following functions, which can be set by using the option *coord_function*: 
 
   - **get_coretweet** (Keller et al., 2020), which detects networks of accounts that repeatedly shared the same retweet in a predefined time interval;
@@ -20,34 +22,69 @@ An alternative algorithm can be implemented by setting *quick = TRUE*, which cut
 
 ## Examples
 
+Search for co-retweet networks.
+
 ```
 academictwitteR::get_all_tweets(
-  query = "BLM",
-  start_tweets = "2020-01-01T00:00:00Z",
-  end_tweets = "2020-01-05T00:00:00Z",
+  query = c("TruongSaHoangSaBelongtoVietnam", "ChinaStopsLying", "ParacelIslandsSpratlyIslandsBelongtoVietnam"),
+  start_tweets = "2020-03-14T00:00:00Z",
+  end_tweets = "2020-03-20T00:00:00Z",
   bearer_token = academictwitteR::get_bearer(),
   data_path = "data_tweets",
-  n = 10000
+  n = 50000
 )
-               
+
 res <- CooRTweet::get_coordinated_tweets(data_path = "data_tweets",
                                          coord_function = "get_coretweet",
-                                         time_window = 60,
-                                         min_repetition = 5,
-                                         chart = TRUE)            
+                                         time_window = 60*60,
+                                         min_repetition = 2,
+                                         chart = TRUE)   
+                                         
+# graph objetc. It can be saved and opened with Gephi, or used in R.
+igraph_network <- res[[1]]
+
+# information about users
+users_info <- res[[2]]
+
+# the analyzed dataset, with a column indicating whether a tweet has been identified as coordinated or not
+dataset <- res[[1]]
 ```
 
-The package can be used to analyze Coordinated Link Sharing Behavior on Twitter (Giglietto et al., 2020), starting from a list of URLs.
+Search for co-reply networks.
+
+```                                         
+res <- CooRTweet::get_coordinated_tweets(data_path = "data_tweets",
+                                         coord_function = "get_coreply",
+                                         reply_type = "same_text",
+                                         time_window = 60*60*24,
+                                         min_repetition = 2,
+                                         chart = TRUE)
+                                         
+df <- res[[3]]
+head(df$text)
+
+[1] "@AmbCina HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#Chinastopslying\n#HoangsatruongsabelongtoVietNam 🇻🇳🇻🇳🇻🇳🇻🇳🇻🇳"      
+[2] "@AmbCina HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#Chinastopslying\n#HoangsatruongsabelongtoVietNam 🇻🇳"              
+[3] "@lingfugui @EnricoTurcato HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#ChinaStopsLying\n#HoangSaTruongSabelongtoVietNam"
+[4] "@AmbCina HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#ChinaStopsLying\n#HoangSaTruongSabelongtoVietNam"                 
+[5] "@AmbCina HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#ChinaStopsLying\n#HoangaTruongSabelongtoVietNam"                  
+[6] "@shen_shiwei HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#Chinastopslying\n#HoangsatruongsabelongtoVietNam" 
+```
+
+The package can be used to analyze Coordinated Link Sharing Behavior (Giglietto et al., 2020) on Twitter by using the *get_clsb* function. The approach requires to start from a list of URLs. In this case, when collecting the data with the Twitter Academic API, attention should be paid to the length of query, which cannot exceed 1024 characters [Twitter Academic Research Access: Query rules](https://developer.twitter.com/en/products/twitter-api/academic-research).
 
 ```
-urls <- c("kiwifarms.com",
-          "kiwifarms.ru",
-          "kiwifarms.net") 
+urls <- c("redice.tv",
+          "renegadebroadcasting.com",
+          "therightstuff.biz",
+          "stormfront.org",
+          "stormer-daily.rw",
+          "metapedia.org") 
 
 academictwitteR::get_all_tweets(
     academictwitteR::build_query(url = c(urls)),
-    start_tweets = "2022-01-01T00:00:00Z",
-    end_tweets = "2022-09-05T00:00:00Z",
+    start_tweets = "2020-03-01T00:00:00Z",
+    end_tweets = "2020-04-05T00:00:00Z",
     bearer_token = academictwitteR::get_bearer(),
     data_path = "data_urls",
     n = 200000
@@ -58,9 +95,30 @@ res <- CooRTweet::get_coordinated_tweets(data_path = "data_urls",
                                          coord_function = "get_clsb",
                                          time_window = 60,
                                          min_repetition = 2,
-                                         chart = TRUE)            
+                                         chart = TRUE)    
 ```
 
+Alternatively, it is possible to analyze coordinated link sharing by collecting tweets containing URLs. 
+
+```
+clic_here <- c("click the blue link", "click the link", "click here")
+
+academictwitteR::get_all_tweets(
+    academictwitteR::build_query(query = clic_here,
+        has_links = TRUE),
+    start_tweets = "2020-03-10T00:00:00Z",
+    end_tweets = "2020-03-17T00:00:00Z",
+    bearer_token = academictwitteR::get_bearer(),
+    data_path = "data_clicbait",
+    n = 50000
+  )
+
+res <- CooRTweet::get_coordinated_tweets(data_path = "data_clicbait",
+                                         coord_function = "get_clsb",
+                                         time_window = 60*60*24,
+                                         min_repetition = 2,
+                                         chart = TRUE) 
+```
 
 ## References
 
