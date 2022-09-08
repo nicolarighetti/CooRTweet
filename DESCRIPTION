@@ -2,7 +2,7 @@ Package: CooRTweet
 Version: 1.0.0
 Date: 2022-08-23
 Type: Package
-Title: Detect coordinated networks on Twitter
+Title: An R package to detect coordinated networks on Twitter
 Description: The packages detects a variety of coordinated actions on Twitter and outputs the network of coordinated users along with related information.
 Author: Nicola Righetti
 Maintainer: Nicola Righetti <nicola.righetti@univie.ac.at>
