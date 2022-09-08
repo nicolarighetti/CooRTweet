@@ -49,8 +49,8 @@ data_wrangling <- function(tweets,
     dset_rt <- tweets |>
       # makes data wider by expanding df-columns
       tidyr::unpack(cols = c(entities, public_metrics)) |>
-      # turns each element of a list-column into a column
-      tidyr::unnest_wider(referenced_tweets) |>
+      # Unnest list-columns (drop null)
+      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) |>
       dplyr::rename(referenced_tweet_id = id) |>
       dplyr::filter(type == "retweeted") |>
       # Unnest list-columns into columns and rows (when tweets include multiple mentions)
@@ -70,7 +70,8 @@ data_wrangling <- function(tweets,
       tidyr::unpack(cols = c(entities, public_metrics)) |>
       tidyr::unnest_wider(referenced_tweets) |>
       dplyr::rename(referenced_tweet_id = id) |>
-      dplyr::filter(type == "NULL") |>
+      tidytable::unnest.(type, keep_empty = TRUE, .drop = FALSE) |>
+      dplyr::filter(is.na(type)) |>
       # convert to date-time format
       dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) |>
       dplyr::mutate(rt_datetime = as.numeric(created_at)) |>
@@ -81,11 +82,9 @@ data_wrangling <- function(tweets,
   if (coord_function == "get_coreply") {
     dset_rt <- tweets |>
       tidyr::unpack(cols = c(entities, public_metrics)) |>
-      tidyr::unnest_wider(referenced_tweets) |>
+      # Unnest list-columns (drop null)
+      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) |>
       dplyr::rename(referenced_tweet_id = id) |>
-      ##tidytable::unnest.(referenced_tweets,
-      ##                   keep_empty = TRUE,
-      ##                   .drop = FALSE) |>
       dplyr::filter(type == "replied_to") |>
       dplyr::group_by(if (reply_type == "same_text")
         text
@@ -120,17 +119,16 @@ data_wrangling <- function(tweets,
   if (coord_function == "get_cohashtag") {
     dset_rt <- tweets |>
       tidyr::unpack(cols = c(entities, public_metrics)) |>
-      tidyr::unnest_wider(referenced_tweets) |>
+      # Unnest list-columns (drop null)
+      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) |>
       dplyr::rename(referenced_tweet_id = id) |>
       # remove retweets
       dplyr::filter(type != "retweeted") |>
-      # keep string of hashtags used in each tweets
       tidyr::unnest_wider(hashtags) |>
-      ## keeps single hashtags
-      ## tidytable::unnest.(hashtags, keep_empty = TRUE, .drop = FALSE) |>
-      dplyr::filter(tag != "NULL") |>
+      # unnest hashtags and drop null
+      tidytable::unnest.(c(start, end, tag)) |>
       ## if keeps single hashtags, remove hashtags used more than once in the same tweet
-      ## dplyr::distinct(tweet_id, tag, .keep_all = TRUE) |>
+      dplyr::distinct(tweet_id, tag, .keep_all = TRUE) |>
       # convert to date-time format
       dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) |>
       dplyr::mutate(rt_datetime = as.numeric(created_at)) |>
