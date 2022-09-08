@@ -27,6 +27,7 @@ utils::globalVariables(
     "entities",
     "entities_hashtags",
     "tag",
+    "end",
     "type",
     "entities_urls",
     "expanded_url",

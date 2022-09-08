@@ -8,6 +8,13 @@
 #'
 #' @importFrom visNetwork toVisNetworkData visNetwork visNodes visEdges visIgraphLayout
 
+utils::globalVariables(
+  c(
+    "cluster",
+    "menu"
+  )
+)
+
 net_viz <- function(coord_graph = coord_graph) {
   if (igraph::gorder(coord_graph) > 500) {
    input <- menu(

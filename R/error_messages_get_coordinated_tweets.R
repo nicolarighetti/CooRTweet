@@ -2,11 +2,11 @@
 #'
 #' Utility function with error messages for get_coordinated_tweets.
 #'
-#' @param data_path see \link[CooRTnet]{get_coordinated_tweets}.
-#' @param coord_function see \link[CooRTnet]{get_coordinated_tweets}.
-#' @param reply_type see \link[CooRTnet]{get_coordinated_tweets}.
-#' @param time_window see \link[CooRTnet]{get_coordinated_tweets}.
-#' @param min_repetition see \link[CooRTnet]{get_coordinated_tweets}.
+#' @param data_path see \link[CooRTweet]{get_coordinated_tweets}.
+#' @param coord_function see \link[CooRTweet]{get_coordinated_tweets}.
+#' @param reply_type see \link[CooRTweet]{get_coordinated_tweets}.
+#' @param time_window see \link[CooRTweet]{get_coordinated_tweets}.
+#' @param min_repetition see \link[CooRTweet]{get_coordinated_tweets}.
 
 #' @return a dataframe of tweets ready for coordination analysis.
 
