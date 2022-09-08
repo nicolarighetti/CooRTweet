@@ -1,6 +1,7 @@
 # CooRTweet
 
-! Warning: the package is still under development !
+##### ! Warning: the package is still under development ! 
+##### Please do not open any issues !
 
 Coordinated behavior is a relevant social media strategy that can be employed for political astroturfing (Keller et al., 2020), the spread of problematic content online (Giglietto et al., 2020), and activism. Software for academic research and investigative journalism has been developed in the last few years to detect coordinated behavior, such as the [CooRnet R package](https://github.com/fabiogiglietto/CooRnet) (Giglietto, Righetti, Rossi, 2020), which detects Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Instagram ([CooRnet website](http://coornet.org)), and the [Coordination Network Toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit/blob/main/README.md) by Timothy Graham (Graham, QUT Digital Observatory, 2020), a command line tool for studying coordination networks in Twitter and other social media data.
 
