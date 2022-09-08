@@ -12,7 +12,6 @@
 #' @param coord_time_distribution Default to FALSE. If TRUE, it returns the distribution of time difference between the same action performed by all the users in the original dataset.
 #' @param quick Default to FALSE. If TRUE, the more restrictive but quicker and less computationally intensive algorithm (Giglietto et al, 2020) is implemented to identify coordinated users. It can be especially useful when dealing with large datasets.
 #'
-#' This function works by running the main analysis a second time, without imposing a time_window and min_repetition interval. This significantly increases the computational time required to get the output (approximately 2x).
 #'
 #' @return a list of outputs including:
 #' * the coordinated network as a .graphml object;
