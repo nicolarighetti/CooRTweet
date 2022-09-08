@@ -20,7 +20,6 @@ utils::globalVariables(
     "id",
     "created_at",
     "text",
-    "lang",
     "public_metrics",
     "referenced_tweets",
     "in_reply_to_user_id",

@@ -36,7 +36,10 @@
 #' The number of possible combinations increases exponentially with the n number of actions (base::choose(n, k)), requiring increasing computational power.
 #'
 #' An alternative algorithm (Giglietto et al, 2020) can be implemented by setting quick = TRUE. This algorithm cuts the period of time from the first to the last action in t period of length equals to time_window, and defines as coordinated the accounts that performed the same action within the same time window.
-#' The algorithm has been originally implemented in CooRnet (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram, and empirically proved appropriate to this aim.
+#' The algorithm has been originally implemented in CooRnet (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram. It is more restrictive of the default but it can be faster when dealing with large datasets on a personal computer.
+#'
+#' A plot of the network is visualized when chart = TRUE. The network is interactive: it is possible to zoom in and out and by clicking or hovering on the nodes, the description of the accounts appear.
+#' Visualization can be slow with large charts. For this reason, with graphs with more than 500 nodes, the user can choose to visualize only the most important nodes according to the weight of the edges (i.e., the number of coordinated actions).
 #'
 #' @references
 #'
