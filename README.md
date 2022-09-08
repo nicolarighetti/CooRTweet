@@ -18,7 +18,7 @@ The core function *get_coordinated_tweets* performs a network analysis (SNA) whe
 
 ![Structure of the CooRTweet package](additional_documentation/CooRTweet_scheme.png)
 
-Currently, the packet detects a variety of possibly coordinated actions based on different types of content using the following functions, which can be defined using the *coord_function* option:
+Currently, the package detects a variety of possibly coordinated actions based on different types of content using the following functions, which can be defined using the *coord_function* option:
 
  - **get_coretweet** (Keller et al., 2020), detects networks of accounts that repeatedly shared the same retweet in a predefined time interval;
   - **get_cotweet** (Keller et al., 2020), detects networks of accounts that repeatedly published the same tweet in a predefined time interval;
@@ -30,7 +30,15 @@ To identify coordinated networks, all pairs of users that performed the same act
 
 An alternative algorithm can be implemented by setting the option *quick = TRUE*, which cuts the period of time from the first to the last action in *t* period of length equals to *time_window*, and defines as coordinated the accounts that performed the same action within the same time window a number of times greater than or equal to the value of *min_repetition*. The algorithm has been originally implemented in [CooRnet](https://github.com/fabiogiglietto/CooRnet) (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram. Depending on the analysis, the choice may be more conservative than the default but faster and can be useful when dealing with large datasets on personal computers.
 
+The package executes the analysis using parallel computation with all available cores less 1. The user can change the number of cores to be used with the option *parallel_cores*.
+
 A plot of the network can also be visualized by setting *chart = TRUE*. The network is interactive and it is possible to zoom in and out, and the description of the accounts appears by clicking or hovering on the nodes. Visualization can be slow with relatively large networks. With graphs with more than 500 nodes, the user can choose to visualize only the most important nodes according to the weight of the edges (i.e., the number of coordinated actions). The user can choose which nodes to view according to the statistical distribution of edge weights (greater than the sample minimum, greater than or equal to the first quartile, greater than or equal to the median, greater than or equal to the average, greater than or equal to the third quartile, greater than or equal to the sample maximum). The *.igraph* object can also be saved and opened in a network analysis software such as Gephi.
+
+The output of CooRTweet is a list of objects including:
+
+  * the .igraph object with the network, which can be exported to Gephi;
+  * a data frame including information on coordinated users;
+  * the analyzed data frame of tweets.
 
 ## Examples
 

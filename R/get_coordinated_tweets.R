@@ -20,10 +20,14 @@
 #' * the analyzed dataset augmented with a column indicating whether the tweet is coordinated or non-coordinated.
 #'
 #' @details
-#' Coordinated behavior has been shown to be a strategy employed for political astroturfing (Keller et al., 2020) and the spread of problematic content online (Giglietto et al., 2020).
-#' The functions implemented in this package enable users to perform a variety of analyses to detect possible coordinated newtorks on Twitter.
+#' Coordinated behavior has been shown to be a strategy employed for political astroturfing
+#' (Keller et al., 2020) and the spread of problematic content online (Giglietto et al., 2020).
+#' The functions implemented in this package enable users to perform a variety of analyses to detect
+#' possible coordinated newtorks on Twitter.
 #'
-#' In the network, users are represented as nodes and a link between them is created when they perfom the same action at least n times (with n specified by the paramenter 'min_repetition') within a predefined time threshold (as specified by the parameter 'time_window').
+#' In the network, users are represented as nodes and a link between them is created when they perfom
+#' the same action at least n times (with n specified by the paramenter 'min_repetition') within a
+#' predefined time threshold (as specified by the parameter 'time_window').
 #' The coordinated actions that can be detected are the following:
 #'
 #' * "get_coretweet" detects networks of accounts that repeatedly shared the same retweet;
@@ -32,14 +36,25 @@
 #' * "get_clsb" detects networks of accounts that repeatedly shared the same URLs. The function refers to Coordinated Link Sharing Behavior (Giglietto et al, 2020);
 #' * "get_cohashtag" detectes networks of accounts that repeatedly shared the same hashtag.
 #'
-#' To identify the network, all possible k=2 combinations between users is calculated for each n identical actions, and then filtered according to the parameter time_window and min_repetition.
-#' The number of possible combinations increases exponentially with the n number of actions (base::choose(n, k)), requiring increasing computational power.
+#' To identify the network, all possible k=2 combinations between users is calculated for each n
+#' identical actions, and then filtered according to the parameter time_window and min_repetition.
+#' The number of possible combinations increases exponentially with the n number of actions
+#' (base::choose(n, k)), requiring increasing computational power.
 #'
-#' An alternative algorithm (Giglietto et al, 2020) can be implemented by setting quick = TRUE. This algorithm cuts the period of time from the first to the last action in t period of length equals to time_window, and defines as coordinated the accounts that performed the same action within the same time window.
-#' The algorithm has been originally implemented in CooRnet (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram. It is more restrictive of the default but it can be faster when dealing with large datasets on a personal computer.
+#' An alternative algorithm can be implemented by setting the option *quick = TRUE*, which cuts the
+#' period of time from the first to the last action in *t* period of length equals to *time_window*,
+#' and defines as coordinated the accounts that performed the same action within the same time window
+#' a number of times greater than or equal to the value of *min_repetition*.
+#' The algorithm has been originally implemented in [CooRnet](https://github.com/fabiogiglietto/CooRnet)
+#' (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram. Depending on the analysis,
+#' the choice may be more conservative than the default but faster and can be useful when dealing
+#' with large datasets on personal computers.
 #'
-#' A plot of the network is visualized when chart = TRUE. The network is interactive: it is possible to zoom in and out and by clicking or hovering on the nodes, the description of the accounts appear.
-#' Visualization can be slow with large charts. For this reason, with graphs with more than 500 nodes, the user can choose to visualize only the most important nodes according to the weight of the edges (i.e., the number of coordinated actions).
+#' A plot of the network is visualized when chart = TRUE. The network is interactive: it is possible
+#' to zoom in and out and by clicking or hovering on the nodes, the description of the accounts appear.
+#' Visualization can be slow with large charts. For this reason, with graphs including more than 500 nodes,
+#' the user can choose to visualize only the most important nodes according to the weight of the edges
+#' (i.e., the number of coordinated actions).
 #'
 #' @references
 #'
