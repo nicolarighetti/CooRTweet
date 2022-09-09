@@ -26,11 +26,15 @@ Currently, the package detects a variety of possibly coordinated actions based o
   - **get_clsb** (Giglietto et al., 2020), detects networks of accounts that repeatedly shared the same URLs (the name of the function refers to Coordinated Link Sharing Behavior, CLSB, as defined in Giglietto et al., 2020) in a predefined time interval;
   - **get_cohashtag**, detects networks of accounts that repeatedly shared the same hashtag in a predefined time interval;
 
+## Network detection
+
 To identify coordinated networks, all pairs of users that performed the same action are computed, and the resulting list is then filtered according to the parameter *time_window* and *min_repetition*. Given a set of *n* actions performed in the same time window, the possible pairs of users are given by *n!/k!(n-k)!* (in R: *base::choose(n, k=2)*). The number of possible combinations increases with the number of actions *n*, requiring increasing computational power.
 
 An alternative algorithm can be implemented by setting the option *quick = TRUE*, which cuts the period of time from the first to the last action in *t* period of length equals to *time_window*, and defines as coordinated the accounts that performed the same action within the same time window a number of times greater than or equal to the value of *min_repetition*. The algorithm has been originally implemented in [CooRnet](https://github.com/fabiogiglietto/CooRnet) (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram. Depending on the analysis, the choice may be more conservative than the default but faster and can be useful when dealing with large datasets on personal computers.
 
 The package executes the analysis using parallel computation with all available cores less 1. The user can change the number of cores to be used with the option *parallel_cores*.
+
+## Visualization
 
 A plot of the network can also be visualized by setting *chart = TRUE*. The network is interactive and it is possible to zoom in and out, and the description of the accounts appears by clicking or hovering on the nodes. Visualization can be slow with relatively large networks. With graphs with more than 500 nodes, the user can choose to visualize only the most important nodes according to the weight of the edges (i.e., the number of coordinated actions). The user can choose which nodes to view according to the statistical distribution of edge weights (greater than the sample minimum, greater than or equal to the first quartile, greater than or equal to the median, greater than or equal to the average, greater than or equal to the third quartile, greater than or equal to the sample maximum). The *.igraph* object can also be saved and opened in a network analysis software such as Gephi.
 
