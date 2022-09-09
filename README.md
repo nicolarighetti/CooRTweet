@@ -26,6 +26,12 @@ Currently, the package detects a variety of possibly coordinated actions based o
   - **get_clsb** (Giglietto et al., 2020), detects networks of accounts that repeatedly shared the same URLs (the name of the function refers to Coordinated Link Sharing Behavior, CLSB, as defined in Giglietto et al., 2020) in a predefined time interval;
   - **get_cohashtag**, detects networks of accounts that repeatedly shared the same hashtag in a predefined time interval;
 
+The output of CooRTweet is a list of objects including:
+
+  * the .igraph object with the network, which can be exported to Gephi;
+  * a data frame including information on coordinated users;
+  * the analyzed data frame of tweets with a column indicating whether the tweet is coordinated or non-coordinated.
+  
 ## Network detection
 
 To identify coordinated networks, all pairs of users that performed the same action are computed, and the resulting list is then filtered according to the parameter *time_window* and *min_repetition*. Given a set of *n* actions performed in the same time window, the possible pairs of users are given by *n!/k!(n-k)!* (in R: *base::choose(n, k=2)*). The number of possible combinations increases with the number of actions *n*, requiring increasing computational power.
@@ -37,12 +43,6 @@ The package executes the analysis using parallel computation with all available 
 ## Visualization
 
 A plot of the network can also be visualized by setting *chart = TRUE*. The network is interactive and it is possible to zoom in and out, and the description of the accounts appears by clicking or hovering on the nodes. Visualization can be slow with relatively large networks. With graphs with more than 500 nodes, the user can choose to visualize only the most important nodes according to the weight of the edges (i.e., the number of coordinated actions). The user can choose which nodes to view according to the statistical distribution of edge weights (greater than the sample minimum, greater than or equal to the first quartile, greater than or equal to the median, greater than or equal to the average, greater than or equal to the third quartile, greater than or equal to the sample maximum). The *.igraph* object can also be saved and opened in a network analysis software such as Gephi.
-
-The output of CooRTweet is a list of objects including:
-
-  * the .igraph object with the network, which can be exported to Gephi;
-  * a data frame including information on coordinated users;
-  * the analyzed data frame of tweets.
 
 ## Examples
 
