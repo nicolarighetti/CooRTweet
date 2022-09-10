@@ -72,53 +72,6 @@ users_info <- res[[2]]
 dataset <- res[[1]]
 ```
 
-Search for co-tweet networks.
-
-```                                         
-res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
-                                         coord_function = "get_cotweet",
-                                         reply_type = "same_user",
-                                         time_window = 60*60*24,
-                                         min_repetition = 1,
-                                         chart = TRUE)
-                                        
-```
-
-Search for co-reply networks (same text).
-
-```                                         
-res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
-                                         coord_function = "get_coreply",
-                                         reply_type = "same_text",
-                                         time_window = 60*60*24,
-                                         min_repetition = 2,
-                                         chart = TRUE)
-                                        
-```
-
-Search for co-reply networks (same user).
-
-```                                         
-res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
-                                         coord_function = "get_coreply",
-                                         reply_type = "same_user",
-                                         time_window = 60*60,
-                                         min_repetition = 2,
-                                         chart = TRUE)
-                                        
-```
-
-Search for co-hashtag networks.
-
-```                                         
-res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
-                                         coord_function = "get_cohashtag",
-                                         time_window = 60*60,
-                                         min_repetition = 2,
-                                         chart = TRUE)
-                                        
-```
-
 
 ## References
 
