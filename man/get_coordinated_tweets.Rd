@@ -61,7 +61,7 @@ The coordinated actions that can be detected are the following:
 \item "get_coretweet" detects networks of accounts that repeatedly shared the same retweet;
 \item "get_cotweet" detects networks of accounts that repeatedly published the same tweet;
 \item "get_coreply" detects networks of accounts that repeatedly replied with the same text (same_text) or to the same user (same_user);
-\item "get_clsb" detects networks of accounts that repeatedly shared the same URLs. The function refers to Coordinated Link Sharing Behavior (Giglietto et al, 2020);
+\item "get_clsb" detects networks of accounts that repeatedly shared the same URLs. The function refers to Coordinated Link Sharing Behavior (Giglietto et al, 2020). Only original tweets are considered when searching for coordinated url sharing.
 \item "get_cohashtag" detectes networks of accounts that repeatedly shared the same hashtag.
 }
 

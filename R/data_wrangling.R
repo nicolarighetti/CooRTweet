@@ -39,7 +39,8 @@ utils::globalVariables(
 
 data_wrangling <- function(tweets,
                            coord_function,
-                           reply_type) {
+                           reply_type,
+                           min_repetition) {
   # de-duplicate
   tweets <- tweets |>
     dplyr::rename(tweet_id = id) |>
@@ -69,10 +70,19 @@ data_wrangling <- function(tweets,
   if (coord_function == "get_cotweet") {
     dset_rt <- tweets |>
       tidyr::unpack(cols = c(entities, public_metrics)) |>
-      tidyr::unnest_wider(referenced_tweets) |>
-      dplyr::rename(referenced_tweet_id = id) |>
-      tidytable::unnest.(type, keep_empty = TRUE, .drop = FALSE) |>
-      dplyr::filter(is.na(type)) |>
+      tidyr::hoist(.col = referenced_tweets,
+                   type = "type",
+                   referenced_tweet_id = "id") |>
+      dplyr::filter(type == "NULL")
+
+    if (nrow(dset_rt) == 0) {
+      message("\n### No enough tweets in the dataset ####\n")
+      opt <- options(show.error.messages = FALSE)
+      on.exit(options(opt))
+      stop()
+    }
+
+    dset_rt <- dset_rt |>
       # convert to date-time format
       dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) |>
       dplyr::mutate(rt_datetime = as.numeric(created_at)) |>
@@ -102,9 +112,27 @@ data_wrangling <- function(tweets,
 
   if (coord_function == "get_clsb") {
     dset_rt <- tweets |>
+      # keeps only original tweets
       tidyr::unpack(cols = c(entities, public_metrics)) |>
-      tidytable::unnest.(urls, keep_empty = TRUE, .drop = FALSE) |>
-      dplyr::filter(nchar(url) > 0) |>
+      tidyr::hoist(.col = referenced_tweets,
+                   type = "type",
+                   referenced_tweet_id = "id") |>
+      dplyr::filter(type == "NULL")
+
+      if (nrow(dset_rt) == 0) {
+        message("\n### No URLs in the dataset ####\n")
+        opt <- options(show.error.messages = FALSE)
+        on.exit(options(opt))
+        stop()
+      }
+
+    dset_rt <- dset_rt |>
+      tidyr::hoist(urls,
+                   url = "url",
+                   expanded_url = "expanded_url",
+                   start = "start") |>
+      tidyr::unnest_longer(c("url", "expanded_url", "start")) |>
+      dplyr::filter(!is.na(url)) |>
       # remove Twitter's internal URLs
       dplyr::filter(stringr::str_starts(expanded_url, "https://twitter.com/", negate = TRUE)) |>
       # remove duplicates
@@ -138,8 +166,22 @@ data_wrangling <- function(tweets,
       dplyr::mutate(group_id = dplyr::cur_group_id())
   }
 
-  # keep content tweeded by at least two users
-  # (no coordination is possible for pieces of content tweeted by less than two users)
+  # filter the data according to the minimum threshold required for coordination
+
+  ## identify users that tweeted a number of times higher than or equal to min_repetition
+  author_n <- dset_rt |>
+    dplyr::group_by(author_id) |>
+    dplyr::summarize(n = dplyr::n()) |>
+    dplyr::filter(n >= min_repetition)
+
+  if (nrow(author_n) == 0) {
+    message("\n### No network detected ####\n")
+    opt <- options(show.error.messages = FALSE)
+    on.exit(options(opt))
+    stop()
+  }
+
+  ## identify content tweeded by at least two users (no coordination possible for content tweeted by less than two users)
   group_n <- dset_rt |>
     dplyr::group_by(group_id) |>
     dplyr::summarize(n = dplyr::n()) |>
@@ -152,7 +194,20 @@ data_wrangling <- function(tweets,
     stop()
   }
 
-  dset_rt <- dset_rt[dset_rt$group_id %in% group_n$group_id, ]
+  # filter data
+  dset_rt <- dset_rt |>
+    dplyr::filter(group_id %in% group_n$group_id & author_id %in% author_n$author_id)
+
+  # re-identify content shared by less than two users after filtering
+  group_n <- dset_rt |>
+    dplyr::group_by(group_id) |>
+    dplyr::summarize(n = dplyr::n()) |>
+    dplyr::filter(n >= 2)
+
+  dset_rt <- dset_rt |>
+    dplyr::filter(group_id %in% group_n$group_id)
+
+  rm("author_n", "group_n")
 
   return(list(dset_rt, tweets))
 }

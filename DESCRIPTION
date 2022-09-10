@@ -13,17 +13,18 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports: 
   utils (>= 2.11.0),
-  academictwitteR (>= 0.2.1),
-  dplyr (>= 1.0.7),
-  parallel (>= 4.1.1),
-  foreach (>= 1.5.1),
-  doSNOW (>= 1.0.19),
-  igraph (>= 1.2.6),
-  lubridate (>= 1.7.10),
-  purrr (>= 0.3.4),
-  tidyr (>= 1.1.4),
-  tidytable (>= 0.8.1), 
+  academictwitteR (>= 0.2.0),
+  dplyr (>= 1.0.0),
+  parallel (>= 4.1.0),
+  foreach (>= 1.5.0),
+  doSNOW (>= 1.0.0),
+  igraph (>= 1.2.0),
+  lubridate (>= 1.7.0),
+  purrr (>= 0.3.0),
+  tidyr (>= 1.1.0),
+  tidytable (>= 0.8.0), 
   stringr (>= 1.4.0),
   visNetwork (>= 2.1.0),
-  rlang (>= 1.0.5)
+  rlang (>= 1.0.0),
+  data.table (>= 1.14.0)
 

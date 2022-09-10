@@ -1,6 +1,6 @@
 # CooRTweet
 
-##### The package is still in beta development. Any feedback or suggestion is welcome: [email](mailto:nicola.righetti@univie.ac.at?subject=[GitHub]%20CooRTweet%20)
+##### Warning: The package is still under development
 
 Coordinated behavior is a relevant social media strategy that can be employed for political astroturfing (Keller et al., 2020), the spread of problematic content online (Giglietto et al., 2020), and activism. Software for academic research and investigative journalism has been developed in the last few years to detect coordinated behavior, such as the [CooRnet R package](https://github.com/fabiogiglietto/CooRnet) (Giglietto, Righetti, Rossi, 2020), which detects Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Instagram ([CooRnet website](http://coornet.org)), and the [Coordination Network Toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit/blob/main/README.md) by Timothy Graham (Graham, QUT Digital Observatory, 2020), a command line tool for studying coordination networks in Twitter and other social media data.
 
@@ -22,8 +22,8 @@ Currently, the package detects a variety of possibly coordinated actions based o
 
  - **get_coretweet** (Keller et al., 2020), detects networks of accounts that repeatedly shared the same retweet in a predefined time interval;
   - **get_cotweet** (Keller et al., 2020), detects networks of accounts that repeatedly published the same tweet in a predefined time interval;
-  - **get_coreply** (Righetti, forthcoming), has to be used with the option *reple_type* that takes on the values "same_text" or "same_user"), and detects networks of accounts that repeatedly replied with the same text (same_text) or to the same user (same_user) in a predefined time interval;
-  - **get_clsb** (Giglietto et al., 2020), detects networks of accounts that repeatedly shared the same URLs (the name of the function refers to Coordinated Link Sharing Behavior, CLSB, as defined in Giglietto et al., 2020) in a predefined time interval;
+  - **get_coreply** has to be used with the option *reple_type* that takes on the values "same_text" or "same_user"), and detects networks of accounts that repeatedly replied with the same text (same_text) or to the same user (same_user) in a predefined time interval;
+  - **get_clsb** (Giglietto et al., 2020), detects networks of accounts that repeatedly shared the same URLs (the name of the function refers to Coordinated Link Sharing Behavior, CLSB, as defined in Giglietto et al., 2020) in a predefined time interval. Only original tweets are considered (i.e., no retweets, replies, or quotes). To search for coordinated link sharing (clsb) networks it is possible to start from a list of URLs. In this case, when collecting the data with the Twitter Academic API, attention should be paid to the length of the query, which cannot exceed 1024 characters [Twitter Academic Research Access: Query rules](https://developer.twitter.com/en/products/twitter-api/academic-research). Alternatively, it is possible to analyze coordinated link sharing by collecting tweets containing URLs. 
   - **get_cohashtag**, detects networks of accounts that repeatedly shared the same hashtag in a predefined time interval;
 
 The output of CooRTweet is a list of objects including:
@@ -46,19 +46,17 @@ A plot of the network can also be visualized by setting *chart = TRUE*. The netw
 
 ## Examples
 
-Search for co-retweet networks.
-
 ```
 academictwitteR::get_all_tweets(
   query = c("TruongSaHoangSaBelongtoVietnam", "ChinaStopsLying", "ParacelIslandsSpratlyIslandsBelongtoVietnam"),
   start_tweets = "2020-03-14T00:00:00Z",
   end_tweets = "2020-03-20T00:00:00Z",
   bearer_token = academictwitteR::get_bearer(),
-  data_path = "data_tweets",
+  data_path = "tweet_data",
   n = 50000
 )
 
-res <- CooRTweet::get_coordinated_tweets(data_path = "data_tweets",
+res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
                                          coord_function = "get_coretweet",
                                          time_window = 60*60,
                                          min_repetition = 2,
@@ -74,73 +72,53 @@ users_info <- res[[2]]
 dataset <- res[[1]]
 ```
 
-Search for co-reply networks.
+Search for co-tweet networks.
 
 ```                                         
-res <- CooRTweet::get_coordinated_tweets(data_path = "data_tweets",
+res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
+                                         coord_function = "get_cotweet",
+                                         reply_type = "same_user",
+                                         time_window = 60*60*24,
+                                         min_repetition = 1,
+                                         chart = TRUE)
+                                        
+```
+
+Search for co-reply networks (same text).
+
+```                                         
+res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
                                          coord_function = "get_coreply",
                                          reply_type = "same_text",
                                          time_window = 60*60*24,
                                          min_repetition = 2,
                                          chart = TRUE)
-                                         
-df <- res[[3]]
-head(df$text)
-
-[1] "@AmbCina HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#Chinastopslying\n#HoangsatruongsabelongtoVietNam 🇻🇳🇻🇳🇻🇳🇻🇳🇻🇳"      
-[2] "@AmbCina HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#Chinastopslying\n#HoangsatruongsabelongtoVietNam 🇻🇳"              
-[3] "@AmbCina HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#ChinaStopsLying\n#HoangSaTruongSabelongtoVietNam"                 
-[4] "@AmbCina HOÀNG SA, TRƯỜNG SA LÀ CỦA VIỆT NAM!\n你们说谎，骗人。长沙群岛, 黄沙群岛是越南的。没有存在九段线。\nStop lying, Truong Sa (Spratly Islands), Hoang Sa (Paracel Islands) belong to Vietnam 🇻🇳\n#ChinaStopsLying\n#HoangaTruongSabelongtoVietNam"
+                                        
 ```
 
-The package can be used to analyze Coordinated Link Sharing Behavior (Giglietto et al., 2020) on Twitter by using the *get_clsb* function. The approach requires starting from a list of URLs. In this case, when collecting the data with the Twitter Academic API, attention should be paid to the length of the query, which cannot exceed 1024 characters [Twitter Academic Research Access: Query rules](https://developer.twitter.com/en/products/twitter-api/academic-research).
+Search for co-reply networks (same user).
 
-```
-urls <- c("redice.tv",
-          "renegadebroadcasting.com",
-          "therightstuff.biz",
-          "stormfront.org",
-          "stormer-daily.rw",
-          "metapedia.org") 
-
-academictwitteR::get_all_tweets(
-    academictwitteR::build_query(url = c(urls)),
-    start_tweets = "2020-03-01T00:00:00Z",
-    end_tweets = "2020-04-05T00:00:00Z",
-    bearer_token = academictwitteR::get_bearer(),
-    data_path = "data_urls",
-    n = 200000
-  )
-}
-               
-res <- CooRTweet::get_coordinated_tweets(data_path = "data_urls",
-                                         coord_function = "get_clsb",
-                                         time_window = 60,
+```                                         
+res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
+                                         coord_function = "get_coreply",
+                                         reply_type = "same_user",
+                                         time_window = 60*60,
                                          min_repetition = 2,
-                                         chart = TRUE)    
+                                         chart = TRUE)
+                                        
 ```
 
-Alternatively, it is possible to analyze coordinated link sharing by collecting tweets containing URLs. 
+Search for co-hashtag networks.
 
-```
-clic_here <- c("click the blue link", "click the link", "click here")
-
-academictwitteR::get_all_tweets(
-    academictwitteR::build_query(query = clic_here,
-        has_links = TRUE),
-    start_tweets = "2020-03-10T00:00:00Z",
-    end_tweets = "2020-03-17T00:00:00Z",
-    bearer_token = academictwitteR::get_bearer(),
-    data_path = "data_clicbait",
-    n = 50000
-  )
-
-res <- CooRTweet::get_coordinated_tweets(data_path = "data_clicbait",
-                                         coord_function = "get_clsb",
-                                         time_window = 60*60*24,
+```                                         
+res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
+                                         coord_function = "get_cohashtag",
+                                         time_window = 60*60,
                                          min_repetition = 2,
-                                         chart = TRUE) 
+                                         chart = TRUE)
+                                        
 ```
+
 
 ## References
 

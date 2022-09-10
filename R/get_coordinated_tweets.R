@@ -32,7 +32,7 @@
 #' * "get_coretweet" detects networks of accounts that repeatedly shared the same retweet;
 #' * "get_cotweet" detects networks of accounts that repeatedly published the same tweet;
 #' * "get_coreply" detects networks of accounts that repeatedly replied with the same text (same_text) or to the same user (same_user);
-#' * "get_clsb" detects networks of accounts that repeatedly shared the same URLs. The function refers to Coordinated Link Sharing Behavior (Giglietto et al, 2020);
+#' * "get_clsb" detects networks of accounts that repeatedly shared the same URLs. The function refers to Coordinated Link Sharing Behavior (Giglietto et al, 2020). Only original tweets are considered when searching for coordinated url sharing.
 #' * "get_cohashtag" detectes networks of accounts that repeatedly shared the same hashtag.
 #'
 #' To identify the network, all possible k=2 combinations between users is calculated for each n
@@ -90,7 +90,8 @@ get_coordinated_tweets <- function(data_path = NULL,
   # return(list(dset_rt, tweets))
   dset_list <- data_wrangling(tweets = tweets,
                               coord_function = coord_function,
-                              reply_type = reply_type)
+                              reply_type = reply_type,
+                              min_repetition = min_repetition)
 
   # create the coordinated network edge list
   # return(list(edge_list, dset_rt (updated), coord_graph, full_edge_list (optional)))
