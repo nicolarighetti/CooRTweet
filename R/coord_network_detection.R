@@ -42,16 +42,19 @@ utils::globalVariables(
     "quick",
     "count",
     "tweet_date",
-    "value"
+    "value",
+    "filtered_comb",
+    "dset_rt_i_x",
+    "dset_rt_i_y"
   )
 )
 
 coord_network_detection <- function(dset_rt,
-                                     time_window,
-                                     min_repetition,
-                                     parallel_cores,
-                                     coord_time_distribution,
-                                     quick) {
+                                    time_window,
+                                    min_repetition,
+                                    parallel_cores,
+                                    coord_time_distribution,
+                                    quick) {
   # setup parallel backend
   if (is.null(parallel_cores)) {
     cores <- parallel::detectCores() - 1
@@ -74,108 +77,180 @@ coord_network_detection <- function(dset_rt,
 
   # quick FALSE ####
   if (quick == FALSE) {
-
     # cycle trough all URLs to find entities that shared the same link within the coordination internal
     edge_list_summary <-
       foreach::foreach(
         i = seq(1:groups_n),
-        .packages = c("dplyr", "purrr", "lubridate"),
+        .packages = c("dplyr", "purrr", "lubridate", "base", "utils"),
         .options.snow = progress_bar
       ) %dopar% {
         # show progress...
         utils::setTxtProgressBar(pb, pb$getVal() + 1)
 
         group_id <- unique(dset_rt$group_id)[i]
-        dset_rt_i <- dset_rt[dset_rt$group_id == group_id,]
+        dset_rt_i <- dset_rt[dset_rt$group_id == group_id, ]
 
-        # create a vector of couples "author_id, rt_datetime" to identify the set of unique actions
-        dset_rt_i <-
-          apply(dset_rt_i[, c("author_id", "rt_datetime", "tweet_id", "group_id")],
-                1, function(x)
-                  paste(x, collapse = ","))
+        dset_rt_i <- dset_rt_i |>
+          dplyr::ungroup() |>
+          dplyr::select(author_id, rt_datetime, tweet_id, group_id) |>
+          dplyr::distinct()
 
-        # generate all k=2 combinations of the n couples of author_id and rt_datetime, without duplicates
-        # n! / k!(n-k)!
-        if (length(dset_rt_i) > 1) {
-          dset_rt_i <- as.data.frame(t(combn(
-            dset_rt_i, m = 2, simplify = T
-          )))
+        if (nrow(dset_rt_i) > 5000) {
+          message(paste("working on", choose(
+            n = nrow(dset_rt_i), k = 2
+          )),
+          "combinations. Please wait...")
+        }
+
+        if (nrow(dset_rt_i) >= 2) {
+          all_comb <- combn(1:nrow(dset_rt_i), 2)
+
+          all_times  <- combn(dset_rt_i$rt_datetime, 2)
+
+          time_diff <-
+            abs(apply(all_times, 2, function(x)
+              x[1] - x[2]))
+
+          within_time_window <- which(time_diff <= time_window)
+
+          if (length(within_time_window) > 0) {
+            filtered_comb <- all_comb[, within_time_window]
+
+            # just one row
+            if (is.null(nrow(filtered_comb))) {
+              dset_rt_i_x <- dset_rt_i[filtered_comb, 1:3]
+              dset_rt_i_y <- dset_rt_i[filtered_comb, ]
+              colnames(dset_rt_i_x) <-
+                paste0(names(dset_rt_i_x), "_x")
+              colnames(dset_rt_i_y)[1:3] <-
+                paste0(names(dset_rt_i_y)[1:3], "_y")
+            }
+
+            # matrix
+            if (!is.null(nrow(filtered_comb))) {
+              dset_rt_i_x <- dset_rt_i[filtered_comb[1, ], 1:3]
+              dset_rt_i_y <- dset_rt_i[filtered_comb[2, ], ]
+              colnames(dset_rt_i_x) <-
+                paste0(names(dset_rt_i_x), "_x")
+              colnames(dset_rt_i_y)[1:3] <-
+                paste0(names(dset_rt_i_y)[1:3], "_y")
+            }
+            time_diff <- time_diff[within_time_window]
+            dset_rt_i <- cbind(dset_rt_i_x, dset_rt_i_y, time_diff)
+          }
         }
       }
 
-    parallel::stopCluster(cl)
 
-    edge_list <- tidytable::bind_rows.(edge_list_summary)
+  parallel::stopCluster(cl)
 
-    if(nrow(edge_list) == 0){
-      message("\n### No network detected ###")
-      opt <- options(show.error.messages = FALSE)
-      on.exit(options(opt))
-      stop()
-    }
+  edge_list <- tidytable::bind_rows.(edge_list_summary)
 
-    edge_list <- as.data.frame(cbind(
-      do.call(rbind, strsplit(edge_list$V1, ",")),
-      do.call(rbind, strsplit(edge_list$V2, ","))[,1:3]
-    ))
-
-    colnames(edge_list) <- c("author_id_x", "created_time_x", "tweet_id_x", "group_id",
-                             "author_id_y", "created_time_y", "tweet_id_y")
-
-    edge_list <- edge_list |>
-      dplyr::mutate(
-      created_time_x = as.numeric(created_time_x),
-      created_time_y = as.numeric(created_time_y)
-    ) |>
-      dplyr::mutate(time_diff = abs(created_time_x - created_time_y))
-
-    # if coord_time_distribution = TRUE, saving and tidying the full edge list
-    if (coord_time_distribution == TRUE) {
-      full_edge_list <- edge_list
-      tidy_full_edge_list <- edge_list |>
-        dplyr::mutate(
-          created_time_x = as.character(created_time_x),
-          created_time_y = as.character(created_time_y)
-        ) |>
-        tidyr::pivot_longer(cols = -c(group_id, time_diff)) |>
-        dplyr::mutate(name = dplyr::case_when(
-          name %in% c("author_id_x", "author_id_y") ~ "author_id",
-          name %in% c("tweet_id_x", "tweet_id_y") ~ "tweet_id",
-          name %in% c("created_time_x", "created_time_y") ~ "created_time"
-        )) |>
-        dplyr::filter(!is.na(name)) |>
-        dplyr::group_by(name) |>
-        dplyr::mutate(row = dplyr::row_number()) |>
-        tidyr::pivot_wider(names_from = name, values_from = value) |>
-        dplyr::select(-row)
-    }
-
-    # filter edge list by time_window
-    edge_list <- edge_list |>
-      dplyr::filter(time_diff <= time_window)
-
-    if(nrow(edge_list) == 0){
-      message("\n### No network detected ###")
-      opt <- options(show.error.messages = FALSE)
-      on.exit(options(opt))
-      stop()
-    }
-
-    el_df <- edge_list |>
-      dplyr::mutate(
-        created_time_x = as.character(created_time_x),
-        created_time_y = as.character(created_time_y)
-      ) |>
-      dplyr::select(-time_diff) |>
-      tidyr::pivot_longer(cols = -group_id)
-
-    el <- edge_list |>
-      tidyr::pivot_longer(cols = c(author_id_x, author_id_y),
-                          values_to = "author_id") |>
-      dplyr::select(-name) |>
-      dplyr::select(author_id, group_id)
+  if (nrow(edge_list) == 0) {
+    message("\n### No network detected ###")
+    opt <- options(show.error.messages = FALSE)
+    on.exit(options(opt))
+    stop()
   }
+  # # quick FALSE ####
+  # if (quick == FALSE) {
+  #
+  #   # cycle trough all URLs to find entities that shared the same link within the coordination internal
+  #   edge_list_summary <-
+  #     foreach::foreach(
+  #       i = seq(1:groups_n),
+  #       .packages = c("dplyr", "purrr", "lubridate"),
+  #       .options.snow = progress_bar
+  #     ) %dopar% {
+  #       # show progress...
+  #       utils::setTxtProgressBar(pb, pb$getVal() + 1)
+  #
+  #       group_id <- unique(dset_rt$group_id)[i]
+  #       dset_rt_i <- dset_rt[dset_rt$group_id == group_id,]
+  #
+  #       # create a vector of couples "author_id, rt_datetime" to identify the set of unique actions
+  #       dset_rt_i <-
+  #         apply(dset_rt_i[, c("author_id", "rt_datetime", "tweet_id", "group_id")],
+  #               1, function(x)
+  #                 paste(x, collapse = ","))
+  #
+  #       # generate all k=2 combinations of the n couples of author_id and rt_datetime, without duplicates
+  #       # n! / k!(n-k)!
+  #       if (length(dset_rt_i) > 1) {
+  #         dset_rt_i <- as.data.frame(t(combn(
+  #           dset_rt_i, m = 2, simplify = T
+  #         )))
+  #       }
+  #     }
+  #
+  #   parallel::stopCluster(cl)
+  #
+  #   edge_list <- tidytable::bind_rows.(edge_list_summary)
+  #
+  #   if(nrow(edge_list) == 0){
+  #     message("\n### No network detected ###")
+  #     opt <- options(show.error.messages = FALSE)
+  #     on.exit(options(opt))
+  #     stop()
+  #   }
+  #
+  #   edge_list <- as.data.frame(cbind(
+  #     do.call(rbind, strsplit(edge_list$V1, ",")),
+  #     do.call(rbind, strsplit(edge_list$V2, ","))[,1:3]
+  #   ))
+  #
+  #   colnames(edge_list) <- c("author_id_x", "created_time_x", "tweet_id_x", "group_id",
+  #                            "author_id_y", "created_time_y", "tweet_id_y")
+  #
+  #   edge_list <- edge_list |>
+  #     dplyr::mutate(
+  #     created_time_x = as.numeric(created_time_x),
+  #     created_time_y = as.numeric(created_time_y)
+  #   ) |>
+  #     dplyr::mutate(time_diff = abs(created_time_x - created_time_y))
+  #
+  #   # if coord_time_distribution = TRUE, saving and tidying the full edge list
+  #   if (coord_time_distribution == TRUE) {
+  #     full_edge_list <- edge_list
+  #     tidy_full_edge_list <- edge_list |>
+  #       dplyr::mutate(
+  #         created_time_x = as.character(created_time_x),
+  #         created_time_y = as.character(created_time_y)
+  #       ) |>
+  #       tidyr::pivot_longer(cols = -c(group_id, time_diff)) |>
+  #       dplyr::mutate(name = dplyr::case_when(
+  #         name %in% c("author_id_x", "author_id_y") ~ "author_id",
+  #         name %in% c("tweet_id_x", "tweet_id_y") ~ "tweet_id",
+  #         name %in% c("created_time_x", "created_time_y") ~ "created_time"
+  #       )) |>
+  #       dplyr::filter(!is.na(name)) |>
+  #       dplyr::group_by(name) |>
+  #       dplyr::mutate(row = dplyr::row_number()) |>
+  #       tidyr::pivot_wider(names_from = name, values_from = value) |>
+  #       dplyr::select(-row)
+  #   }
+  #
+  #   # filter edge list by time_window
+  #   edge_list <- edge_list |>
+  #     dplyr::filter(time_diff <= time_window)
+  #
+  #   if(nrow(edge_list) == 0){
+  #     message("\n### No network detected ###")
+  #     opt <- options(show.error.messages = FALSE)
+  #     on.exit(options(opt))
+  #     stop()
+  #   }
+  #
+     el_df <- edge_list |>
+       dplyr::mutate_all(as.character) |>
+       tidyr::pivot_longer(cols = -group_id)
 
+     el <- edge_list |>
+       tidyr::pivot_longer(cols = c(author_id_x, author_id_y),
+                           values_to = "author_id") |>
+       dplyr::select(-name) |>
+       dplyr::select(author_id, group_id)
+   }
 
 
   # quick TRUE ####
@@ -215,7 +290,7 @@ coord_network_detection <- function(dset_rt,
 
     edge_list <- tidytable::bind_rows.(edge_list_summary)
 
-    if(nrow(edge_list) == 0){
+    if (nrow(edge_list) == 0) {
       message("\n### No network detected ###")
       opt <- options(show.error.messages = FALSE)
       on.exit(options(opt))
@@ -271,7 +346,7 @@ coord_network_detection <- function(dset_rt,
       delete.vertices = T
     )
 
-  if(igraph::gorder(coord_graph) == 0){
+  if (igraph::gorder(coord_graph) == 0) {
     message("\n### No network detected ###")
     opt <- options(show.error.messages = FALSE)
     on.exit(options(opt))
@@ -319,7 +394,13 @@ coord_network_detection <- function(dset_rt,
 
 
   if (coord_time_distribution == TRUE) {
-    return(list(edge_list, dset_rt, coord_graph, full_edge_list, tidy_full_edge_list))
+    return(list(
+      edge_list,
+      dset_rt,
+      coord_graph,
+      full_edge_list,
+      tidy_full_edge_list
+    ))
   } else {
     return(list(edge_list, dset_rt, coord_graph))
   }
