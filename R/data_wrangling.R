@@ -198,7 +198,7 @@ data_wrangling <- function(tweets,
   dset_rt <- dset_rt |>
     dplyr::filter(group_id %in% group_n$group_id & author_id %in% author_n$author_id)
 
-  # re-identify content shared by less than two users after filtering
+  # re-identify content shared by more than two users after previous filtering
   group_n <- dset_rt |>
     dplyr::group_by(group_id) |>
     dplyr::summarize(n = dplyr::n()) |>
