@@ -9,7 +9,7 @@
 #' @param min_repetition the minimum number of published coordinated tweets necessary for a user to be included it in the coordinated network.
 #' @param chart if TRUE, the function returns a simple chart of the network for exploratory analysis. Default to FALSE.
 #' @param parallel_cores number of cores to be used in parallel computing. Default to all available cores -1.
-#' @param coord_time_distribution Default to FALSE. If TRUE, it returns the distribution of time difference between the same action performed by all the users in the original dataset.
+#' @param coord_time_distribution Still under development. Default to FALSE. If TRUE, it returns the distribution of time difference between the same action performed by all the users in the original dataset.
 #' @param quick Default to FALSE. If TRUE, the more restrictive but quicker and less computationally intensive algorithm (Giglietto et al, 2020) is implemented to identify coordinated users. It can be especially useful when dealing with large datasets.
 #'
 #'
