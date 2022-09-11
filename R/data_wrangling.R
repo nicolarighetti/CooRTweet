@@ -74,7 +74,7 @@ data_wrangling <- function(tweets,
       tidyr::hoist(.col = referenced_tweets,
                    type = "type",
                    referenced_tweet_id = "id") %>%
-      dplyr::filter(type == "NULL")
+      dplyr::filter(is.na(type))
 
     if (nrow(dset_rt) == 0) {
       message("\n### No network detected ####\n")
@@ -118,7 +118,7 @@ data_wrangling <- function(tweets,
       tidyr::hoist(.col = referenced_tweets,
                    type = "type",
                    referenced_tweet_id = "id") %>%
-      dplyr::filter(type == "NULL")
+      dplyr::filter(is.na(type))
 
       if (nrow(dset_rt) == 0) {
         message("\n### No network detected ####\n")
