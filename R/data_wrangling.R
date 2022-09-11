@@ -167,8 +167,9 @@ data_wrangling <- function(tweets,
       dplyr::mutate(group_id = dplyr::cur_group_id())
   }
 
-  # filter the data according to the minimum threshold required for coordination
-
+  # filter by min threshold ####
+  ## filter the data according to the minimum threshold required for coordination
+  ##
   ## identify users that tweeted a number of times higher than or equal to min_repetition
   author_n <- dset_rt %>%
     dplyr::group_by(author_id) %>%

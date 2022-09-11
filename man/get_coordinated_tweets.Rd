@@ -41,7 +41,8 @@ a list of outputs including:
 \itemize{
 \item the coordinated network as a .graphml object;
 \item a data frame including information on the coordinated users identified by the analysis;
-\item the analyzed dataset augmented with a column indicating whether the tweet is coordinated or non-coordinated.
+\item the analyzed dataset augmented with a column indicating whether the tweet was shared
+within the time frame specified by time_window by a user included in the coordinated network.
 }
 }
 \description{
@@ -85,8 +86,27 @@ Visualization can be slow with large charts. For this reason, with graphs includ
 the user can choose to visualize only the most important nodes according to the weight of the edges
 (i.e., the number of coordinated actions).
 }
+\examples{
+
+\dontrun{
+res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
+                                         coord_function = "get_coretweet",
+                                         time_window = 60,
+                                         min_repetition = 2,
+                                         chart = TRUE)
+igraph_network <- res[[1]]
+users_info <- res[[2]]
+dataset <- res[[3]]
+
+# save the network in a Gephi-ready format
+igraph::write.graph(igraph_network, file = "network_name.graphml", format = "graphml")
+
+}
+
+}
 \references{
 Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. Information, Communication & Society, 23(6), 867-891.
-
+Giglietto, F., Righetti, N., Rossi, L. (2020). CooRnet: Detect coordinated link sharing behavior on social media. R package version 1.5.0. https://github.com/fabiogiglietto/CooRnet
 Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2020). Political astroturfing on Twitter: How to coordinate a disinformation campaign. Political Communication, 37(2), 256-280.
+Graham, T., QUT Digital Observatory, (2020). Coordination Network Toolkit. Queensland University of Technology. (Software) https://doi.org/10.25912/RDF_1632782596538
 }

@@ -4,7 +4,7 @@
 
 Coordinated behavior is a relevant social media strategy that can be employed for political astroturfing (Keller et al., 2020), the spread of problematic content online (Giglietto et al., 2020), and activism. Software for academic research and investigative journalism has been developed in the last few years to detect coordinated behavior, such as the [CooRnet R package](https://github.com/fabiogiglietto/CooRnet) (Giglietto, Righetti, Rossi, 2020), which detects Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Instagram ([CooRnet website](http://coornet.org)), and the [Coordination Network Toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit/blob/main/README.md) by Timothy Graham (Graham, QUT Digital Observatory, 2020), a command line tool for studying coordination networks in Twitter and other social media data.
 
-The **CooRTweet** package builds on the existing literature on coordinated behavior and the experience of previous software like CooRnet and others to provide R users with an easy-to-use tool to detect a variety of coordinated networks on Twitter.
+The **CooRTweet** package builds on the existing literature on coordinated behavior and the experience of previous software, particularly CooRnet, to provide R users with an easy-to-use tool to detect a variety of coordinated networks on Twitter.
 
 ```
 # install.packages("devtools")
@@ -24,13 +24,7 @@ Currently, the package detects a variety of possibly coordinated actions based o
   - **get_cotweet** (Keller et al., 2020), detects networks of accounts that repeatedly published the same tweet in a predefined time interval;
   - **get_coreply** has to be used with the option *reple_type* that takes on the values "same_text" or "same_user"), and detects networks of accounts that repeatedly replied with the same text (same_text) or to the same user (same_user) in a predefined time interval;
   - **get_clsb** (Giglietto et al., 2020), detects networks of accounts that repeatedly shared the same URLs (the name of the function refers to Coordinated Link Sharing Behavior, CLSB, as defined in Giglietto et al., 2020) in a predefined time interval. Only original tweets are considered (i.e., no retweets, replies, or quotes). To search for coordinated link sharing (clsb) networks it is possible to start from a list of URLs. In this case, when collecting the data with the Twitter Academic API, attention should be paid to the length of the query, which cannot exceed 1024 characters [Twitter Academic Research Access: Query rules](https://developer.twitter.com/en/products/twitter-api/academic-research). Alternatively, it is possible to analyze coordinated link sharing by collecting tweets containing URLs. 
-  - **get_cohashtag**, detects networks of accounts that repeatedly shared the same hashtag in a predefined time interval;
-
-The output of CooRTweet is a list of objects including:
-
-  * the .igraph object with the network, which can be exported to Gephi;
-  * a data frame including information on coordinated users;
-  * the analyzed data frame of tweets with a column indicating whether the tweet is coordinated or non-coordinated.
+  - **get_cohashtag**, detects networks of accounts that repeatedly shared the same hashtag in a predefined time interval.
   
 ## Network detection
 
@@ -39,6 +33,14 @@ To identify coordinated networks, all pairs of users that performed the same act
 An alternative algorithm can be implemented by setting the option *quick = TRUE*, which cuts the period of time from the first to the last action in *t* period of length equals to *time_window*, and defines as coordinated the accounts that performed the same action within the same time window a number of times greater than or equal to the value of *min_repetition*. The algorithm has been originally implemented in [CooRnet](https://github.com/fabiogiglietto/CooRnet) (Giglietto et al, 2020) to detect coordinated networks on Facebook and Instagram. Depending on the analysis, the choice may be more conservative than the default but faster and can be useful when dealing with large datasets on personal computers.
 
 The package executes the analysis using parallel computation with all available cores less 1. The user can change the number of cores to be used with the option *parallel_cores*.
+
+## Output
+
+The output of CooRTweet is a list of objects including:
+
+  * the .igraph object with the network, which can be exported to Gephi;
+  * a data frame including information on coordinated users;
+  * the analyzed data frame of tweets with a column indicating whether the tweet is coordinated or non-coordinated.
 
 ## Visualization
 
@@ -65,11 +67,14 @@ res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
 # graph objetc. It can be saved and opened with Gephi, or used in R.
 igraph_network <- res[[1]]
 
+# to export the network to Gephi
+igraph::write.graph(igraph_network, file = "network_name.graphml", format = "graphml")
+
 # information about users
 users_info <- res[[2]]
 
 # the analyzed dataset, with a column indicating whether a tweet has been identified as coordinated or not
-dataset <- res[[1]]
+dataset <- res[[3]]
 ```
 
 
@@ -77,6 +82,8 @@ dataset <- res[[1]]
 
 Barrie, Christopher and Ho, Justin Chun-ting. (2021). academictwitteR: an R package to access the Twitter Academic Research Product Track v2 API endpoint. *Journal of Open Source Software*, 6(62), 3272, https://doi.org/10.21105/joss.03272
 
+Fabio Giglietto, Nicola Righetti and Luca Rossi (2020). CooRnet: Detect coordinated link sharing behavior on social media. R package version 1.5.0. https://github.com/fabiogiglietto/CooRnet
+  
 Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. *Information, Communication & Society*, 23(6), 867-891. https://doi.org/10.1080/1369118X.2020.1739732
 
 Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2020). Political astroturfing on Twitter: How to coordinate a disinformation campaign. *Political Communication*, 37(2), 256-280. https://doi.org/10.1080/10584609.2019.1661888 

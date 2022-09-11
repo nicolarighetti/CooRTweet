@@ -92,7 +92,7 @@ coord_network_detection <- function(dset_rt,
         utils::setTxtProgressBar(pb, pb$getVal() + 1)
 
         group_id <- unique(dset_rt$group_id)[i]
-        dset_rt_i <- dset_rt[dset_rt$group_id == group_id, ]
+        dset_rt_i <- dset_rt[dset_rt$group_id == group_id,]
 
         dset_rt_i <- dset_rt_i %>%
           dplyr::ungroup() %>%
@@ -123,7 +123,7 @@ coord_network_detection <- function(dset_rt,
             # just one row
             if (is.null(nrow(filtered_comb))) {
               dset_rt_i_x <- dset_rt_i[filtered_comb, 1:3]
-              dset_rt_i_y <- dset_rt_i[filtered_comb, ]
+              dset_rt_i_y <- dset_rt_i[filtered_comb,]
               colnames(dset_rt_i_x) <-
                 paste0(names(dset_rt_i_x), "_x")
               colnames(dset_rt_i_y)[1:3] <-
@@ -132,8 +132,8 @@ coord_network_detection <- function(dset_rt,
 
             # matrix
             if (!is.null(nrow(filtered_comb))) {
-              dset_rt_i_x <- dset_rt_i[filtered_comb[1, ], 1:3]
-              dset_rt_i_y <- dset_rt_i[filtered_comb[2, ], ]
+              dset_rt_i_x <- dset_rt_i[filtered_comb[1,], 1:3]
+              dset_rt_i_y <- dset_rt_i[filtered_comb[2,],]
               colnames(dset_rt_i_x) <-
                 paste0(names(dset_rt_i_x), "_x")
               colnames(dset_rt_i_y)[1:3] <-
@@ -146,28 +146,27 @@ coord_network_detection <- function(dset_rt,
       }
 
 
-  parallel::stopCluster(cl)
+    parallel::stopCluster(cl)
 
-  edge_list <- tidytable::bind_rows.(edge_list_summary)
+    edge_list <- tidytable::bind_rows.(edge_list_summary)
 
-  if (nrow(edge_list) == 0) {
-    message("\n### No network detected ###")
-    opt <- options(show.error.messages = FALSE)
-    on.exit(options(opt))
-    stop()
+    if (nrow(edge_list) == 0) {
+      message("\n### No network detected ###")
+      opt <- options(show.error.messages = FALSE)
+      on.exit(options(opt))
+      stop()
+    }
+
+    el_df <- edge_list %>%
+      dplyr::mutate_all(as.character) %>%
+      tidyr::pivot_longer(cols = -group_id)
+
+    el <- edge_list %>%
+      tidyr::pivot_longer(cols = c(author_id_x, author_id_y),
+                          values_to = "author_id") %>%
+      dplyr::select(-name) %>%
+      dplyr::select(author_id, group_id)
   }
-
-     el_df <- edge_list %>%
-       dplyr::mutate_all(as.character) %>%
-       tidyr::pivot_longer(cols = -group_id)
-
-     el <- edge_list %>%
-       tidyr::pivot_longer(cols = c(author_id_x, author_id_y),
-                           values_to = "author_id") %>%
-       dplyr::select(-name) %>%
-       dplyr::select(author_id, group_id)
-   }
-
 
   # quick TRUE ####
   if (quick == TRUE) {
@@ -181,7 +180,7 @@ coord_network_detection <- function(dset_rt,
         utils::setTxtProgressBar(pb, pb$getVal() + 1)
 
         group_id <- unique(dset_rt$group_id)[i]
-        dset_rt_i <- dset_rt[dset_rt$group_id == group_id,]
+        dset_rt_i <- dset_rt[dset_rt$group_id == group_id, ]
 
         if (nrow(dset_rt_i) > 1) {
           dat.summary <- dset_rt_i %>%
@@ -239,22 +238,22 @@ coord_network_detection <- function(dset_rt,
   v <- rbind(v1, v2)
 
   g2.bp <-
-    igraph::graph.data.frame(el, directed = T, vertices = v) # makes the bipartite graph
+    igraph::graph.data.frame(el, directed = T, vertices = v)
   g2.bp <-
     igraph::simplify(
       g2.bp,
       remove.multiple = T,
       remove.loops = T,
       edge.attr.comb = "min"
-    ) # simplify the bipartite network to avoid problems with resulting edge weight in projected network
+    )
   full_g <-
-    suppressWarnings(igraph::bipartite.projection(g2.bp, multiplicity = T)$proj2) # project entity-entity network
+    suppressWarnings(igraph::bipartite.projection(g2.bp, multiplicity = T)$proj2)
 
-  # keep only highly coordinated entities
   igraph::V(full_g)$degree <- igraph::degree(full_g)
   coord_graph <-
-    igraph::induced_subgraph(graph = full_g, vids = igraph::V(full_g)[igraph::V(full_g)$degree > 0]) # filter for degree
-  # filter for edge weight
+    igraph::induced_subgraph(graph = full_g, vids = igraph::V(full_g)[igraph::V(full_g)$degree > 0])
+
+  # filter for min_repetition
   coord_graph <-
     igraph::subgraph.edges(
       coord_graph,
@@ -300,7 +299,7 @@ coord_network_detection <- function(dset_rt,
       FALSE
     )
 
-  # find and annotate nodes-components
+  # components and clusters
   igraph::V(coord_graph)$component <-
     igraph::components(coord_graph)$membership
   igraph::V(coord_graph)$cluster <-
