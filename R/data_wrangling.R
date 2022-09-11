@@ -77,7 +77,7 @@ data_wrangling <- function(tweets,
       dplyr::filter(is.na(type))
 
     if (nrow(dset_rt) == 0) {
-      message("\n### No network detected ####\n")
+      message("\n### No original tweets in the dataset ####\n")
       opt <- options(show.error.messages = FALSE)
       on.exit(options(opt))
       stop()
@@ -121,7 +121,7 @@ data_wrangling <- function(tweets,
       dplyr::filter(is.na(type))
 
       if (nrow(dset_rt) == 0) {
-        message("\n### No network detected ####\n")
+        message("\n### No original tweets in the dataset ####\n")
         opt <- options(show.error.messages = FALSE)
         on.exit(options(opt))
         stop()
