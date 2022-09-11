@@ -32,7 +32,7 @@ get_coordinated_tweets(
 
 \item{parallel_cores}{number of cores to be used in parallel computing. Default to all available cores -1.}
 
-\item{coord_time_distribution}{Default to FALSE. If TRUE, it returns the distribution of time difference between the same action performed by all the users in the original dataset.}
+\item{coord_time_distribution}{Still under development. Default to FALSE. If TRUE, it returns the distribution of time difference between the same action performed by all the users in the original dataset.}
 
 \item{quick}{Default to FALSE. If TRUE, the more restrictive but quicker and less computationally intensive algorithm (Giglietto et al, 2020) is implemented to identify coordinated users. It can be especially useful when dealing with large datasets.}
 }

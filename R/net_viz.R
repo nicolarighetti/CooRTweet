@@ -7,6 +7,7 @@
 #' @return a plot in the 'Plots' window.
 #'
 #' @importFrom visNetwork toVisNetworkData visNetwork visNodes visEdges visIgraphLayout
+#' @importFrom magrittr %>%
 
 utils::globalVariables(
   c(
@@ -114,9 +115,9 @@ net_viz <- function(coord_graph = coord_graph) {
     vis_net$nodes$value <- vis_net$nodes$degree
     vis_net$nodes$borderWidth <- 8
 
-    top10_clusters <- vis_net$nodes |>
-      dplyr::group_by(cluster) |>
-      dplyr::summarize(n = dplyr::n()) |>
+    top10_clusters <- vis_net$nodes %>%
+      dplyr::group_by(cluster) %>%
+      dplyr::summarize(n = dplyr::n()) %>%
       dplyr::top_n(n = 10, wt = n)
 
     if (nrow(top10_clusters) < 10) {
@@ -138,18 +139,18 @@ net_viz <- function(coord_graph = coord_graph) {
         vis_net$nodes,
         vis_net$edges,
         idToLabel = TRUE
-      ) |>
+      ) %>%
       visNetwork::visIgraphLayout(
         layout = "layout_nicely",
         smooth = FALSE,
         physics = TRUE,
         randomSeed = 123
-      ) |>
+      ) %>%
       visNetwork::visNodes(
         shape = "circularImage",
         scaling = list(min = 5, max = 50),
         font = '20px arial black'
-      ) |>
+      ) %>%
       visNetwork::visEdges(
         width = 1,
         physics = FALSE,
@@ -160,7 +161,7 @@ net_viz <- function(coord_graph = coord_graph) {
           #color = "slategray",
           highlight = "black"
         )
-      ) |>
+      ) %>%
       visNetwork::visPhysics(
         solver = "forceAtlas2Based",
         maxVelocity = 50,

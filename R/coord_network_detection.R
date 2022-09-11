@@ -18,6 +18,7 @@
 #' @importFrom dplyr summarize mutate filter summarize group_by left_join
 #' @importFrom igraph graph_from_data_frame V degree
 #' @importFrom tidyr separate
+#' @importFrom magrittr %>%
 
 utils::globalVariables(
   c(
@@ -45,7 +46,10 @@ utils::globalVariables(
     "value",
     "filtered_comb",
     "dset_rt_i_x",
-    "dset_rt_i_y"
+    "dset_rt_i_y",
+    "rt_datetime",
+    "full_edge_list",
+    "tidy_full_edge_list"
   )
 )
 
@@ -90,9 +94,9 @@ coord_network_detection <- function(dset_rt,
         group_id <- unique(dset_rt$group_id)[i]
         dset_rt_i <- dset_rt[dset_rt$group_id == group_id, ]
 
-        dset_rt_i <- dset_rt_i |>
-          dplyr::ungroup() |>
-          dplyr::select(author_id, rt_datetime, tweet_id, group_id) |>
+        dset_rt_i <- dset_rt_i %>%
+          dplyr::ungroup() %>%
+          dplyr::select(author_id, rt_datetime, tweet_id, group_id) %>%
           dplyr::distinct()
 
         if (nrow(dset_rt_i) > 5000) {
@@ -153,14 +157,14 @@ coord_network_detection <- function(dset_rt,
     stop()
   }
 
-     el_df <- edge_list |>
-       dplyr::mutate_all(as.character) |>
+     el_df <- edge_list %>%
+       dplyr::mutate_all(as.character) %>%
        tidyr::pivot_longer(cols = -group_id)
 
-     el <- edge_list |>
+     el <- edge_list %>%
        tidyr::pivot_longer(cols = c(author_id_x, author_id_y),
-                           values_to = "author_id") |>
-       dplyr::select(-name) |>
+                           values_to = "author_id") %>%
+       dplyr::select(-name) %>%
        dplyr::select(author_id, group_id)
    }
 
@@ -180,20 +184,20 @@ coord_network_detection <- function(dset_rt,
         dset_rt_i <- dset_rt[dset_rt$group_id == group_id,]
 
         if (nrow(dset_rt_i) > 1) {
-          dat.summary <- dset_rt_i |>
-            dplyr::arrange(created_at) |>
-            dplyr::mutate(cut = cut(created_at, breaks = paste(time_window, "sec"))) |>
-            dplyr::group_by(cut) |>
+          dat.summary <- dset_rt_i %>%
+            dplyr::arrange(created_at) %>%
+            dplyr::mutate(cut = cut(created_at, breaks = paste(time_window, "sec"))) %>%
+            dplyr::group_by(cut) %>%
             dplyr::mutate(
               count = dplyr::n(),
               author_id = list(author_id),
               tweet_id = list(tweet_id),
               tweet_date = list(created_at),
               group_id = group_id
-            ) |>
-            dplyr::select(cut, count, author_id, tweet_id, tweet_date, group_id) |>
+            ) %>%
+            dplyr::select(cut, count, author_id, tweet_id, tweet_date, group_id) %>%
             # subset the URLs shared by more than one entity
-            dplyr::filter(count > 1) |>
+            dplyr::filter(count > 1) %>%
             unique()
         }
       }
@@ -212,19 +216,19 @@ coord_network_detection <- function(dset_rt,
     el_df <-
       edge_list[, c("author_id", "group_id", "tweet_id")]
 
-    el <- el_df |>
+    el <- el_df %>%
       dplyr::mutate(author_id = as.character(author_id),
-                    group_id = as.character(group_id)) |>
-      tidyr::separate_rows(author_id, sep = ",") |>
-      dplyr::mutate(author_id = gsub('"|c|\\(|\\)', "", author_id)) |>
-      dplyr::mutate(author_id = gsub("[[:space:]]", "", author_id)) |>
-      tidyr::separate_rows(tweet_id, sep = ",") |>
-      dplyr::mutate(tweet_id = gsub('"|c|\\(|\\)', "", tweet_id)) |>
-      dplyr::mutate(tweet_id = gsub("[[:space:]]", "", tweet_id)) |>
-      dplyr::filter(nchar(author_id) > 0) |>
-      dplyr::filter(nchar(tweet_id) > 0) |>
-      dplyr::distinct() |>
-      dplyr::mutate(group_id = as.character(group_id)) |>
+                    group_id = as.character(group_id)) %>%
+      tidyr::separate_rows(author_id, sep = ",") %>%
+      dplyr::mutate(author_id = gsub('"|c|\\(|\\)', "", author_id)) %>%
+      dplyr::mutate(author_id = gsub("[[:space:]]", "", author_id)) %>%
+      tidyr::separate_rows(tweet_id, sep = ",") %>%
+      dplyr::mutate(tweet_id = gsub('"|c|\\(|\\)', "", tweet_id)) %>%
+      dplyr::mutate(tweet_id = gsub("[[:space:]]", "", tweet_id)) %>%
+      dplyr::filter(nchar(author_id) > 0) %>%
+      dplyr::filter(nchar(tweet_id) > 0) %>%
+      dplyr::distinct() %>%
+      dplyr::mutate(group_id = as.character(group_id)) %>%
       dplyr::mutate(group_id = paste0("g", group_id))
   }
 
@@ -267,19 +271,19 @@ coord_network_detection <- function(dset_rt,
 
   # mark coordinated tweets
   if (quick == FALSE) {
-    el <- el_df |>
+    el <- el_df %>%
       dplyr::mutate(name = dplyr::case_when(
         name %in% c("author_id_x", "author_id_y") ~ "author_id",
         name %in% c("tweet_id_x", "tweet_id_y") ~ "tweet_id"
-      )) |>
-      dplyr::filter(!is.na(name)) |>
-      dplyr::group_by(name) |>
-      dplyr::mutate(row = dplyr::row_number()) |>
-      tidyr::pivot_wider(names_from = name, values_from = value) |>
+      )) %>%
+      dplyr::filter(!is.na(name)) %>%
+      dplyr::group_by(name) %>%
+      dplyr::mutate(row = dplyr::row_number()) %>%
+      tidyr::pivot_wider(names_from = name, values_from = value) %>%
       dplyr::select(-row)
   }
 
-  el <- el |>
+  el <- el %>%
     dplyr::filter(author_id %in% igraph::V(coord_graph)$name)
 
   if (quick == TRUE) {

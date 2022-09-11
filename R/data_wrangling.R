@@ -12,6 +12,7 @@
 #' @importFrom dplyr group_by rename summarize mutate case_when distinct filter
 #' @importFrom stringr str_starts
 #' @importFrom rlang :=
+#' @importFrom magrittr %>%
 
 utils::globalVariables(
   c(
@@ -42,37 +43,37 @@ data_wrangling <- function(tweets,
                            reply_type,
                            min_repetition) {
   # de-duplicate
-  tweets <- tweets |>
-    dplyr::rename(tweet_id = id) |>
+  tweets <- tweets %>%
+    dplyr::rename(tweet_id = id) %>%
     dplyr::distinct(tweet_id, .keep_all = TRUE)
 
   # manipulate and group data by variable of interest
   if (coord_function == "get_coretweet") {
-    dset_rt <- tweets |>
+    dset_rt <- tweets %>%
       # makes data wider by expanding df-columns
-      tidyr::unpack(cols = c(entities, public_metrics)) |>
+      tidyr::unpack(cols = c(entities, public_metrics)) %>%
       # Unnest list-columns (drop null)
-      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) |>
-      dplyr::rename(referenced_tweet_id = id) |>
-      dplyr::filter(type == "retweeted") |>
+      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) %>%
+      dplyr::rename(referenced_tweet_id = id) %>%
+      dplyr::filter(type == "retweeted") %>%
       # Unnest list-columns into columns and rows (when tweets include multiple mentions)
-      tidytable::unnest.(mentions, keep_empty = TRUE, .drop = FALSE) |>
+      tidytable::unnest.(mentions, keep_empty = TRUE, .drop = FALSE) %>%
       # keep mentions to retweeted users, drop the others
-      dplyr::filter(start == 3) |>
+      dplyr::filter(start == 3) %>%
       # convert to date-time format
-      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) |>
-      dplyr::mutate(rt_datetime = as.numeric(created_at)) |>
+      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) %>%
+      dplyr::mutate(rt_datetime = as.numeric(created_at)) %>%
       # group content
-      dplyr::group_by(referenced_tweet_id) |>
+      dplyr::group_by(referenced_tweet_id) %>%
       dplyr::mutate(group_id = dplyr::cur_group_id())
   }
 
   if (coord_function == "get_cotweet") {
-    dset_rt <- tweets |>
-      tidyr::unpack(cols = c(entities, public_metrics)) |>
+    dset_rt <- tweets %>%
+      tidyr::unpack(cols = c(entities, public_metrics)) %>%
       tidyr::hoist(.col = referenced_tweets,
                    type = "type",
-                   referenced_tweet_id = "id") |>
+                   referenced_tweet_id = "id") %>%
       dplyr::filter(type == "NULL")
 
     if (nrow(dset_rt) == 0) {
@@ -82,41 +83,41 @@ data_wrangling <- function(tweets,
       stop()
     }
 
-    dset_rt <- dset_rt |>
+    dset_rt <- dset_rt %>%
       # convert to date-time format
-      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) |>
-      dplyr::mutate(rt_datetime = as.numeric(created_at)) |>
-      dplyr::group_by(text) |>
+      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) %>%
+      dplyr::mutate(rt_datetime = as.numeric(created_at)) %>%
+      dplyr::group_by(text) %>%
       dplyr::mutate(group_id = dplyr::cur_group_id())
   }
 
   if (coord_function == "get_coreply") {
-    dset_rt <- tweets |>
-      tidyr::unpack(cols = c(entities, public_metrics)) |>
+    dset_rt <- tweets %>%
+      tidyr::unpack(cols = c(entities, public_metrics)) %>%
       # Unnest list-columns (drop null)
-      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) |>
-      dplyr::rename(referenced_tweet_id = id) |>
-      dplyr::filter(type == "replied_to") |>
+      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) %>%
+      dplyr::rename(referenced_tweet_id = id) %>%
+      dplyr::filter(type == "replied_to") %>%
       dplyr::group_by(if (reply_type == "same_text")
         text
         else if (reply_type == "same_user")
-          in_reply_to_user_id) |>
+          in_reply_to_user_id) %>%
       # convert to date-time format
-      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) |>
-      dplyr::mutate(rt_datetime = as.numeric(created_at)) |>
+      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) %>%
+      dplyr::mutate(rt_datetime = as.numeric(created_at)) %>%
       # group by
-      dplyr::mutate(group_id = dplyr::cur_group_id()) |>
+      dplyr::mutate(group_id = dplyr::cur_group_id()) %>%
       dplyr::rename({{reply_type}} := "if (reply_type == \"same_text\") text else if (reply_type == \"same_user\") in_reply_to_user_id")
 
   }
 
   if (coord_function == "get_clsb") {
-    dset_rt <- tweets |>
+    dset_rt <- tweets %>%
       # keeps only original tweets
-      tidyr::unpack(cols = c(entities, public_metrics)) |>
+      tidyr::unpack(cols = c(entities, public_metrics)) %>%
       tidyr::hoist(.col = referenced_tweets,
                    type = "type",
-                   referenced_tweet_id = "id") |>
+                   referenced_tweet_id = "id") %>%
       dplyr::filter(type == "NULL")
 
       if (nrow(dset_rt) == 0) {
@@ -126,52 +127,52 @@ data_wrangling <- function(tweets,
         stop()
       }
 
-    dset_rt <- dset_rt |>
+    dset_rt <- dset_rt %>%
       tidyr::hoist(urls,
                    url = "url",
                    expanded_url = "expanded_url",
-                   start = "start") |>
-      tidyr::unnest_longer(c("url", "expanded_url", "start")) |>
-      dplyr::filter(!is.na(url)) |>
+                   start = "start") %>%
+      tidyr::unnest_longer(c("url", "expanded_url", "start")) %>%
+      dplyr::filter(!is.na(url)) %>%
       # remove Twitter's internal URLs
-      dplyr::filter(stringr::str_starts(expanded_url, "https://twitter.com/", negate = TRUE)) |>
+      dplyr::filter(stringr::str_starts(expanded_url, "https://twitter.com/", negate = TRUE)) %>%
       # remove duplicates
-      dplyr::distinct(tweet_id, url, .keep_all = TRUE) |>
+      dplyr::distinct(tweet_id, url, .keep_all = TRUE) %>%
       # convert to date-time format
-      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) |>
-      dplyr::mutate(rt_datetime = as.numeric(created_at)) |>
+      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) %>%
+      dplyr::mutate(rt_datetime = as.numeric(created_at)) %>%
       # group by
-      dplyr::group_by(url) |>
+      dplyr::group_by(url) %>%
       dplyr::mutate(group_id = dplyr::cur_group_id())
   }
 
   if (coord_function == "get_cohashtag") {
-    dset_rt <- tweets |>
-      tidyr::unpack(cols = c(entities, public_metrics)) |>
+    dset_rt <- tweets %>%
+      tidyr::unpack(cols = c(entities, public_metrics)) %>%
       # Unnest list-columns (drop null)
-      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) |>
-      dplyr::rename(referenced_tweet_id = id) |>
+      tidytable::unnest.(referenced_tweets, keep_empty = TRUE, .drop = FALSE) %>%
+      dplyr::rename(referenced_tweet_id = id) %>%
       # remove retweets
-      dplyr::filter(type != "retweeted") |>
-      tidyr::unnest_wider(hashtags) |>
+      dplyr::filter(type != "retweeted") %>%
+      tidyr::unnest_wider(hashtags) %>%
       # unnest hashtags and drop null
-      tidytable::unnest.(c(start, end, tag)) |>
+      tidytable::unnest.(c(start, end, tag)) %>%
       ## if keeps single hashtags, remove hashtags used more than once in the same tweet
-      dplyr::distinct(tweet_id, tag, .keep_all = TRUE) |>
+      dplyr::distinct(tweet_id, tag, .keep_all = TRUE) %>%
       # convert to date-time format
-      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) |>
-      dplyr::mutate(rt_datetime = as.numeric(created_at)) |>
+      dplyr::mutate(created_at = lubridate::as_datetime(created_at, tz = "UTC")) %>%
+      dplyr::mutate(rt_datetime = as.numeric(created_at)) %>%
       # group by
-      dplyr::group_by(tag) |>
+      dplyr::group_by(tag) %>%
       dplyr::mutate(group_id = dplyr::cur_group_id())
   }
 
   # filter the data according to the minimum threshold required for coordination
 
   ## identify users that tweeted a number of times higher than or equal to min_repetition
-  author_n <- dset_rt |>
-    dplyr::group_by(author_id) |>
-    dplyr::summarize(n = dplyr::n()) |>
+  author_n <- dset_rt %>%
+    dplyr::group_by(author_id) %>%
+    dplyr::summarize(n = dplyr::n()) %>%
     dplyr::filter(n >= min_repetition)
 
   if (nrow(author_n) == 0) {
@@ -182,9 +183,9 @@ data_wrangling <- function(tweets,
   }
 
   ## identify content tweeded by at least two users (no coordination possible for content tweeted by less than two users)
-  group_n <- dset_rt |>
-    dplyr::group_by(group_id) |>
-    dplyr::summarize(n = dplyr::n()) |>
+  group_n <- dset_rt %>%
+    dplyr::group_by(group_id) %>%
+    dplyr::summarize(n = dplyr::n()) %>%
     dplyr::filter(n >= 2)
 
   if (nrow(group_n) == 0) {
@@ -195,16 +196,16 @@ data_wrangling <- function(tweets,
   }
 
   # filter data
-  dset_rt <- dset_rt |>
+  dset_rt <- dset_rt %>%
     dplyr::filter(group_id %in% group_n$group_id & author_id %in% author_n$author_id)
 
   # re-identify content shared by more than two users after previous filtering
-  group_n <- dset_rt |>
-    dplyr::group_by(group_id) |>
-    dplyr::summarize(n = dplyr::n()) |>
+  group_n <- dset_rt %>%
+    dplyr::group_by(group_id) %>%
+    dplyr::summarize(n = dplyr::n()) %>%
     dplyr::filter(n >= 2)
 
-  dset_rt <- dset_rt |>
+  dset_rt <- dset_rt %>%
     dplyr::filter(group_id %in% group_n$group_id)
 
   rm("author_n", "group_n")

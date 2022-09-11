@@ -26,5 +26,6 @@ Imports:
   stringr (>= 1.4.0),
   visNetwork (>= 2.1.0),
   rlang (>= 1.0.0),
-  data.table (>= 1.14.0)
+  data.table (>= 1.14.0),
+  magrittr (>= 2.0.0)
 

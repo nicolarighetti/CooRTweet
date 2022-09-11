@@ -10,6 +10,7 @@
 #' @importFrom dplyr mutate case_when filter group_by ungroup select right_join rename
 #' @importFrom igraph V as_data_frame
 #' @importFrom stats median
+#' @importFrom magrittr %>%
 
 utils::globalVariables(
   c(
@@ -57,8 +58,8 @@ coord_users_info <- function(data_path,
                edge_list$author_id_y),
       time_diff = c(edge_list$time_diff,
                     edge_list$time_diff)
-    ) |>
-      dplyr::group_by(name) |>
+    ) %>%
+      dplyr::group_by(name) %>%
       dplyr::summarize(
         average_coord_time = mean(time_diff),
         median_coord_time = stats::median(time_diff)
@@ -79,7 +80,7 @@ coord_users_info <- function(data_path,
 
   coord_users_info <- dplyr::left_join(coord_users_info,
                                        users,
-                                       by = c("name" = "id")) |>
+                                       by = c("name" = "id")) %>%
     dplyr::rename(screenname = name.y)
 
   # users' info to coord_graph
