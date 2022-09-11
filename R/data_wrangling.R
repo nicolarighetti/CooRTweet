@@ -77,7 +77,7 @@ data_wrangling <- function(tweets,
       dplyr::filter(type == "NULL")
 
     if (nrow(dset_rt) == 0) {
-      message("\n### No enough tweets in the dataset ####\n")
+      message("\n### No network detected ####\n")
       opt <- options(show.error.messages = FALSE)
       on.exit(options(opt))
       stop()
@@ -121,7 +121,7 @@ data_wrangling <- function(tweets,
       dplyr::filter(type == "NULL")
 
       if (nrow(dset_rt) == 0) {
-        message("\n### No URLs in the dataset ####\n")
+        message("\n### No network detected ####\n")
         opt <- options(show.error.messages = FALSE)
         on.exit(options(opt))
         stop()
