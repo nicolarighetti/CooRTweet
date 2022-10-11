@@ -151,7 +151,7 @@ coord_network_detection <- function(dset_rt,
     edge_list <- tidytable::bind_rows.(edge_list_summary)
 
     if (nrow(edge_list) == 0) {
-      message("\n### No network detected ###")
+      message("\n### No network was detected ###")
       opt <- options(show.error.messages = FALSE)
       on.exit(options(opt))
       stop()
@@ -206,7 +206,7 @@ coord_network_detection <- function(dset_rt,
     edge_list <- tidytable::bind_rows.(edge_list_summary)
 
     if (nrow(edge_list) == 0) {
-      message("\n### No network detected ###")
+      message("\n### No network was detected ###")
       opt <- options(show.error.messages = FALSE)
       on.exit(options(opt))
       stop()
@@ -262,7 +262,7 @@ coord_network_detection <- function(dset_rt,
     )
 
   if (igraph::gorder(coord_graph) == 0) {
-    message("\n### No network detected ###")
+    message("\n### No network was detected ###")
     opt <- options(show.error.messages = FALSE)
     on.exit(options(opt))
     stop()
