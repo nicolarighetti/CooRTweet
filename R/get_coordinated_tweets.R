@@ -3,6 +3,7 @@
 #' Function to identify different types of coordinated tweet networks.
 #'
 #' @param data_path file path to a folder containing the JSON files returned by the function \link[academictwitteR]{get_all_tweets}.
+#' @param dataset a data frame of tweets with the fileds required by the analysis. Only if data_path is unspecified. It does not return user information.
 #' @param coord_function the type of coordinated behavior to detect. Currently, one of "get_coretweet", "get_cotweet", "get_coreply", "get_clsb", "get_cohashtag". See details.
 #' @param reply_type the type of co-reply behavior: one among "same_text" and "same_user". Required if the coord_function is "get_coreply". See details.
 #' @param time_window the number of seconds within which tweets are to be considered as coordinated (default to 60 seconds).
@@ -83,6 +84,7 @@
 
 
 get_coordinated_tweets <- function(data_path = NULL,
+                                   dataset = NULL,
                                    coord_function = c("get_coretweet",
                                                       "get_cotweet",
                                                       "get_coreply",
@@ -97,13 +99,15 @@ get_coordinated_tweets <- function(data_path = NULL,
                                    quick = FALSE) {
   error_messages_get_coordinated_tweets(
     data_path = data_path,
+    dataset = dataset,
     coord_function = coord_function,
     reply_type = reply_type,
     time_window = time_window,
     min_repetition = min_repetition
   )
 
-  tweets <- load_tweets(data_path = data_path)
+  tweets <- load_tweets(data_path = data_path,
+                        dataset = dataset)
 
   # return(list(dset_rt, tweets))
   dset_list <- data_wrangling(tweets = tweets,
@@ -122,17 +126,22 @@ get_coordinated_tweets <- function(data_path = NULL,
     quick = quick
   )
 
-  # return(list(coord_users_info, coord_graph (updated)))
-  coord_list <-
-    coord_users_info(
-      data_path = data_path,
-      out_list = out_list,
-      dset_list = dset_list,
-      coord_function = coord_function,
-      reply_type = reply_type,
-      quick = quick
-    )
+  # if dataset=TRUE, return simplified results
+  if(!is.null(dataset)){
+    return(out_list)
+  }
 
+  # if complete data is available (data_path), proceed with the analysis
+  # return(list(coord_users_info, coord_graph (updated)))
+    coord_list <-
+      coord_users_info(
+        data_path = data_path,
+        out_list = out_list,
+        dset_list = dset_list,
+        coord_function = coord_function,
+        reply_type = reply_type,
+        quick = quick
+      )
 
   # print information
   cat("\nTweets analyzed: N =",
@@ -182,5 +191,5 @@ get_coordinated_tweets <- function(data_path = NULL,
       # tidy full_edge_list
       out_list[[5]]))
   }
-
 }
+

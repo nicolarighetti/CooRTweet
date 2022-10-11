@@ -4,13 +4,18 @@
 
 error_messages_get_coordinated_tweets <-
   function(data_path = data_path,
+           dataset = dataset,
            coord_function = coord_function,
            reply_type = reply_type,
            time_window = time_window,
            min_repetition = min_repetition) {
 
-    if (is.null(data_path)) {
-      stop(error = "please, indicate the data path")
+    if (is.null(data_path) & is.null(dataset)) {
+      stop(error = "please, indicate the data path or the dataset")
+    }
+
+    if (!is.null(dataset) & !is.null(data_path)) {
+      stop("\n### please, indicate either the data path or the dataset, not both ####\n")
     }
 
     if (is.null(coord_function)) {

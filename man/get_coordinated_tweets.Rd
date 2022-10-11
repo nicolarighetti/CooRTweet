@@ -6,6 +6,7 @@
 \usage{
 get_coordinated_tweets(
   data_path = NULL,
+  dataset = NULL,
   coord_function = c("get_coretweet", "get_cotweet", "get_coreply", "get_clsb",
     "get_cohashtag"),
   reply_type = NULL,
@@ -19,6 +20,8 @@ get_coordinated_tweets(
 }
 \arguments{
 \item{data_path}{file path to a folder containing the JSON files returned by the function \link[academictwitteR]{get_all_tweets}.}
+
+\item{dataset}{a data frame with the fileds required by the analysis (if data_path is unspecified).}
 
 \item{coord_function}{the type of coordinated behavior to detect. Currently, one of "get_coretweet", "get_cotweet", "get_coreply", "get_clsb", "get_cohashtag". See details.}
 
