@@ -81,7 +81,6 @@ coord_network_detection <- function(dset_rt,
 
   # quick FALSE ####
   if (quick == FALSE) {
-    # cycle trough all URLs to find entities that shared the same link within the coordination internal
     edge_list_summary <-
       foreach::foreach(
         i = seq(1:groups_n),
@@ -195,7 +194,7 @@ coord_network_detection <- function(dset_rt,
               group_id = group_id
             ) %>%
             dplyr::select(cut, count, author_id, tweet_id, tweet_date, group_id) %>%
-            # subset the URLs shared by more than one entity
+            # subset content shared by more than one entity
             dplyr::filter(count > 1) %>%
             unique()
         }
