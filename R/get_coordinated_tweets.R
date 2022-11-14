@@ -15,10 +15,9 @@
 #'
 #'
 #' @return a list of outputs including:
-#' * the coordinated network as a .graphml object;
 #' * a data frame including information on the coordinated users identified by the analysis;
-#' * the analyzed dataset augmented with a column indicating whether the tweet was shared
-#' within the time frame specified by time_window by a user included in the coordinated network.
+#' * the analyzed dataset augmented with a column indicating whether the tweet was shared within the time frame specified by time_window by a user included in the coordinated network;
+#' * the coordinated network as a .graphml object.
 #'
 #' @details
 #' Coordinated behavior has been shown to be a strategy employed for political astroturfing

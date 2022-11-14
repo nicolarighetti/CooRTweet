@@ -39,9 +39,10 @@ The package executes the analysis using parallel computation with all available 
 
 The output of CooRTweet is a list of objects, including:
 
-  -	the .igraph object with the network, which can be exported to Gephi;
-  -	a data frame including information on coordinated users;
+  -	a data frame including information on coorinated users;
   -	the analyzed data frame of tweets with a column indicating whether the tweet is coordinated or non-coordinated.
+  -	the .igraph object with the network, which can be exported to Gephi;
+
 
 ## Visualization
 
