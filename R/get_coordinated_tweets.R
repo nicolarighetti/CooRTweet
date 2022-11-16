@@ -64,9 +64,9 @@
 #'                                          time_window = 60,
 #'                                          min_repetition = 2,
 #'                                          chart = TRUE)
-#' igraph_network <- res[[1]]
-#' users_info <- res[[2]]
-#' dataset <- res[[3]]
+#' users_info <- res[[1]]
+#' dataset <- res[[2]]
+#' igraph_network <- res[[3]]
 #'
 #' # save the network in a Gephi-ready format
 #' igraph::write.graph(igraph_network, file = "network_name.graphml", format = "graphml")
