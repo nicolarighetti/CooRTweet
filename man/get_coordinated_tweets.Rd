@@ -21,7 +21,7 @@ get_coordinated_tweets(
 \arguments{
 \item{data_path}{file path to a folder containing the JSON files returned by the function \link[academictwitteR]{get_all_tweets}.}
 
-\item{dataset}{a data frame with the fileds required by the analysis (if data_path is unspecified).}
+\item{dataset}{a data frame of tweets with the fileds required by the analysis. Only if data_path is unspecified. It does not return user information.}
 
 \item{coord_function}{the type of coordinated behavior to detect. Currently, one of "get_coretweet", "get_cotweet", "get_coreply", "get_clsb", "get_cohashtag". See details.}
 
@@ -42,10 +42,9 @@ get_coordinated_tweets(
 \value{
 a list of outputs including:
 \itemize{
-\item the coordinated network as a .graphml object;
 \item a data frame including information on the coordinated users identified by the analysis;
-\item the analyzed dataset augmented with a column indicating whether the tweet was shared
-within the time frame specified by time_window by a user included in the coordinated network.
+\item the analyzed dataset augmented with a column indicating whether the tweet was shared within the time frame specified by time_window by a user included in the coordinated network;
+\item the coordinated network as a .graphml object.
 }
 }
 \description{
@@ -97,9 +96,9 @@ res <- CooRTweet::get_coordinated_tweets(data_path = "tweet_data",
                                          time_window = 60,
                                          min_repetition = 2,
                                          chart = TRUE)
-igraph_network <- res[[1]]
-users_info <- res[[2]]
-dataset <- res[[3]]
+users_info <- res[[1]]
+dataset <- res[[2]]
+igraph_network <- res[[3]]
 
 # save the network in a Gephi-ready format
 igraph::write.graph(igraph_network, file = "network_name.graphml", format = "graphml")

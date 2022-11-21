@@ -4,6 +4,7 @@
 #'
 #' @param dset_rt the grouped data frame to detect coordination.
 #' @param time_window the number of seconds within which considering a tweet to be coordinated (default to 60 seconds).
+#' @param min_repetiton the minimum number of repetition needed to consider a tweet to be coordinated (default to 60 seconds).
 #' @param parallel_cores number of cores to be used in parallel computing. Default to all available cores -1.
 #' @param quick Default to FALSE. If TRUE, a quick and less computationally intensive algorithm is implemented to identify coordinated users.
 #'

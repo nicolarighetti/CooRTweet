@@ -114,6 +114,10 @@ get_coordinated_tweets <- function(data_path = NULL,
                               reply_type = reply_type,
                               min_repetition = min_repetition)
 
+  # return(list(dset_rt, tweets))
+  dset_list <- data_wrangling_filter(dset_list = dset_list,
+                                     min_repetition = min_repetition)
+
   # create the coordinated network edge list
   # return(list(edge_list, dset_rt (updated), coord_graph, full_edge_list (optional)))
   out_list <- coord_network_detection(

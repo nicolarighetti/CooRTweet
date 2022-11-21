@@ -167,49 +167,6 @@ data_wrangling <- function(tweets,
       dplyr::mutate(group_id = dplyr::cur_group_id())
   }
 
-  # filter by min threshold ####
-  ## filter the data according to the minimum threshold required for coordination
-  ##
-  ## identify users that tweeted a number of times higher than or equal to min_repetition
-  author_n <- dset_rt %>%
-    dplyr::group_by(author_id) %>%
-    dplyr::summarize(n = dplyr::n()) %>%
-    dplyr::filter(n >= min_repetition)
-
-  if (nrow(author_n) == 0) {
-    message("\n### No network was detected ####\n")
-    opt <- options(show.error.messages = FALSE)
-    on.exit(options(opt))
-    stop()
-  }
-
-  ## identify content tweeded by at least two users (no coordination possible for content tweeted by less than two users)
-  group_n <- dset_rt %>%
-    dplyr::group_by(group_id) %>%
-    dplyr::summarize(n = dplyr::n()) %>%
-    dplyr::filter(n >= 2)
-
-  if (nrow(group_n) == 0) {
-    message("\n### No network was detected ####\n")
-    opt <- options(show.error.messages = FALSE)
-    on.exit(options(opt))
-    stop()
-  }
-
-  # filter data
-  dset_rt <- dset_rt %>%
-    dplyr::filter(group_id %in% group_n$group_id & author_id %in% author_n$author_id)
-
-  # re-identify content shared by more than two users after previous filtering
-  group_n <- dset_rt %>%
-    dplyr::group_by(group_id) %>%
-    dplyr::summarize(n = dplyr::n()) %>%
-    dplyr::filter(n >= 2)
-
-  dset_rt <- dset_rt %>%
-    dplyr::filter(group_id %in% group_n$group_id)
-
-  rm("author_n", "group_n")
-
   return(list(dset_rt, tweets))
+
 }
