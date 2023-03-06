@@ -3,7 +3,7 @@
 #' Function to identify different types of coordinated tweet networks.
 #'
 #' @param data_path file path to a folder containing the JSON files returned by the function \link[academictwitteR]{get_all_tweets}.
-#' @param dataset a data frame of tweets with the fileds required by the analysis. Only if data_path is unspecified. It does not return user information.
+#' @param dataset a data frame of tweets with the fileds required by the analysis. Only if data_path is unspecified. Differently from the data_path option, this does not return user information.
 #' @param coord_function the type of coordinated behavior to detect. Currently, one of "get_coretweet", "get_cotweet", "get_coreply", "get_clsb", "get_cohashtag". See details.
 #' @param reply_type the type of co-reply behavior: one among "same_text" and "same_user". Required if the coord_function is "get_coreply". See details.
 #' @param time_window the number of seconds within which tweets are to be considered as coordinated (default to 60 seconds).
