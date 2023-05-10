@@ -1,4 +1,131 @@
-# CooRTweet
+# CooRTweet (DEV VERSION)
+
+## How to use new functionality
+
+You might need to load the functions in this package manually:
+
+```r
+library(roxygen2)
+library(devtools)
+
+roxygen2::roxygenise()
+load_all()
+```
+
+### Load Raw Data and Preprocess
+
+```r
+# load data
+
+raw <- load_tweets_json('path/to/data/with/jsonfiles')
+users <- load_twitter_users_json('path/to/data/with/jsonfiles')
+
+# preprocess (unnest) data
+tweets <- preprocess_tweets(raw)
+users <- preprocess_twitter_users(users)
+```
+
+The resulting `tweets` is a named list, where each item is a `data.table`. The five `data.table`s are: "tweets", "referenced", "urls", "mentions", and "hashtags". This keeps the data sorted and avoids redundant rows.
+
+To access the tweets you can simply use `tweets$tweets` and view your dataset.
+
+### Coordination by Retweets
+
+```r
+# reshape data
+retweets <- reshape_tweets(tweets, intent = "retweets")
+
+# detect coordinated tweets
+result <- detect_coordinated_groups(retweets, time_window = 60, min_repetition = 10)
+```
+
+### Coordination by Hashtags
+
+```r
+hashtags <- reshape_tweets(tweets, intent = "hashtags")
+result <- detect_coordinated_groups(hashtags, time_window = 60, min_repetition = 10)
+```
+
+### Coordination by Link Sharing
+
+```r
+urls <- reshape_tweets(tweets, intent = "urls")
+result <- detect_coordinated_groups(urls, time_window = 60, min_repetition = 10)
+```
+
+
+### Coordination by Link Sharing (considering only the domain)
+
+```r
+urls <- reshape_tweets(tweets, intent = "urls_domain")
+result <- detect_coordinated_groups(urls, time_window = 60, min_repetition = 10)
+```
+
+### Get summaries of results
+
+There are two functions that give summaries of the `result` data: `group_stats()` and `user_stats()`. 
+
+To get insights on the coordinated content (groups), use `group_stats()`
+
+```r
+summary_groups <- group_stats(result)
+```
+
+It returns a `data.table` which shows the group statistics for total count of unique users, total posts in per group, and average time delta per group. If your group analysis is focused on retweets, you can join the data back as follows:
+
+```r
+library(data.table)
+# rename tweet column
+setnames(summary_groups, "object_id", "tweet_id")
+summary_groups <- tweets$tweets[summary_groups, on = "tweet_id"]
+```
+
+If you are interested in the user statistics, you can pass `result` into `user_stats()`
+
+```r
+summary_users <- user_stats(result)
+```
+
+It provides summary statistics for each user that participated in coordinated behaviour: total coordinated posts shared, and average time delta. High number of posts shared and low average time delta are indicators for highly coordinated (and potentially automated) user behaviour.
+
+You can rejoin these summary statistics with the original data as follows (using `data.table` syntax):
+
+```r
+library(data.table)
+# rename user column
+setnames(summary_users, "id_user", "user_id")
+
+# join with pre-processed user data
+summary_users <- users[summary_users, on = "user_id"]
+```
+
+### Generate a network
+
+We provide a utility function to transform the `result` to an [`igraph`](https://r.igraph.org/) object for further analysis. In this example, we want to investigate the coordinated content, and how they are connected.
+
+```r
+coord_graph <- generate_network(result, intent = "objects")
+
+library(igraph)
+
+# E.g., get the degree of each node for filtering
+igraph::V(coord_graph)$degree <- igraph::degree(coord_graph)
+
+# Or we can run a community detection algorithm
+igraph::V(coord_graph)$cluster <- igraph::cluster_louvain(coord_graph)$membership
+```
+
+Then, we can join the graph back to the original `data.table`, with additional information, such as the cluster for each content:
+
+```r
+library(data.table)
+dt <- data.table(tweet_id=V(coord_graph)$name,
+                cluster=V(coord_graph)$cluster,
+                degree=V(coord_graph)$degree)
+
+dt_joined <- tweets$tweets[dt, on = "tweet_id"]
+```
+
 
 #### (Beta version)
 
