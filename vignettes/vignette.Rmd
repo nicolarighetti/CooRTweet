@@ -1,0 +1,90 @@
+---
+title: "Introduction to CooRTweet"
+author: "Nicola Righetti & Paul Ba"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to CooRTweet}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(CooRTweet)
+```
+
+
+Coordinated behavior has been defined as "the act of making people and/or things involved in organized cooperation" (Giglietto et al., 2020, p. 872). 
+
+Coordinated behavior on social media platforms like Twitter has been used for political astroturfing (Keller et al., 2020), spreading inappropriate content, and activism. Detecting such behavior is crucial for academic research and investigative journalism. The `CooRTweet` package provides an easy-to-use tool for detecting various coordinated networks on Twitter.
+
+The `detect_coordinated_groups` function permits to identify coordinated actors through two main parameters. Following the standard operationalization in literature, two or more users are defined as coordinated when they perform the same action at least n times, a parameter we call `min_repetition`, within a predefined time interval, a parameter we call `time_window`. Based on these two parameters, which are set by the users, the core function of CooRTweet identifies coordinated Twitter actors and networks. 
+
+`CooRTweet` allows the user to identify a variety of networks coordinating around different types of content. The `reshape_tweets` function makes it possible to reshape Twitter data for detecting different types of coordinated behavior. The parameter `intent` of this function permits to choose between different options: `retweets`, for coordinated retweeting behavior; `hashtags`, for coordinated usage of hashtags; `urls` to detect coordinated link sharing behavior; `urls_domain` to detect coordinated link sharing behavior at the domain level.
+
+The package works with data retrieved from the Twitter Academic API in the JSON format. The data can be conveniently collected with the R package `academictwitteR` and the function `get_all_tweets`, which retrieves tweets and users' information at once. The `load_data` function of `CooRTweet` implements the state-of-the-art approach to load large amount of data in the fastes way currently possible.
+
+
+# References
+
+Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. Information, Communication & Society, 23(6), 867-891. https://doi.org/10.1080/1369118X.2020.1739732
+
+Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2020). Political astroturfing on Twitter: How to coordinate a disinformation campaign. Political Communication, 37(2), 256-280. https://doi.org/10.1080/10584609.2019.1661888
+
+
+# ---------
+
+Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+
+- Never uses retina figures
+- Has a smaller default figure size
+- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+
+## Vignette Info
+
+Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Styles
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))
