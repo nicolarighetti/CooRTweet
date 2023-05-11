@@ -1,12 +1,13 @@
 ---
 title: "Introduction to CooRTweet"
-author: "Nicola Righetti & Paul Ba"
+author: "Nicola Righetti & Paul Balluff"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to CooRTweet}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: references.bib
 ---
 
 ```{r setup, include = FALSE}
@@ -14,77 +15,223 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
-
-```{r setup}
 library(CooRTweet)
+
 ```
 
 
-Coordinated behavior has been defined as "the act of making people and/or things involved in organized cooperation" (Giglietto et al., 2020, p. 872). 
+# Introduction
 
-Coordinated behavior on social media platforms like Twitter has been used for political astroturfing (Keller et al., 2020), spreading inappropriate content, and activism. Detecting such behavior is crucial for academic research and investigative journalism. The `CooRTweet` package provides an easy-to-use tool for detecting various coordinated networks on Twitter.
+We introduce `CooRTweet` an R-Package for detecting coordinated behavior on social media platforms such as Twitter. Coordinated behavior has been defined as "the act of making people and/or things involved in organized cooperation" [@Giglietto2020, p. 872]. 
 
-The `detect_coordinated_groups` function permits to identify coordinated actors through two main parameters. Following the standard operationalization in literature, two or more users are defined as coordinated when they perform the same action at least n times, a parameter we call `min_repetition`, within a predefined time interval, a parameter we call `time_window`. Based on these two parameters, which are set by the users, the core function of CooRTweet identifies coordinated Twitter actors and networks. 
+Coordinated behavior on social media has been used for political astroturfing [@Keller2020], spreading inappropriate content, and activism. Detecting such behavior is crucial for academic research and investigative journalism. The `CooRTweet` package provides an easy-to-use tool for detecting various coordinated networks on Twitter. The package is powered by `data.table` [@datatable] which makes efficient use of memory and is considerably fast.
 
-`CooRTweet` allows the user to identify a variety of networks coordinating around different types of content. The `reshape_tweets` function makes it possible to reshape Twitter data for detecting different types of coordinated behavior. The parameter `intent` of this function permits to choose between different options: `retweets`, for coordinated retweeting behavior; `hashtags`, for coordinated usage of hashtags; `urls` to detect coordinated link sharing behavior; `urls_domain` to detect coordinated link sharing behavior at the domain level.
+The package works with data retrieved from the Twitter Academic API V2 in JSON format. The data can be conveniently collected with the R package `academictwitteR` and the function `get_all_tweets`, which retrieves tweets and users' information at once. `CooRTweet` provides the convenience function `load_data`, which implements the state-of-the-art approach to parse large amount of JSON data in the fastest way currently possible [@RcppSimdJson].
 
-The package works with data retrieved from the Twitter Academic API in the JSON format. The data can be conveniently collected with the R package `academictwitteR` and the function `get_all_tweets`, which retrieves tweets and users' information at once. The `load_data` function of `CooRTweet` implements the state-of-the-art approach to load large amount of data in the fastes way currently possible.
+# Modelling Coordinated Behaviour: Key Parameters
+
+Following the standard operationalization in literature, two or more users are defined as coordinated when they perform the *same action* at least $n$ times, within a predefined time interval $\Delta t$. 
+
+This so-called "same action" can be operationalized in a variety of ways:
+
+- sharing the same URL
+- using the same hashtag 
+- retweeting the same original tweet
+- theoretically, any kind of uniquely identifiable content that can be shared on social media
+
+In `CooRTweet` we refer to the content on which we track the "same actions" as *objects*. 
+
+The `detect_coordinated_groups()` function permits to identify coordinated users through two main parameters: `min_repetition` ($n$) and `time_window` ($\Delta t$). Based on these two parameters the core function of `CooRTweet` identifies coordinated Twitter actors and networks.
+
+Choosing the right parameters for `min_repetition` and `time_window` is often not simple, and depends on the theoretical assumptions when investigating coordinated behavior. For example, if the assumption is that most of the coordinated users are non-human actors (e.g., bots), then a very short `time_window` of less than 10 seconds seems appropriate ($\Delta t = 10$). *It depends on the particular case that you want to analyze, and it is recommended to test different parameter combinations*.
+
+
+
+# A Usage Example
+
+We provide an anonymized version of a real dataset of coordinated tweets by pro-government users in Russia [@Kulichkina2022]. You can load the sample dataset as follows:
+
+
+```{r results='hide'}
+library(CooRTweet)
+russian_coord_tweets
+```
+
+The dataset has four columns which is the minimum required input data for detecting coordinated behaviour:
+
+- `object_id`: the coordinated content. In this example the ID of retweeted content.
+- `id_user`: the unique ID of a twitter user.
+- `content_id`: the unique IDs of the twitter users' posts. 
+- `timestamp_share`: the exact time `content_id` was posted by the user.
+
+The length of `content_id` should be the same as the number of rows of your input data
+
+```{r results='hide'}
+length(russian_coord_tweets$content_id) == nrow(russian_coord_tweets)
+
+```
+
+Let's assume that we want to detect coordinated behaviour with a `min_repetition` of 5 within a `time_window` of 10 seconds. We can call the main function `detect_coordinated_groups()` as follows:
+
+```{r results='hide'}
+result <- detect_coordinated_groups(russian_coord_tweets, 
+                                    min_repetition = 5, 
+                                    time_window = 10)
+```
+
+The `result` is a `data.table` that only includes the users and their contents that were identified as coordinated with the given parameters. The `result` is in a wide-format, where it shows the time difference (`time_delta`) between two posts (`content_id` and `content_id_y`).
+
+We can quickly get some summary statistics by using the provided convenience functions `group_stats()` and `user_stats()`. If we are interested in the content that users share in a coordinated fashion, we can call `group_stats()` and pass in our `results` table:
+
+```{r results='hide'}
+summary_groups <- group_stats(result)
+
+```
+
+`summary_groups` shows how many coordinated users (column `users`) participated for each unique shared object (`object_id`), how many coordinated posts (`posts`) were published and their average time delay (`mean_time_delta`). In this case, we have retweets, therefore, you can interpret the results as follows: 2 users retweeted the tweet with the id `4a5c13a7f533d6ebc27bec5581ad5a9f` within an average time delay of 2 seconds.
+
+If you are interested in understanding more about the users you can call `user_stats()`:
+
+```{r results='hide'}
+summary_users <- user_stats(result)
+
+```
+
+`summary_users` shows that the user with the ID `5c10a1e23d788292981b40e4006f4563` shared a total of 9 coordinated posts and within an average time window of 4.2 seconds. 
+
+# Using your own data
+
+Of course, you want to use the package with your own data that you retrieved from the Twitter API (V2). We guide you here quickly through the process.
+
+## Load Raw Data and Preprocess
+
+We assume that all your tweets are stored as JSON files in a directory. You can load the JSON data with the `load_tweets_json()` and `load_twitter_users_json()` functions
+
+```{r results='hide', eval=FALSE}
+# load data
+
+raw <- load_tweets_json('path/to/data/with/jsonfiles')
+users <- load_twitter_users_json('path/to/data/with/jsonfiles')
+```
+
+**If you cannot load your Twitter data, please feel free to raise an issue in our [Github repository](https://github.com/nicolarighetti/CooRTweet/). We are happy to help!**
+
+Twitter data is nested and difficult to handle, so we also provide a simple pre-processing function that unnests the data:
+
+```{r results='hide', eval=FALSE}
+# preprocess (unnest) data
+
+tweets <- preprocess_tweets(raw)
+users <- preprocess_twitter_users(users)
+```
+
+The resulting `tweets` is a named list, where each item is a `data.table`. The five `data.table`s are: `tweets`, `referenced`, `urls`, `mentions`, and `hashtags`. This keeps the data sorted and avoids redundant rows.
+
+To access the tweets you can simply use `tweets$tweets` and view your dataset.
+
+## Coordination Detection and Reshaping
+
+The `reshape_tweets` function makes it possible to reshape Twitter data for detecting different types of coordinated behavior. The parameter `intent` of this function permits to choose between different options: `retweets`, for coordinated retweeting behavior; `hashtags`, for coordinated usage of hashtags; `urls` to detect coordinated link sharing behavior; `urls_domain` to detect coordinated link sharing behavior at the domain level.
+
+### Coordination by Retweets
+
+
+```{r results='hide', eval=FALSE}
+# reshape data
+retweets <- reshape_tweets(tweets, intent = "retweets")
+
+# detect coordinated tweets
+result <- detect_coordinated_groups(retweets, time_window = 60, min_repetition = 10)
+```
+
+### Coordination by Hashtags
+
+```{r results='hide', eval=FALSE}
+hashtags <- reshape_tweets(tweets, intent = "hashtags")
+result <- detect_coordinated_groups(hashtags, time_window = 60, min_repetition = 10)
+```
+
+### Coordination by Link Sharing
+
+```{r results='hide', eval=FALSE}
+urls <- reshape_tweets(tweets, intent = "urls")
+result <- detect_coordinated_groups(urls, time_window = 60, min_repetition = 10)
+```
+
+
+### Coordination by Link Sharing (considering only the domain)
+
+```{r results='hide', eval=FALSE}
+urls <- reshape_tweets(tweets, intent = "urls_domain")
+result <- detect_coordinated_groups(urls, time_window = 60, min_repetition = 10)
+```
+
+### Get summaries of results
+
+There are two functions that give summaries of the `result` data: `group_stats()` and `user_stats()`. 
+
+To get insights on the coordinated content (groups), use `group_stats()`
+
+```{r results='hide', eval=FALSE}
+summary_groups <- group_stats(result)
+```
+
+It returns a `data.table` which shows the group statistics for total count of unique users, total posts in per group, and average time delta per group. If your group analysis is focused on retweets, you can join the data back as follows:
+
+```{r results='hide', eval=FALSE}
+library(data.table)
+# rename tweet column
+setnames(summary_groups, "object_id", "tweet_id")
+summary_groups <- tweets$tweets[summary_groups, on = "tweet_id"]
+```
+
+If you are interested in the user statistics, you can pass `result` into `user_stats()`
+
+```{r results='hide', eval=FALSE}
+summary_users <- user_stats(result)
+```
+
+It provides summary statistics for each user that participated in coordinated behaviour: total coordinated posts shared, and average time delta. High number of posts shared and low average time delta are indicators for highly coordinated (and potentially automated) user behaviour.
+
+You can rejoin these summary statistics with the original data as follows (using `data.table` syntax):
+
+```{r results='hide', eval=FALSE}
+library(data.table)
+
+# rename user column
+setnames(summary_users, "id_user", "user_id")
+
+# join with pre-processed user data
+summary_users <- users[summary_users, on = "user_id"]
+```
+
+### Generate a network
+
+We provide a utility function to transform the `result` to an [`igraph`](https://r.igraph.org/) object for further analysis. In this example, we want to investigate the coordinated content, and how they are connected.
+
+```{r results='hide', eval=FALSE}
+library(igraph)
+
+coord_graph <- generate_network(result, intent = "objects")
+
+# E.g., get the degree of each node for filtering
+igraph::V(coord_graph)$degree <- igraph::degree(coord_graph)
+
+# Or we can run a community detection algorithm
+igraph::V(coord_graph)$cluster <- igraph::cluster_louvain(coord_graph)$membership
+```
+
+Then, we can join the graph back to the original `data.table`, with additional information, such as the cluster for each content:
+
+```{r results='hide', eval=FALSE}
+library(data.table)
+dt <- data.table(tweet_id=V(coord_graph)$name,
+                cluster=V(coord_graph)$cluster,
+                degree=V(coord_graph)$degree)
+
+dt_joined <- tweets$tweets[dt, on = "tweet_id"]
+```
 
 
 # References
 
-Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. Information, Communication & Society, 23(6), 867-891. https://doi.org/10.1080/1369118X.2020.1739732
-
-Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2020). Political astroturfing on Twitter: How to coordinate a disinformation campaign. Political Communication, 37(2), 256-280. https://doi.org/10.1080/10584609.2019.1661888
-
-
-# ---------
-
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
-
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
-```
-
-You can enable figure captions by `fig_caption: yes` in YAML:
-
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
-```
-
-Also a quote using `>`:
-
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
