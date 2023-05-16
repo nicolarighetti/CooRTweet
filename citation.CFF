@@ -1,0 +1,12 @@
+cff-version: 1.3.2
+message: "If you use this package, please use the following citation."
+authors:
+- family-names: "Righetti"
+  given-names: "Nicola"
+  orcid: "https://orcid.org/0000-0002-9257-5113"
+- family-names: "Balluff"
+  given-names: "Paul"
+  orcid: "https://orcid.org/0000-0001-9548-3225"
+title: "CooRTweet: An R package to detect coordinated networks on Twitter"
+date-released: 2023-05-16
+url: "https://github.com/nicolarighetti/CooRTweet"

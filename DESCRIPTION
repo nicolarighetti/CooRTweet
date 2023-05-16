@@ -1,31 +1,42 @@
 Package: CooRTweet
-Version: 1.0.0
-Date: 2022-08-23
+Version: 1.2
+Date: 2023-05-16
 Type: Package
-Title: An R package to detect coordinated networks on Twitter
-Description: The packages detects a variety of coordinated actions on Twitter and outputs the network of coordinated users along with related information.
-Author: Nicola Righetti
+Title: An R Package to Detect Coordinated Networks on Social Media
+Description: Detects a variety of coordinated actions on Twitter and outputs the network of coordinated users along with related information.
+Authors@R: 
+  c(
+      person("Nicola", "Righetti", 
+              email = "nicola.righetti@univie.ac.at", 
+              role = c("aut", "cre"),
+              comment = c(ORCID="0000-0002-9257-5113")),
+      person("Paul", "Balluff", 
+              email = "paul.balluff@univie.ac.at", 
+              role = c("aut"),
+              comment = c(ORCID="0000-0001-9548-3225"))
+    )
+Author: Nicola Righetti [aut, cre] (<https://orcid.org/0000-0002-9257-5113>), Paul Balluff [aut] (<https://orcid.org/0000-0001-9548-3225>)
 Maintainer: Nicola Righetti <nicola.righetti@univie.ac.at>
-URL: https://github.com/nicolarighetti/CooRTnet
+URL: https://github.com/nicolarighetti/CooRTweet
+BugReports: https://github.com/nicolarighetti/CooRTweet/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
-Imports: 
-  utils (>= 2.11.0),
-  academictwitteR (>= 0.2.0),
-  dplyr (>= 1.0.0),
-  parallel (>= 4.0.0),
-  foreach (>= 1.5.0),
-  doSNOW (>= 1.0.0),
-  igraph (>= 1.2.0),
-  lubridate (>= 1.7.0),
-  purrr (>= 0.3.0),
-  tidyr (>= 1.1.0),
-  tidytable (>= 0.8.0), 
-  stringr (>= 1.4.0),
-  visNetwork (>= 2.1.0),
-  rlang (>= 1.0.0),
-  data.table (>= 1.14.0),
-  magrittr (>= 1.5.0)
-
+RoxygenNote: 7.2.3
+Imports:
+  data.table,
+  tidytable,
+  RcppSimdJson,
+  Matrix,
+  lubridate,
+  igraph,
+  stringi
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Depends: 
+    R (>= 2.10)
+LazyData: true
+VignetteBuilder: knitr
