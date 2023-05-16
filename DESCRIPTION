@@ -5,10 +5,18 @@ Type: Package
 Title: An R package to detect coordinated networks on Social Media
 Description: The packages detects a variety of coordinated actions on Twitter and outputs the network of coordinated users along with related information.
 Authors@R: 
-  Nicola Righetti [aut, cre] (<https://github.com/nicolarighetti>)
-   Paul Balluff [aut] (<https://github.com/mrwunderbar666>)
-Maintainer: Nicola Righetti <nicola.righetti@univie.ac.at>, Paul Balluff <paul.balluff@univie.ac.at>
+  c(
+      person("Nicola", "Righetti", 
+              email = "nicola.righetti@univie.ac.at", 
+              role = c("aut", "cre"),
+              comment = c(ORCID="0000-0002-9257-5113")),
+      person("Paul", "Balluff", 
+              email = "paul.balluff@univie.ac.at", 
+              role = c("aut"),
+              comment = c(ORCID="0000-0001-9548-3225"))
+    )
 URL: https://github.com/nicolarighetti/CooRTnet
+BugReports: https://github.com/nicolarighetti/CooRTweet/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
