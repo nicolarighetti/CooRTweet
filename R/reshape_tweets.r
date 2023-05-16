@@ -5,7 +5,7 @@
 #'
 #' @details
 #' This function takes the pre-processed Twitter data
-#' (output of \link{preprocess_twitter}) and reshapes it
+#' (output of \link{preprocess_tweets}) and reshapes it
 #' for coordination detection (\link{detect_coordinated_groups}).
 #' You can choose the intent for reshaping the data. Use
 #' `"retweets"` to detect coordinated retweeting behaviour;
@@ -17,7 +17,7 @@
 #' can be passed to \link{detect_coordinated_groups}.
 #'
 #' @param tweets a named list of Twitter data
-#' (output of \link{preprocess_twitter})
+#' (output of \link{preprocess_tweets})
 #'
 #' @param intent the desired intent for analysis.
 #'
@@ -32,6 +32,7 @@
 reshape_tweets <- function(
     tweets,
     intent = c("retweets", "hashtags", "urls", "urls_domains")) {
+    start = tweet_id = type = referenced_tweet_id = object_id = id_user = NULL
     if (!inherits(tweets, "list")) {
         stop("Provided data probably not preprocessed yet.")
     }
@@ -88,8 +89,8 @@ reshape_tweets <- function(
         )
 
         retweets <- rbind(
-            retweets[, ..tweet_cols],
-            original_tweets[, ..tweet_cols]
+            retweets[, tweet_cols, with = FALSE],
+            original_tweets[, tweet_cols, with = FALSE]
         )
 
         data.table::setnames(retweets, tweet_cols, output_cols)
@@ -107,7 +108,7 @@ reshape_tweets <- function(
         hashtags <- tweets$tweets[tweets$hashtags, on = "tweet_id"]
 
         tweet_cols <- c("tag", "author_id", "tweet_id", "created_timestamp")
-        hashtags <- hashtags[, ..tweet_cols]
+        hashtags <- hashtags[, tweet_cols, with = FALSE]
 
         data.table::setnames(hashtags, tweet_cols, output_cols)
         data.table::setindex(hashtags, object_id, id_user)
@@ -134,7 +135,7 @@ reshape_tweets <- function(
             "created_timestamp"
         )
 
-        urls <- urls[, ..tweet_cols]
+        urls <- urls[, tweet_cols, with = FALSE]
 
         data.table::setnames(urls, tweet_cols, output_cols)
         data.table::setindex(urls, object_id, id_user)
@@ -155,7 +156,7 @@ reshape_tweets <- function(
         domains <- tweets$tweets[domains, on = "tweet_id"]
 
         tweet_cols <- c("domain", "author_id", "tweet_id", "created_timestamp")
-        domains <- domains[, ..tweet_cols]
+        domains <- domains[, tweet_cols, with = FALSE]
 
         data.table::setnames(domains, tweet_cols, output_cols)
         data.table::setindex(domains, object_id, id_user)

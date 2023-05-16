@@ -11,7 +11,7 @@ reshape_tweets(
 }
 \arguments{
 \item{tweets}{a named list of Twitter data
-(output of \link{preprocess_twitter})}
+(output of \link{preprocess_tweets})}
 
 \item{intent}{the desired intent for analysis.}
 }
@@ -23,7 +23,7 @@ Reshape twitter data for coordination detection.
 }
 \details{
 This function takes the pre-processed Twitter data
-(output of \link{preprocess_twitter}) and reshapes it
+(output of \link{preprocess_tweets}) and reshapes it
 for coordination detection (\link{detect_coordinated_groups}).
 You can choose the intent for reshaping the data. Use
 \code{"retweets"} to detect coordinated retweeting behaviour;

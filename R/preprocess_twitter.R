@@ -40,6 +40,9 @@
 #'
 
 preprocess_tweets <- function(tweets) {
+    tweet_id = author_id = created_at = created_timestamp = referenced_tweets = 
+        referenced_tweet_id = entities_urls = domain = expanded_url = 
+        entities_mentions = username = id = entities_hashtags = tag = NULL
     if (!inherits(tweets, "data.table")) {
         tweets <- data.table::as.data.table(tweets)
     }
@@ -66,7 +69,7 @@ preprocess_tweets <- function(tweets) {
         "public_metrics_like_count", "public_metrics_quote_count"
     )
 
-    Tweets <- tweets[, ..Tweets_cols]
+    Tweets <- tweets[, Tweets_cols, with = FALSE]
     data.table::setindex(Tweets, tweet_id, author_id)
 
     # reformat datetime of created_at
@@ -76,7 +79,7 @@ preprocess_tweets <- function(tweets) {
     # referenced tweets
     Referenced <- tidytable::unnest(tweets, referenced_tweets)
     Referenced_cols <- c("tweet_id", "id", "type")
-    Referenced <- data.table::as.data.table(Referenced[, ..Referenced_cols])
+    Referenced <- data.table::as.data.table(Referenced[, Referenced_cols, with = FALSE])
     data.table::setnames(
         Referenced,
         c("tweet_id", "referenced_tweet_id", "type")
@@ -101,7 +104,7 @@ preprocess_tweets <- function(tweets) {
         "end"
     )
 
-    URLs <- data.table::as.data.table(URLs[, ..URLs_cols])
+    URLs <- data.table::as.data.table(URLs[, URLs_cols, with = FALSE])
 
     # extract domain names
     URLs[, domain := gsub("https?://", "", expanded_url)]
@@ -115,7 +118,7 @@ preprocess_tweets <- function(tweets) {
 
     Mentions_cols <- c("tweet_id", "username", "id", "start", "end")
 
-    Mentions <- data.table::as.data.table(Mentions[, ..Mentions_cols])
+    Mentions <- data.table::as.data.table(Mentions[, Mentions_cols, with = FALSE])
 
     data.table::setindex(Mentions, tweet_id, username, id)
 
@@ -123,7 +126,7 @@ preprocess_tweets <- function(tweets) {
     Hashtags <- tidytable::unnest(entities, entities_hashtags)
 
     Hashtags_cols <- c("tweet_id", "tag", "start", "end")
-    Hashtags <- data.table::as.data.table(Hashtags[, ..Hashtags_cols])
+    Hashtags <- data.table::as.data.table(Hashtags[, Hashtags_cols, with = FALSE])
 
     data.table::setindex(Hashtags, tag)
 
@@ -162,6 +165,7 @@ preprocess_tweets <- function(tweets) {
 
 
 preprocess_twitter_users <- function(users) {
+    domain = expanded_url = NULL
     if (!inherits(users, "data.table")) {
         users <- data.table::as.data.table(users)
     }
@@ -195,7 +199,7 @@ preprocess_twitter_users <- function(users) {
         "entities_url_urls_start",
         "entities_url_urls_end"
     )
-    urls <- urls[, ..urls_cols]
+    urls <- urls[, urls_cols, with = FALSE]
     data.table::setnames(
         urls, urls_cols,
         c("user_id", "expanded_url", "display_url", "url_start", "url_end")
@@ -229,7 +233,7 @@ preprocess_twitter_users <- function(users) {
 #' @import data.table
 #' @importFrom data.table ':='
 #'
-
+#' @noRd
 
 dt_unnest_wider <- function(dt,
                             columns,

@@ -14,6 +14,7 @@
 #' Columns: content_id, id_user, content_id_y, id_user_y, time_delta
 #'
 #' @import data.table
+#' @noRd
 
 calc_group_combinations <- function(group, time_window = 10) {
   id <- object_id <- content_id <- i.content_id <- NULL

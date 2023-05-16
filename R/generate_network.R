@@ -38,7 +38,7 @@ generate_network <- function(x, intent = c("users", "content", "objects")) {
     )
 
     subcols <- c(nodes, "object_id")
-    df <- unique(df[, ..subcols])
+    df <- unique(df[, subcols, with = FALSE])
     df <- df[, lapply(.SD, as.factor)]
 
     # Transform data to a sparse matrix

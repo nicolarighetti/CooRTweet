@@ -15,8 +15,8 @@ a data.table with all users loaded
 \description{
 Very efficient and fast way to load user information from JSON files.
 Wrapper of the function \link[RcppSimdJson]{fload}
-
-#' @details
+}
+\details{
 This function is optimized to load user data JSON files that were
 collected using the academicTwittr Package (Twitter API V2).
 It uses RcppSimdJson to load the JSON files, which is extremely

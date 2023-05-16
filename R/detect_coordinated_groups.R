@@ -81,6 +81,7 @@ detect_coordinated_groups <- function(x,
 #' `timedelta`
 #'
 #' @import data.table
+#' @noRd
 
 do_detect_coordinated_groups <- function(x,
                                          time_window = 10,
