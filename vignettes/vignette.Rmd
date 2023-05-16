@@ -24,7 +24,10 @@ library(CooRTweet)
 
 We introduce `CooRTweet` an R-Package for detecting coordinated behavior on social media platforms such as Twitter. Coordinated behavior has been defined as "the act of making people and/or things involved in organized cooperation" [@Giglietto2020, p. 872]. 
 
-Coordinated behavior on social media has been used for political astroturfing [@Keller2020], spreading inappropriate content, and activism. Detecting such behavior is crucial for academic research and investigative journalism. The `CooRTweet` package provides an easy-to-use tool for detecting various coordinated networks on Twitter. The package is powered by `data.table` [@datatable] which makes efficient use of memory and is considerably fast.
+Coordinated behavior on social media has been used for political astroturfing [@Keller2020], spreading inappropriate content [@Giglietto2020], and activism. Detecting such behavior is crucial for academic research and investigative journalism. 
+Software for academic research and investigative journalism has been developed in the last few years to detect coordinated behavior, such as the CooRnet R package [@Giglietto2020], which detects Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Instagram ([CooRnet website](http://coornet.org/)), and the [Coordination Network Toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit) [@Graham2020], a command line tool for studying coordination networks in Twitter and other social media data.
+
+The `CooRTweet` package builds on the existing literature on coordinated behavior and the experience of previous software, and provides an easy-to-use tool for detecting various coordinated networks on Twitter. The package is powered by `data.table` [@datatable] which makes efficient use of memory and is considerably fast.
 
 The package works with data retrieved from the Twitter Academic API V2 in JSON format. The data can be conveniently collected with the R package `academictwitteR` and the function `get_all_tweets`, which retrieves tweets and users' information at once. `CooRTweet` provides the convenience function `load_data`, which implements the state-of-the-art approach to parse large amount of JSON data in the fastest way currently possible [@RcppSimdJson].
 
