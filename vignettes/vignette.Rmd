@@ -22,16 +22,17 @@ library(CooRTweet)
 
 # Introduction
 
-We introduce `CooRTweet` an R-Package for detecting coordinated behavior on social media platforms such as Twitter. Coordinated behavior has been defined as "the act of making people and/or things involved in organized cooperation" [@Giglietto2020, p. 872]. 
+We introduce `CooRTweet` an R-Package for detecting coordinated behavior on Twitter. Coordinated behavior has been defined as "the act of making people and/or things involved in organized cooperation" [@Giglietto2020, p. 872]. 
 
-Coordinated behavior on social media has been used for political astroturfing [@Keller2020], spreading inappropriate content [@Giglietto2020], and activism. Detecting such behavior is crucial for academic research and investigative journalism. 
-Software for academic research and investigative journalism has been developed in the last few years to detect coordinated behavior, such as the CooRnet R package [@Giglietto2020], which detects Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Instagram ([CooRnet website](http://coornet.org/)), and the [Coordination Network Toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit) [@Graham2020], a command line tool for studying coordination networks in Twitter and other social media data.
+Coordinated behavior on social media has been used for political astroturfing [@Keller2020], spreading inappropriate content [@Giglietto2020], and activism. Detecting such behavior is crucial for academic research and investigative journalism.
 
-The `CooRTweet` package builds on the existing literature on coordinated behavior and the experience of previous software, and provides an easy-to-use tool for detecting various coordinated networks on Twitter. The package is powered by `data.table` [@datatable] which makes efficient use of memory and is considerably fast.
+Software for academic research and investigative journalism has been developed in the last few years to detect coordinated behavior, such as the CooRnet R package [@Giglietto2020], which detects Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Instagram ([CooRnet website](http://coornet.org/)).
 
-The package works with data retrieved from the Twitter Academic API V2 in JSON format. The data can be conveniently collected with the R package `academictwitteR` and the function `get_all_tweets`, which retrieves tweets and users' information at once. `CooRTweet` provides the convenience function `load_data`, which implements the state-of-the-art approach to parse large amount of JSON data in the fastest way currently possible [@RcppSimdJson].
+The `CooRTweet` package builds on the existing literature on coordinated behavior and the experience of previous software to provide an easy-to-use tool for detecting various coordinated networks on Twitter. The package is powered by `data.table` [@datatable] which makes efficient use of memory and is considerably fast.
 
-# Modelling Coordinated Behaviour: Key Parameters
+The package works with data retrieved from the Twitter Academic API V2 in JSON format. The data can be conveniently collected with the R package `academictwitteR` and the function `get_all_tweets`, which retrieves tweets and users' information at once. The `CooRTweet` convenience function `load_data` implements the state-of-the-art approach to parse large amount of JSON data in the fastest way currently possible [@RcppSimdJson].
+
+# Modelling Coordinated behavior: Key Parameters
 
 Following the standard operationalization in literature, two or more users are defined as coordinated when they perform the *same action* ($a_i \in A$) at least $r$ times, within a predefined time interval $\Delta t$. 
 
@@ -40,15 +41,15 @@ This so-called "same action" ($a_i$) can be operationalized in a variety of ways
 - sharing the same URL
 - using the same hashtag 
 - retweeting the same original tweet
-- theoretically, any kind of uniquely identifiable content that can be shared on social media
+- theoretically, sharing any kind of uniquely identifiable content that can be shared on social media
 
 In `CooRTweet` we refer to the content on which we track the "same actions" as *objects*. $n(A) = N$ is the total number of potentially coordinated actions or *objects*. For example, if your dataset has 100 unique URLs then one URL is a object $a_i$ and $n(A) = N = 100$. 
 
 The `detect_coordinated_groups()` function permits to identify coordinated users through two main parameters: `min_repetition` ($r$) and `time_window` ($\Delta t$). Based on these two parameters the core function of `CooRTweet` identifies coordinated Twitter actors and networks. 
 
-To identify coordinated networks, all pairs of users that performed the same action are computed, and the resulting list is then filtered according to the parameters `time_window` and `min_repetition`. Given a set of $A$ actions, their total count $N = n(A)$ the possible pairs of coordinated actions are given by $\frac{N!}{2!(N-2)!}$ (in R: `base::choose(N, k=2)`). The number of possible combinations increases with the number of actions $N$ (which in turn), requiring increasing computational power. The number of actions $N$ also generally increases when analyzing longer time intervals (`time_window`) and when using a low threshold for the number of repetitions (`min_repetitions`).
+To identify coordinated networks, all pairs of users that performed the same action are computed, and the resulting list is then filtered according to the parameters `time_window` and `min_repetition`. Given a set of $A$ actions and their total count $N = n(A)$ the possible pairs of coordinated actions are given by $\frac{N!}{2!(N-2)!}$ (in R: `base::choose(N, k=2)`). The number of possible combinations increases with the number of actions $N$, requiring increasing computational power. The number of actions $N$ also generally increases when analyzing longer time intervals (`time_window`) and when using a low threshold for the number of repetitions (`min_repetitions`). CooRTweet makes this computation as efficient as possible using fast and memory-efficient `data.table` syntax.
 
-Choosing the right parameters for `min_repetition` and `time_window` is often not simple, and depends on the theoretical assumptions when investigating coordinated behavior. For example, if the assumption is that most of the coordinated users are non-human actors (e.g., bots), then a very short `time_window` of less than 10 seconds seems appropriate ($\Delta t = 10$). *It depends on the particular case that you want to analyze, and it is recommended to test different parameter combinations*.
+There are no standard parameters for `min_repetition` and `time_window` as they depend on the theoretical assumptions when investigating coordinated behavior. For example, if the assumption is that most of the coordinated users are non-human actors (e.g., bots), then a very short `time_window` of less than 10 seconds seems appropriate ($\Delta t = 10$). In general, *the choice of the parameter depends on the particular case that you want to analyze, and it is recommended to test different parameter combinations*.
 
 
 # A Usage Example
@@ -61,7 +62,7 @@ library(CooRTweet)
 russian_coord_tweets
 ```
 
-The dataset has four columns which is the minimum required input data for detecting coordinated behaviour:
+The dataset has four columns which is the minimum required input data for detecting coordinated behavior:
 
 - `object_id`: the coordinated content. In this example the ID of retweeted content.
 - `id_user`: the unique ID of a twitter user.
@@ -75,7 +76,7 @@ length(russian_coord_tweets$content_id) == nrow(russian_coord_tweets)
 
 ```
 
-Let's assume that we want to detect coordinated behaviour with a `min_repetition` of 5 within a `time_window` of 10 seconds. We can call the main function `detect_coordinated_groups()` as follows:
+Let's assume that we want to detect coordinated behavior with a `min_repetition` of 5 within a `time_window` of 10 seconds. We can call the main function `detect_coordinated_groups()` as follows:
 
 ```{r results='hide'}
 result <- detect_coordinated_groups(russian_coord_tweets, 
@@ -195,7 +196,7 @@ If you are interested in the user statistics, you can pass `result` into `user_s
 summary_users <- user_stats(result)
 ```
 
-It provides summary statistics for each user that participated in coordinated behaviour: total coordinated posts shared, and average time delta. High number of posts shared and low average time delta are indicators for highly coordinated (and potentially automated) user behaviour.
+It provides summary statistics for each user that participated in coordinated behavior: total coordinated posts shared, and average time delta. High number of posts shared and low average time delta are indicators for highly coordinated (and potentially automated) user behavior.
 
 You can rejoin these summary statistics with the original data as follows (using `data.table` syntax):
 
