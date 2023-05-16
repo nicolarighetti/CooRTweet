@@ -140,7 +140,6 @@ The `reshape_tweets` function makes it possible to reshape Twitter data for dete
 
 ### Coordination by Retweets
 
-
 ```{r results='hide', eval=FALSE}
 # reshape data
 retweets <- reshape_tweets(tweets, intent = "retweets")
@@ -162,7 +161,6 @@ result <- detect_coordinated_groups(hashtags, time_window = 60, min_repetition =
 urls <- reshape_tweets(tweets, intent = "urls")
 result <- detect_coordinated_groups(urls, time_window = 60, min_repetition = 10)
 ```
-
 
 ### Coordination by Link Sharing (considering only the domain)
 
