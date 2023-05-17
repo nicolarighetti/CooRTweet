@@ -1,6 +1,6 @@
 Package: CooRTweet
-Version: 1.2
-Date: 2023-05-16
+Version: 1.2.1
+Date: 2023-05-17
 Type: Package
 Title: An R Package to Detect Coordinated Networks on Social Media
 Description: Detects a variety of coordinated actions on Twitter and outputs the network of coordinated users along with related information.

@@ -1,10 +1,10 @@
 #' generate_network
 #'
-#' Take the results of coordinated content detection and generate a network from the data. This function generates a two-mode (bipartite) incidence matrix first, and then projects the matrix to a weighted adjacency matrix. 
+#' Take the results of coordinated content detection and generate a network from the data. This function generates a two-mode (bipartite) incidence matrix first, and then projects the matrix to a weighted adjacency matrix.
 #'
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
 #' @param intent the intended network. The option `"users"` generates a network of users who are connected over the same content that they share (default). Option "content" generates a network based on content ids. Option "objects" generates a network of the coordinated content (`object_id`) that is connected via the users.
-#' 
+#'
 #' @return A weighted, undirected network (igraph object) where the vertices (nodes) are users (or `content_ids`) and edges (links) are the membership in coordinated groups (`object_id`)
 #'
 #' @import data.table
@@ -19,6 +19,7 @@
 
 generate_network <- function(x, intent = c("users", "content", "objects")) {
     object_id = nodes = NULL
+    patterns = function(...) NULL
 
     # TODO: Add data validation
     if (intent == "users") {

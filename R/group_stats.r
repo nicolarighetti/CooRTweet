@@ -1,10 +1,10 @@
 #' group_stats
 #'
-#' @description 
+#' @description
 #' Calculate coordinated group statistics:
 #' total unique users per group, total posts in per group,
 #' average time delta per group
-#' 
+#'
 #' @details
 #' This helper function gives you a summary of the coordinated
 #' groups.
@@ -19,6 +19,8 @@
 
 group_stats <- function(x) {
     variable <- time_delta <- id_user <- NULL
+    patterns = function(...) NULL
+
     x_melted <- data.table::melt(x,
         id.vars = c("object_id", "time_delta"),
         measure.vars = patterns("^content_id", "^id_user"),

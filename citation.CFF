@@ -8,5 +8,5 @@ authors:
   given-names: "Paul"
   orcid: "https://orcid.org/0000-0001-9548-3225"
 title: "CooRTweet: An R package to detect coordinated networks on Twitter"
-date-released: 2023-05-16
+date-released: 2023-05-17
 url: "https://github.com/nicolarighetti/CooRTweet"

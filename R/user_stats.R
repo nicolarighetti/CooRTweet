@@ -2,8 +2,8 @@
 #'
 #' @description
 #' Calculate user statistics: total posts shared, average time delta.
-#' 
-#' @details 
+#'
+#' @details
 #' With this helper function you get a summary of the users, who
 #' share coordinated content.
 #' High number of posts shared and low average time delta are indicators for
@@ -19,6 +19,8 @@
 
 user_stats <- function(x) {
     variable <- time_delta <- NULL
+    patterns = function(...) NULL
+
     x_melted <- data.table::melt(x,
         id.vars = c("object_id", "time_delta"),
         measure.vars = patterns("^content_id", "^id_user"),
