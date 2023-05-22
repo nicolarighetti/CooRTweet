@@ -23,7 +23,7 @@
 #'
 #' @param tweets a data.table to unnest. Twitter data loaded
 #' with \link{load_tweets_json}`.
-#' @param tweet_cols a caharacter vector specifying the columns to keep (optional).
+#' @param tweets_cols a caharacter vector specifying the columns to keep (optional).
 #'
 #' @return a named `list` with 5 data.tables:
 #' tweets (contains all tweets and their meta-data),

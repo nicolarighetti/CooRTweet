@@ -16,7 +16,7 @@ preprocess_tweets(
 \item{tweets}{a data.table to unnest. Twitter data loaded
 with \link{load_tweets_json}`.}
 
-\item{tweet_cols}{a caharacter vector specifying the columns to keep (optional).}
+\item{tweets_cols}{a caharacter vector specifying the columns to keep (optional).}
 }
 \value{
 a named \code{list} with 5 data.tables:
