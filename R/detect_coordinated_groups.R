@@ -95,9 +95,6 @@ do_detect_coordinated_groups <- function(x,
   # before they can be considered coordinated
   x <- x[, if (.N > min_repetition) .SD, by = id_user]
   
-  # a object has to be shared at least the times of min_rep
-  x <- x[, if (.N > min_repetition) .SD, by = object_id]
-
   # ---------------------------
   # calculate time differences per group
 
@@ -135,6 +132,6 @@ do_detect_coordinated_groups <- function(x,
   result <- result[object_id != content_id_y]
   result <- result[content_id != content_id_y]
   result <- result[id_user != id_user_y]
-  
+
   return(result)
 }
