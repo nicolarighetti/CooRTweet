@@ -32,9 +32,9 @@ The package works with data retrieved from the Twitter Academic API V2 in JSON f
 
 # Modelling Coordinated behavior: Key Parameters
 
-An action $a$ on social media can be formalized as a triple of a user $u$ posting content $p$ at time $t$:
+An action $a$ on social media can be formalized as a user $u$ posting content $p$ at time $t$:
 
-$$a = (u, p, t)$$
+$$a = (p, t)$$
 
 Following the standard operationalization in literature, two or more users are defined as coordinated when they perform the *same action* at least $r$ times, within a predefined time interval $\tau$. This so-called "same action" can be operationalized in a variety of ways:
 
@@ -113,7 +113,7 @@ summary_users <- user_stats(result)
 
 ```
 
-`summary_users` shows that the user with the ID `5c10a1e23d788292981b40e4006f4563` shared a total of 9 coordinated posts and within an average time window of 4.2 seconds.
+`summary_users` shows that the user with the ID `dcaec387c76f1d26a0d51f61227fdac0` shared a total of 6 coordinated posts and within an average time window of 4.3 seconds.
 
 # Using your own data
 
