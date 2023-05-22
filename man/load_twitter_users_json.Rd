@@ -4,10 +4,13 @@
 \alias{load_twitter_users_json}
 \title{load_twitter_users_json}
 \usage{
-load_twitter_users_json(data_dir)
+load_twitter_users_json(data_dir, query_error_ok = TRUE)
 }
 \arguments{
 \item{data_dir}{string that leads to the directory containing JSON files}
+
+\item{query_error_ok}{(Boolean) stop if \code{query} causes an error. Passed on
+to \link[RcppSimdJson]{fload} (optional). Default: \code{TRUE}}
 }
 \value{
 a data.table with all users loaded
