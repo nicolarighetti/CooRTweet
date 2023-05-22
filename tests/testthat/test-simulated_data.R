@@ -5,6 +5,7 @@ sim_test <- function(n_users_coord = 5,
                      n_objects = 5,
                      min_repetition = 3,
                      time_window = 10) {
+  coordinated = NULL
   
   sim <- simulate_data(
     n_users_coord = n_users_coord,
