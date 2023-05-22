@@ -134,8 +134,7 @@ do_detect_coordinated_groups <- function(x,
   result <- result[object_id != content_id]
   result <- result[object_id != content_id_y]
   result <- result[content_id != content_id_y]
-
-  # TODO: remove self-coordinated loops
-
+  result <- result[id_user != id_user_y]
+  
   return(result)
 }
