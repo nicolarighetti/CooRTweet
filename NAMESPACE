@@ -3,6 +3,7 @@
 export(detect_coordinated_groups)
 export(generate_network)
 export(group_stats)
+export(load_many_tweets_json)
 export(load_tweets_json)
 export(load_twitter_users_json)
 export(preprocess_tweets)
