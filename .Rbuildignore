@@ -1,2 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.vscode
+^citation\.CFF
+^sample_data
+^\.github
