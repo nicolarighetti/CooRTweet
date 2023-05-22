@@ -1,7 +1,5 @@
 library(data.table)
 
-set.seed(10)
-
 sim_test <- function(n_users_coord = 5,
                      n_users_noncoord = 4,
                      n_objects = 5,
@@ -112,7 +110,6 @@ test_that("balanced increase in number of users", {
   # increasing number of users
   # fails with only 2 users
   for (i in 3:6) {
-    print(i)
     n_users_coord <- i
     n_users_noncoord <- i
     n_objects <- 5
