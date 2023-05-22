@@ -24,7 +24,10 @@
 #'
 #' @return a data.table with ids of coordinated contents. Columns:
 #' `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`,
-#' `timedelta`
+#' `timedelta`. The `id_user` and `content_id` represent the "older"
+#' data points, `id_user_y` and `content_id_y` represent the "newer"
+#' data points. For example, User A retweets from User B, then User A's
+#' content is newer (i.e., `id_user_y`).
 #'
 #' @import data.table
 #' @export
@@ -87,7 +90,7 @@ do_detect_coordinated_groups <- function(x,
                                          time_window = 10,
                                          min_repetition = 2) {
   object_id <- id_user <- content_id <- content_id_y <-
-    id_user_y <- NULL
+    id_user_y <- time_delta <- NULL
 
   # --------------------------
   # Pre-filter
@@ -133,6 +136,18 @@ do_detect_coordinated_groups <- function(x,
   result <- result[object_id != content_id_y]
   result <- result[content_id != content_id_y]
   result <- result[id_user != id_user_y]
+
+  # ---------------------------
+  # Sort output: content_id should be older than content_id_y
+  # Therefore, we swap all values with positive time_delta
+  # and return the absolute value
+
+  result[
+    time_delta > 0,
+    c("content_id", "content_id_y", "id_user", "id_user_y") :=
+      .(content_id_y, content_id, id_user_y, id_user)
+  ]
+  result[, time_delta := abs(time_delta)]
 
   return(result)
 }

@@ -142,7 +142,7 @@ result <- detect_coordinated_groups(russian_coord_tweets,
 The `result` is a `data.table` that only includes the users and their
 contents that were identified as coordinated with the given parameters.
 The `result` is in a wide-format, where it shows the time difference
-(`time_delta`) between two posts (`content_id` and `content_id_y`).
+(`time_delta`) between two posts (`content_id` and `content_id_y`). `result` is sorted in such a way that the "older" posts are represented by `content_id` and the "newer" posts by `content_id_y`. For example, if User A retweets a post of User B, then the Tweet by User A is the "newer" post. Sorting the `result` this way has the advantage that the direction of cascaded coordination can be tracked.
 
 We can quickly get some summary statistics by using the provided
 convenience functions `group_stats()` and `user_stats()`. If we are

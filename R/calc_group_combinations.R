@@ -29,12 +29,12 @@ calc_group_combinations <- function(group, time_window = 10) {
       object_id = object_id,
       content_id = content_id,
       content_id_y = i.content_id,
-      time_delta = abs(timestamp_share - i.timestamp_share),
+      time_delta = timestamp_share - i.timestamp_share,
       id_user = id_user,
       id_user_y = i.id_user
     ),
     allow.cartesian = TRUE
-  ][time_delta <= time_window]
+  ][abs(time_delta) <= time_window]
 
   return(group)
 }
