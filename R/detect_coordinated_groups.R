@@ -19,9 +19,9 @@
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
-#' @param min_repetition the minimum number of repeated coordinated 
+#' @param min_repetition the minimum number of repeated coordinated
 #' action to define two users as coordinated (defaults to 2)
-#' 
+#'
 #' @return a data.table with ids of coordinated contents. Columns:
 #' `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`,
 #' `timedelta`
@@ -86,7 +86,8 @@ detect_coordinated_groups <- function(x,
 do_detect_coordinated_groups <- function(x,
                                          time_window = 10,
                                          min_repetition = 2) {
-  object_id <- id_user <- content_id <- content_id_y <- NULL
+  object_id <- id_user <- content_id <- content_id_y <-
+    id_user_y <- NULL
 
   # --------------------------
   # Pre-filter
@@ -94,7 +95,7 @@ do_detect_coordinated_groups <- function(x,
   # a user must have tweeted a minimum number of times
   # before they can be considered coordinated
   x <- x[, if (.N > min_repetition) .SD, by = id_user]
-  
+
   # ---------------------------
   # calculate time differences per group
 
