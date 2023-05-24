@@ -1,12 +1,11 @@
 library(data.table)
 
-set.seed(10)
-
 sim_test <- function(n_users_coord = 5,
                      n_users_noncoord = 4,
                      n_objects = 5,
                      min_repetition = 3,
                      time_window = 10) {
+  coordinated = NULL
   
   sim <- simulate_data(
     n_users_coord = n_users_coord,
@@ -64,8 +63,8 @@ sim_test <- function(n_users_coord = 5,
 test_that("simulated data works with default parameters", {
   res <- sim_test()
 
-  expect_equal(res[[1]], res[[2]])
-  expect_equal(res[[3]], res[[4]])
+  testthat::expect_equal(res[[1]], res[[2]])
+  testthat::expect_equal(res[[3]], res[[4]])
 })
 
 
@@ -77,8 +76,8 @@ test_that("simulated data works with high values", {
     min_repetition = 3,
     time_window = 100)
 
-  expect_equal(res[[1]], res[[2]])
-  expect_equal(res[[3]], res[[4]])
+  testthat::expect_equal(res[[1]], res[[2]])
+  testthat::expect_equal(res[[3]], res[[4]])
 })
 
 
@@ -100,8 +99,8 @@ test_that("simulation is possible with random parameters", {
     )
 
 
-    expect_equal(sim[[1]], sim[[2]])
-    expect_equal(sim[[3]], sim[[4]])
+    testthat::expect_equal(sim[[1]], sim[[2]])
+    testthat::expect_equal(sim[[3]], sim[[4]])
 
 
   }
@@ -126,12 +125,10 @@ test_that("balanced increase in number of users", {
       time_window = time_window
     )
 
-
-    expect_equal(sim[[1]], sim[[2]])
-    expect_equal(sim[[3]], sim[[4]])
-
-
+    testthat::expect_equal(sim[[1]], sim[[2]])
+    testthat::expect_equal(sim[[3]], sim[[4]])
   }
+
 })
 
 
@@ -155,8 +152,8 @@ test_that("unbalanced increase in number of users: A", {
     )
 
 
-    expect_equal(sim[[1]], sim[[2]])
-    expect_equal(sim[[3]], sim[[4]])
+    testthat::expect_equal(sim[[1]], sim[[2]])
+    testthat::expect_equal(sim[[3]], sim[[4]])
 
   }
 })
@@ -180,8 +177,8 @@ test_that("unbalanced increase in number of users: B", {
       time_window = time_window
     )
 
-    expect_equal(sim[[1]], sim[[2]])
-    expect_equal(sim[[3]], sim[[4]])
+    testthat::expect_equal(sim[[1]], sim[[2]])
+    testthat::expect_equal(sim[[3]], sim[[4]])
 
   }
 })
@@ -204,8 +201,8 @@ test_that("increase in number of objects", {
       time_window = time_window
     )
 
-    expect_equal(sim[[1]], sim[[2]])
-    expect_equal(sim[[3]], sim[[4]])
+    testthat::expect_equal(sim[[1]], sim[[2]])
+    testthat::expect_equal(sim[[3]], sim[[4]])
 
   }
 })
@@ -228,8 +225,8 @@ test_that("larger time window", {
       time_window = time_window
     )
 
-    expect_equal(sim[[1]], sim[[2]])
-    expect_equal(sim[[3]], sim[[4]])
+    testthat::expect_equal(sim[[1]], sim[[2]])
+    testthat::expect_equal(sim[[3]], sim[[4]])
 
   }
 })

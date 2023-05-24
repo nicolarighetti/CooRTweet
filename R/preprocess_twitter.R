@@ -17,12 +17,13 @@
 #' The function also expects that the following additional
 #' columns are present in the `data.table`:
 #' `created_at`, `tweet_id`, `author_id`,
-#' `conversation_id`, `possibly_sensitive`, `lang`, `text`,
+#' `conversation_id`, `text`,
 #' `in_reply_to_user_id`.
 #' Implicitely dropped columns: `edit_history_tweet_ids`
 #'
 #' @param tweets a data.table to unnest. Twitter data loaded
 #' with \link{load_tweets_json}`.
+#' @param tweets_cols a character vector specifying the columns to keep (optional).
 #'
 #' @return a named `list` with 5 data.tables:
 #' tweets (contains all tweets and their meta-data),
@@ -39,37 +40,53 @@
 #' @export
 #'
 
-preprocess_tweets <- function(tweets) {
-    tweet_id = author_id = created_at = created_timestamp = referenced_tweets = 
-        referenced_tweet_id = entities_urls = domain = expanded_url = 
-        entities_mentions = username = id = entities_hashtags = tag = NULL
+preprocess_tweets <- function(tweets, tweets_cols = c(
+                                  "created_at", "tweet_id", "author_id",
+                                  "conversation_id",
+                                  "possibly_sensitive", "lang", "text",
+                                  "in_reply_to_user_id",
+                                  "public_metrics_retweet_count",
+                                  "public_metrics_reply_count",
+                                  "public_metrics_like_count",
+                                  "public_metrics_quote_count"
+                              )) {
+    tweet_id <- author_id <- created_at <- created_timestamp <-
+        referenced_tweets <- referenced_tweet_id <- entities_urls <-
+        domain <- expanded_url <- entities_mentions <- username <-
+        id <- entities_hashtags <- tag <- NULL
     if (!inherits(tweets, "data.table")) {
         tweets <- data.table::as.data.table(tweets)
     }
 
-    required_cols <- c("entities", "public_metrics", "tweet_id", "created_at")
+    required_cols <- c(
+        "entities",
+        "tweet_id",
+        "created_at",
+        "author_id",
+        "conversation_id",
+        "in_reply_to_user_id",
+        "referenced_tweets"
+    )
 
     for (cname in required_cols) {
         if (!cname %in% colnames(tweets)) {
             stop("Columns or their names are incorrect.
             Ensure your data has the columns:
-            entities, public_metrics, tweet_id, created_at")
+            entities, tweet_id, created_at")
         }
     }
 
-    tweets <- dt_unnest_wider(tweets, c("public_metrics"))
+    if ("public_metrics" %in% colnames(tweets)) {
+        tweets <- dt_unnest_wider(tweets, c("public_metrics"))
+    } else {
+        tweets_cols <- tweets_cols[!startsWith(tweets_cols, "public_metrics")]
+    }
 
     # Construct the main data.table containing all tweets and their meta-data
     # implicitly dropped columns: "edit_history_tweet_ids", "withheld"
-    Tweets_cols <- c(
-        "created_at", "tweet_id", "author_id", "conversation_id",
-        "possibly_sensitive", "lang", "text",
-        "in_reply_to_user_id",
-        "public_metrics_retweet_count", "public_metrics_reply_count",
-        "public_metrics_like_count", "public_metrics_quote_count"
-    )
+    tmp_keep_cols <- colnames(tweets)[colnames(tweets) %in% tweets_cols]
 
-    Tweets <- tweets[, Tweets_cols, with = FALSE]
+    Tweets <- tweets[, tmp_keep_cols, with = FALSE]
     data.table::setindex(Tweets, tweet_id, author_id)
 
     # reformat datetime of created_at
@@ -165,7 +182,7 @@ preprocess_tweets <- function(tweets) {
 
 
 preprocess_twitter_users <- function(users) {
-    domain = expanded_url = NULL
+    domain <- expanded_url <- NULL
     if (!inherits(users, "data.table")) {
         users <- data.table::as.data.table(users)
     }

@@ -4,10 +4,16 @@
 \alias{load_tweets_json}
 \title{load_tweets_json}
 \usage{
-load_tweets_json(data_dir)
+load_tweets_json(data_dir, query = NULL, query_error_ok = TRUE)
 }
 \arguments{
 \item{data_dir}{string that leads to the directory containing JSON files}
+
+\item{query}{(string) JSON Pointer query passed on to
+\link[RcppSimdJson]{fload} (optional). Default: \code{NULL}}
+
+\item{query_error_ok}{(Boolean) stop if \code{query} causes an error. Passed on
+to \link[RcppSimdJson]{fload} (optional). Default: \code{FALSE}}
 }
 \value{
 a data.table with all tweets loaded

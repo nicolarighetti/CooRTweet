@@ -4,11 +4,19 @@
 \alias{preprocess_tweets}
 \title{preprocess_tweets}
 \usage{
-preprocess_tweets(tweets)
+preprocess_tweets(
+  tweets,
+  tweets_cols = c("created_at", "tweet_id", "author_id", "conversation_id",
+    "possibly_sensitive", "lang", "text", "in_reply_to_user_id",
+    "public_metrics_retweet_count", "public_metrics_reply_count",
+    "public_metrics_like_count", "public_metrics_quote_count")
+)
 }
 \arguments{
 \item{tweets}{a data.table to unnest. Twitter data loaded
 with \link{load_tweets_json}`.}
+
+\item{tweets_cols}{a character vector specifying the columns to keep (optional).}
 }
 \value{
 a named \code{list} with 5 data.tables:
@@ -35,7 +43,7 @@ each \code{data.table} represents one aspect of the nested data.
 The function also expects that the following additional
 columns are present in the \code{data.table}:
 \code{created_at}, \code{tweet_id}, \code{author_id},
-\code{conversation_id}, \code{possibly_sensitive}, \code{lang}, \code{text},
+\code{conversation_id}, \code{text},
 \code{in_reply_to_user_id}.
 Implicitely dropped columns: \code{edit_history_tweet_ids}
 }

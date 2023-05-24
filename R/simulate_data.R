@@ -243,8 +243,6 @@ simulate_data <- function(
         (1 + (length(share_ids) / 2)):length(share_ids)
     ]
 
-    rm(list = setdiff(ls(), "output_table"))
-
     # subset and rename accordingly to the detect_coordinated_groups output
     output_table <- output_table[
         ,
@@ -294,7 +292,6 @@ simulate_data <- function(
 
     output_list <- list(input_dataset, output_table)
 
-    rm(list = setdiff(ls(), "output_list"))
     gc()
 
     return(output_list)

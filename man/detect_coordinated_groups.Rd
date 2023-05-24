@@ -20,7 +20,10 @@ action to define two users as coordinated (defaults to 2)}
 \value{
 a data.table with ids of coordinated contents. Columns:
 \code{object_id}, \code{id_user}, \code{id_user_y}, \code{content_id}, \code{content_id_y},
-\code{timedelta}
+\code{timedelta}. The \code{id_user} and \code{content_id} represent the "older"
+data points, \code{id_user_y} and \code{content_id_y} represent the "newer"
+data points. For example, User A retweets from User B, then User A's
+content is newer (i.e., \code{id_user_y}).
 }
 \description{
 Function to detect coordinated behaviour based on content groups.

@@ -37,10 +37,10 @@ possible (Eddelbuettel, Knapp, and Lemire 2023).
 
 # Modelling Coordinated behavior: Key Parameters
 
-An action $a$ on social media can be formalized as a triple of a user
+An action $a$ on social media can be formalized as a user
 $u$ posting content $p$ at time $t$:
 
-$$a = (u, p, t)$$
+$$a = (p, t)$$
 
 Following the standard operationalization in literature, two or more
 users are defined as coordinated when they perform the *same action* at
@@ -142,7 +142,7 @@ result <- detect_coordinated_groups(russian_coord_tweets,
 The `result` is a `data.table` that only includes the users and their
 contents that were identified as coordinated with the given parameters.
 The `result` is in a wide-format, where it shows the time difference
-(`time_delta`) between two posts (`content_id` and `content_id_y`).
+(`time_delta`) between two posts (`content_id` and `content_id_y`). `result` is sorted in such a way that the "older" posts are represented by `content_id` and the "newer" posts by `content_id_y`. For example, if User A retweets a post of User B, then the Tweet by User A is the "newer" post. Sorting the `result` this way has the advantage that the direction of cascaded coordination can be tracked.
 
 We can quickly get some summary statistics by using the provided
 convenience functions `group_stats()` and `user_stats()`. If we are
@@ -168,9 +168,7 @@ If you are interested in understanding more about the users you can call
 summary_users <- user_stats(result)
 ```
 
-`summary_users` shows that the user with the ID
-`5c10a1e23d788292981b40e4006f4563` shared a total of 9 coordinated posts
-and within an average time window of 4.2 seconds.
+`summary_users` shows that the user with the ID `dcaec387c76f1d26a0d51f61227fdac0` shared a total of 6 coordinated posts and within an average time window of 4.3 seconds.
 
 # Using your own data
 

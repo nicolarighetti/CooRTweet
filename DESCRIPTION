@@ -1,5 +1,5 @@
 Package: CooRTweet
-Version: 1.2.1
+Version: 1.3
 Date: 2023-05-17
 Type: Package
 Title: An R Package to Detect Coordinated Networks on Social Media
