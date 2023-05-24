@@ -41,10 +41,7 @@
 #'
 
 preprocess_tweets <- function(tweets, tweets_cols = c(
-                                  "created_at", "tweet_id", "author_id",
-                                  "conversation_id",
                                   "possibly_sensitive", "lang", "text",
-                                  "in_reply_to_user_id",
                                   "public_metrics_retweet_count",
                                   "public_metrics_reply_count",
                                   "public_metrics_like_count",
@@ -75,6 +72,8 @@ preprocess_tweets <- function(tweets, tweets_cols = c(
             entities, tweet_id, created_at")
         }
     }
+
+    tweets_cols <- c(required_cols, tweets_cols)
 
     if ("public_metrics" %in% colnames(tweets)) {
         tweets <- dt_unnest_wider(tweets, c("public_metrics"))
