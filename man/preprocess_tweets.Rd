@@ -6,10 +6,9 @@
 \usage{
 preprocess_tweets(
   tweets,
-  tweets_cols = c("created_at", "tweet_id", "author_id", "conversation_id",
-    "possibly_sensitive", "lang", "text", "in_reply_to_user_id",
-    "public_metrics_retweet_count", "public_metrics_reply_count",
-    "public_metrics_like_count", "public_metrics_quote_count")
+  tweets_cols = c("possibly_sensitive", "lang", "text", "public_metrics_retweet_count",
+    "public_metrics_reply_count", "public_metrics_like_count",
+    "public_metrics_quote_count")
 )
 }
 \arguments{
