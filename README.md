@@ -8,18 +8,7 @@ The **CooRTweet** package builds on the existing literature on coordinated behav
 
 # Install
 
-## Development Version 
-
-```r
-# install.packages("devtools")
-
-library("devtools")
-devtools::install_github("https://github.com/nicolarighetti/CooRTweet")
-```
-
 ## Install from CRAN
-
-(coming soon)
 
 ```r
 install.packages("CooRTweet")
