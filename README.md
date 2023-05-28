@@ -20,6 +20,10 @@ The package works with data retrieved from the Twitter Academic API in the JSON 
 
 For a walk-through see the [vignette](https://github.com/nicolarighetti/CooRTweet/blob/master/vignettes/vignette.md).
 
+## Citation
+
+Righetti N., Balluff P. (2023). CooRTweet: Coordinated Networks Detection on Social Media. R package version 1.3. https://CRAN.R-project.org/package=CooRTweet.
+
 
 ## References
 
