@@ -19,7 +19,6 @@
 
 generate_network <- function(x, intent = c("users", "content", "objects")) {
     object_id = nodes = NULL
-    patterns = function(...) NULL
 
     # TODO: Add data validation
     if (intent == "users") {

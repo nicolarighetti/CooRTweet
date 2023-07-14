@@ -19,7 +19,6 @@
 
 group_stats <- function(x) {
     variable <- time_delta <- id_user <- NULL
-    patterns = function(...) NULL
 
     x_melted <- data.table::melt(x,
         id.vars = c("object_id", "time_delta"),
