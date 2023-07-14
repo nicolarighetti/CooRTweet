@@ -18,7 +18,7 @@
 # https://stackoverflow.com/questions/38991448/out-of-memory-error-when-projecting-a-bipartite-network-in-igraph
 
 generate_network <- function(x, intent = c("users", "content", "objects")) {
-    object_id = nodes = NULL
+    object_id <- nodes <- patterns <- NULL
 
     # TODO: Add data validation
     if (intent == "users") {

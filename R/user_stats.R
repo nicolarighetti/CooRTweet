@@ -18,7 +18,7 @@
 #'
 
 user_stats <- function(x) {
-    variable <- time_delta <- NULL
+    variable <- time_delta <- patterns <- NULL
 
     x_melted <- data.table::melt(x,
         id.vars = c("object_id", "time_delta"),
