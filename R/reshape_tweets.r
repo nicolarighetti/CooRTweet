@@ -13,6 +13,8 @@
 #' `"urls"` to detect coordinated link sharing behaviour;
 #' `"urls_domain"` to detect coordinated link sharing behaviour
 #' at the domain level.
+#' `"cotweet"` to detect coordinated cotweeting behaviour
+#' (users posting same text).
 #' The output of this function is a reshaped `data.table` that
 #' can be passed to \link{detect_coordinated_groups}.
 #'
@@ -31,8 +33,9 @@
 
 reshape_tweets <- function(
     tweets,
-    intent = c("retweets", "hashtags", "urls", "urls_domains")) {
-    start = tweet_id = type = referenced_tweet_id = object_id = id_user = NULL
+    intent = c("retweets", "hashtags", "urls", "urls_domains", "cotweet")) {
+    start  <- tweet_id <- type <- referenced_tweet_id <- object_id <- id_user <-
+      text_normalized <- NULL
     if (!inherits(tweets, "list")) {
         stop("Provided data probably not preprocessed yet.")
     }
@@ -162,7 +165,50 @@ reshape_tweets <- function(
         data.table::setindex(domains, object_id, id_user)
 
         return(domains)
+    } else if (intent == "cotweet") {
+      # Mapping overview
+      # text_normalized --> object_id
+      # author_id --> id_user
+      # tweet_id --> content_id:
+      # created_timestamp --> timestamp_share
+
+      # normalize text
+      tweets$tweets[, text_normalized := normalize_text(text)]
+      data.table::setindex(tweets$tweets, text_normalized)
+
+      tweet_cols <- c("text_normalized", "author_id", "tweet_id", "created_timestamp")
+      cotweets <- tweets$tweets[, tweet_cols, with = FALSE]
+
+      data.table::setnames(cotweets, tweet_cols, output_cols)
+      data.table::setindex(cotweets, object_id)
+      data.table::setindex(cotweets, id_user)
+
+      return(cotweets)
+
     } else {
         .NotYetImplemented()
     }
+}
+
+
+#' Normalize text
+#'
+#' @description
+#' Utility function that normalizes text by removing mentions of other users, removing "RT",
+#' and trimming whitespace.
+#'
+#' @param text The text to be normalized.
+#'
+#' @return The normalized text.
+#'
+#' @export
+
+normalize_text <- function(text) {
+  # remove mentions of other users
+  text <- gsub("@.+?(\\s|$)", "", text)
+  # remove "RT"
+  text <- gsub("RT", "", text)
+  text <- trimws(tolower(text))
+  return(text)
+
 }
