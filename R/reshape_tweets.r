@@ -22,6 +22,12 @@
 #' (output of \link{preprocess_tweets})
 #'
 #' @param intent the desired intent for analysis.
+#' @param drop_retweets Option passed to `intent = "cotweet"`.
+#' When analysing tweets based on text similarity, you can choose to drop
+#' all tweets that are retweets. Default: TRUE
+#' @param drop_replies Option passed to `intent = "cotweet"`.
+#' When analysing tweets based on text similarity, you can choose to drop
+#' all tweets that are replies to other tweets. Default: TRUE
 #'
 #' @return a reshaped data.table
 #'
@@ -33,9 +39,11 @@
 
 reshape_tweets <- function(
     tweets,
-    intent = c("retweets", "hashtags", "urls", "urls_domains", "cotweet")) {
-    start  <- tweet_id <- type <- referenced_tweet_id <- object_id <- id_user <-
-      text_normalized <- NULL
+    intent = c("retweets", "hashtags", "urls", "urls_domains", "cotweet"),
+    drop_retweets = TRUE,
+    drop_replies = TRUE) {
+    start <- tweet_id <- type <- referenced_tweet_id <- object_id <- id_user <-
+        text_normalized <- NULL
     if (!inherits(tweets, "list")) {
         stop("Provided data probably not preprocessed yet.")
     }
@@ -166,25 +174,36 @@ reshape_tweets <- function(
 
         return(domains)
     } else if (intent == "cotweet") {
-      # Mapping overview
-      # text_normalized --> object_id
-      # author_id --> id_user
-      # tweet_id --> content_id:
-      # created_timestamp --> timestamp_share
+        # Mapping overview
+        # text_normalized --> object_id
+        # author_id --> id_user
+        # tweet_id --> content_id:
+        # created_timestamp --> timestamp_share
+        referenced_tweets <- tweets$referenced
+        cotweets <- tweets$tweets
 
-      # normalize text
-      tweets$tweets[, text_normalized := normalize_text(text)]
-      data.table::setindex(tweets$tweets, text_normalized)
+        # filter out retweets
+        if (drop_retweets) {
+            filt <- cotweets$tweet_id %in% referenced_tweets[type == "retweeted", ]$tweet_id
+            cotweets <- cotweets[!filt, ]
+        }
+        if (drop_replies) {
+            filt <- cotweets$tweet_id %in% referenced_tweets[type == "replied_to", ]$tweet_id
+            cotweets <- cotweets[!filt, ]
+        }
 
-      tweet_cols <- c("text_normalized", "author_id", "tweet_id", "created_timestamp")
-      cotweets <- tweets$tweets[, tweet_cols, with = FALSE]
+        # normalize text
+        cotweets[, text_normalized := normalize_text(text)]
+        data.table::setindex(cotweets, text_normalized)
 
-      data.table::setnames(cotweets, tweet_cols, output_cols)
-      data.table::setindex(cotweets, object_id)
-      data.table::setindex(cotweets, id_user)
+        tweet_cols <- c("text_normalized", "author_id", "tweet_id", "created_timestamp")
+        cotweets <- cotweets[, tweet_cols, with = FALSE]
 
-      return(cotweets)
+        data.table::setnames(cotweets, tweet_cols, output_cols)
+        data.table::setindex(cotweets, object_id)
+        data.table::setindex(cotweets, id_user)
 
+        return(cotweets)
     } else {
         .NotYetImplemented()
     }
@@ -204,11 +223,10 @@ reshape_tweets <- function(
 #' @export
 
 normalize_text <- function(text) {
-  # remove mentions of other users
-  text <- gsub("@.+?(\\s|$)", "", text)
-  # remove "RT"
-  text <- gsub("RT", "", text)
-  text <- trimws(tolower(text))
-  return(text)
-
+    # remove mentions of other users
+    text <- gsub("@.+?(\\s|$)", "", text)
+    # remove "RT"
+    text <- gsub("RT", "", text)
+    text <- trimws(tolower(text))
+    return(text)
 }
