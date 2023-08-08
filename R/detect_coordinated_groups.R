@@ -110,6 +110,34 @@ do_detect_coordinated_groups <- function(x,
 
   # ---------------------------
   # filter by minimum repetition
+  if (min_repetition > 1) {
+    result <- filter_min_repetition(x, result, min_repetition)
+  }
+
+  # ---------------------------
+  # remove loops
+  result <- remove_loops(result)
+
+  # ---------------------------
+  # Sort output: content_id should be older than content_id_y
+  # Therefore, we swap all values with positive time_delta
+  # and return the absolute value
+
+  result[
+    time_delta > 0,
+    c("content_id", "content_id_y", "id_user", "id_user_y") :=
+      .(content_id_y, content_id, id_user_y, id_user)
+  ]
+  result[, time_delta := abs(time_delta)]
+
+  return(result)
+}
+
+
+filter_min_repetition <- function(x, result, min_repetition) {
+  content_id <- id_user <- content_id_y <- NULL
+  # ---------------------------
+  # filter by minimum repetition
   # first get all content_ids that are flagged as coordinated
   coordinated_content_ids <- unique(
     c(
@@ -130,24 +158,110 @@ do_detect_coordinated_groups <- function(x,
   # filter the result to only contain content_ids from above
   result <- result[(content_id %in% filt$content_id) | (content_id_y %in% filt$content_id)]
 
-  # ---------------------------
+  return(result)
+}
+
+remove_loops <- function(result) {
+  object_id <- content_id <- id_user <- content_id_y <- id_user_y <- NULL
   # remove loops
-  result <- result[object_id != content_id]
-  result <- result[object_id != content_id_y]
+  if ("object_id" %in% colnames(result)) {
+    result <- result[object_id != content_id]
+    result <- result[object_id != content_id_y]
+  }
   result <- result[content_id != content_id_y]
   result <- result[id_user != id_user_y]
+
+  return(result)
+}
+
+#' detect_similar_text
+#'
+#' @description
+#' Private (?) function that performs coordination detection
+#' based on text similarity. 
+#'
+#'
+
+detect_similar_text <- function(x,
+                                min_repetition = 2,
+                                time_window = 10,
+                                min_similarity = 0.8) {
+  require("textreuse")
+
+  # https://cran.r-project.org/web/packages/textreuse/vignettes/textreuse-minhash.html
+  minhash <- textreuse::minhash_generator(n = 240, seed = 3552)
+
+
+  texts <- x$object_id
+  names(texts) <- x$content_id
+
+  corpus <- textreuse::TextReuseCorpus(
+    text = texts,
+    tokenizer = textreuse::tokenize_ngrams,
+    n = 5,
+    minhash_func = minhash,
+    keep_tokens = TRUE,
+    progress = TRUE,
+    # skip_short = FALSE,
+  )
+
+
+  buckets <- textreuse::lsh(corpus, bands = 80, progress = TRUE)
+  candidates <- textreuse::lsh_candidates(buckets)
+
+  result <- data.table(
+    textreuse::lsh_compare(
+      candidates, 
+      corpus, 
+      textreuse::jaccard_similarity, 
+      progress = TRUE))
+  result_a <- result[, .(a, score)]
+  result_b <- result[, .(b, score)]
+
+
+  setnames(result_a, "a", "content_id")
+  setnames(result_b, "b", "content_id")
+
+
+  cotweet_pairs_x <- x[result_a, .(content_id, id_user, timestamp_share, score), on = "content_id"]
+  cotweet_pairs_y <- x[result_b, .(content_id, id_user, timestamp_share), on = "content_id"]
+
+
+  setnames(
+    cotweet_pairs_y,
+    c("content_id", "id_user", "timestamp_share"),
+    c("content_id_y", "id_user_y", "timestamp_share_y")
+  )
+
+
+  cotweet_pairs <- cbind(cotweet_pairs_x, cotweet_pairs_y)
+
+  setnames(cotweet_pairs, "score", "similarity_score")
+
+  coordinated_cotweets <- cotweet_pairs[
+    similarity_score >= min_similarity,
+    time_delta := timestamp_share - timestamp_share_y
+  ][abs(time_delta) <= time_window]
+
+  # filter by minimum repetition
+  coordinated_cotweets <- filter_min_repetition(x, coordinated_cotweets, min_repetition)
+
+  # filter out loops
+
+  coordinated_cotweets <- remove_loops(coordinated_cotweets)
+
 
   # ---------------------------
   # Sort output: content_id should be older than content_id_y
   # Therefore, we swap all values with positive time_delta
   # and return the absolute value
 
-  result[
+  coordinated_cotweets[
     time_delta > 0,
     c("content_id", "content_id_y", "id_user", "id_user_y") :=
       .(content_id_y, content_id, id_user_y, id_user)
   ]
-  result[, time_delta := abs(time_delta)]
+  coordinated_cotweets[, time_delta := abs(time_delta)]
 
-  return(result)
+  return(coordinated_cotweets)
 }
