@@ -4,3 +4,4 @@
 ^citation\.CFF
 ^sample_data
 ^\.github
+^.lintr
