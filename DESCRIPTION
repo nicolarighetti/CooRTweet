@@ -30,7 +30,8 @@ Imports:
   Matrix,
   lubridate,
   igraph,
-  stringi
+  stringi,
+  textreuse
 Suggests: 
     knitr,
     rmarkdown,

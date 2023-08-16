@@ -15,7 +15,7 @@ coordinated content), \code{id_user} (unique ids for users), \code{content_id}
 are to be considered as coordinated (default to 10 seconds).}
 
 \item{min_repetition}{the minimum number of repeated coordinated
-action to define two users as coordinated (defaults to 2)}
+actions a user has to perform (default to 2 times)}
 }
 \value{
 a data.table with ids of coordinated contents. Columns:
