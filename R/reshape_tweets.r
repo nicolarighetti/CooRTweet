@@ -28,6 +28,8 @@
 #' @param drop_replies Option passed to `intent = "cotweet"`.
 #' When analysing tweets based on text similarity, you can choose to drop
 #' all tweets that are replies to other tweets. Default: TRUE
+#' @param drop_hashtags Option passed to `intent = "cotweet"`. You can choose to
+#' remove all hashtags from the tweet texts. Default: FALSE
 #'
 #' @return a reshaped data.table
 #'
@@ -41,9 +43,10 @@ reshape_tweets <- function(
     tweets,
     intent = c("retweets", "hashtags", "urls", "urls_domains", "cotweet"),
     drop_retweets = TRUE,
-    drop_replies = TRUE) {
+    drop_replies = TRUE,
+    drop_hashtags = FALSE) {
     start <- tweet_id <- type <- referenced_tweet_id <- object_id <- id_user <-
-        text_normalized <- NULL
+        text <- text_normalized <- NULL
     if (!inherits(tweets, "list")) {
         stop("Provided data probably not preprocessed yet.")
     }
@@ -194,6 +197,9 @@ reshape_tweets <- function(
 
         # normalize text
         cotweets[, text_normalized := normalize_text(text)]
+        if (drop_hashtags) {
+            cotweets[, text_normalized := remove_hashtags(text)]
+        }
         data.table::setindex(cotweets, text_normalized)
 
         tweet_cols <- c("text_normalized", "author_id", "tweet_id", "created_timestamp")
@@ -214,19 +220,37 @@ reshape_tweets <- function(
 #'
 #' @description
 #' Utility function that normalizes text by removing mentions of other users, removing "RT",
-#' and trimming whitespace.
+#' converting to lower case, and trimming whitespace.
 #'
-#' @param text The text to be normalized.
+#' @param x The text to be normalized.
 #'
 #' @return The normalized text.
 #'
 #' @export
 
-normalize_text <- function(text) {
+normalize_text <- function(x) {
     # remove mentions of other users
-    text <- gsub("@.+?(\\s|$)", "", text)
+    x <- gsub("@.+?(\\s|$)", "", x)
     # remove "RT"
-    text <- gsub("RT", "", text)
-    text <- trimws(tolower(text))
-    return(text)
+    x <- gsub("RT", "", x)
+    x <- trimws(tolower(x))
+    return(x)
+}
+
+
+#' Remove hashtags
+#'
+#' @description
+#' Utility function that removes hashtags from tags.
+#'
+#' @param x The text to be processed.
+#'
+#' @return The text without hashtags.
+#'
+#' @export
+
+remove_hashtags <- function(x) {
+    # remove hashtags from text
+    x <- gsub("#.+?(\\s|$)", "", x)
+    return(x)
 }
