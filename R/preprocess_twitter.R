@@ -61,7 +61,6 @@ preprocess_tweets <- function(tweets, tweets_cols = c(
         "created_at",
         "author_id",
         "conversation_id",
-        "in_reply_to_user_id",
         "referenced_tweets"
     )
 
