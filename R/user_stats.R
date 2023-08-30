@@ -29,12 +29,14 @@ user_stats <- function(x) {
     x_melted[, variable := NULL]
     x_melted <- unique(x_melted)
 
-    x_summary <- x_melted[, .(
-        total_posts = .N,
-        mean_time_delta = mean(time_delta)
-    ),
-    by = "id_user"
-    ]
+    x_dedup <- unique(x_melted, by = c("object_id", "content_id"))
+
+    total_posts_by_user <- x_dedup[, .(total_posts = .N), by = "id_user"]
+
+    time_delta_by_user <- x_melted[, .(mean_time_delta = mean(time_delta)), by = "id_user"]
+
+    x_summary <- merge(total_posts_by_user, time_delta_by_user, by = "id_user")
+
     data.table::setorder(x_summary, "id_user")
     return(x_summary)
 }
