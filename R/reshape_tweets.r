@@ -166,6 +166,9 @@ reshape_tweets <- function(
         filt <- startsWith(tweets$urls$expanded_url, "https://twitter.com")
         domains <- tweets$urls[!filt]
 
+        # remove prefix "www" to normalize domain names
+        domains[, domain := gsub("www\\.", "", domain)]
+
         # join meta data with urls table
         domains <- tweets$tweets[domains, on = "tweet_id"]
 
