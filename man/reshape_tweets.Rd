@@ -6,7 +6,10 @@
 \usage{
 reshape_tweets(
   tweets,
-  intent = c("retweets", "hashtags", "urls", "urls_domains")
+  intent = c("retweets", "hashtags", "urls", "urls_domains", "cotweet"),
+  drop_retweets = TRUE,
+  drop_replies = TRUE,
+  drop_hashtags = FALSE
 )
 }
 \arguments{
@@ -14,6 +17,17 @@ reshape_tweets(
 (output of \link{preprocess_tweets})}
 
 \item{intent}{the desired intent for analysis.}
+
+\item{drop_retweets}{Option passed to \code{intent = "cotweet"}.
+When analysing tweets based on text similarity, you can choose to drop
+all tweets that are retweets. Default: TRUE}
+
+\item{drop_replies}{Option passed to \code{intent = "cotweet"}.
+When analysing tweets based on text similarity, you can choose to drop
+all tweets that are replies to other tweets. Default: TRUE}
+
+\item{drop_hashtags}{Option passed to \code{intent = "cotweet"}. You can choose to
+remove all hashtags from the tweet texts. Default: FALSE}
 }
 \value{
 a reshaped data.table
@@ -31,6 +45,8 @@ You can choose the intent for reshaping the data. Use
 \code{"urls"} to detect coordinated link sharing behaviour;
 \code{"urls_domain"} to detect coordinated link sharing behaviour
 at the domain level.
+\code{"cotweet"} to detect coordinated cotweeting behaviour
+(users posting same text).
 The output of this function is a reshaped \code{data.table} that
 can be passed to \link{detect_coordinated_groups}.
 }

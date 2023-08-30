@@ -13,6 +13,8 @@
 #' `"urls"` to detect coordinated link sharing behaviour;
 #' `"urls_domain"` to detect coordinated link sharing behaviour
 #' at the domain level.
+#' `"cotweet"` to detect coordinated cotweeting behaviour
+#' (users posting same text).
 #' The output of this function is a reshaped `data.table` that
 #' can be passed to \link{detect_coordinated_groups}.
 #'
@@ -20,6 +22,14 @@
 #' (output of \link{preprocess_tweets})
 #'
 #' @param intent the desired intent for analysis.
+#' @param drop_retweets Option passed to `intent = "cotweet"`.
+#' When analysing tweets based on text similarity, you can choose to drop
+#' all tweets that are retweets. Default: TRUE
+#' @param drop_replies Option passed to `intent = "cotweet"`.
+#' When analysing tweets based on text similarity, you can choose to drop
+#' all tweets that are replies to other tweets. Default: TRUE
+#' @param drop_hashtags Option passed to `intent = "cotweet"`. You can choose to
+#' remove all hashtags from the tweet texts. Default: FALSE
 #'
 #' @return a reshaped data.table
 #'
@@ -31,8 +41,12 @@
 
 reshape_tweets <- function(
     tweets,
-    intent = c("retweets", "hashtags", "urls", "urls_domains")) {
-    start = tweet_id = type = referenced_tweet_id = object_id = id_user = NULL
+    intent = c("retweets", "hashtags", "urls", "urls_domains", "cotweet"),
+    drop_retweets = TRUE,
+    drop_replies = TRUE,
+    drop_hashtags = FALSE) {
+    start <- tweet_id <- type <- referenced_tweet_id <- object_id <- id_user <-
+        text <- text_normalized <- NULL
     if (!inherits(tweets, "list")) {
         stop("Provided data probably not preprocessed yet.")
     }
@@ -162,7 +176,81 @@ reshape_tweets <- function(
         data.table::setindex(domains, object_id, id_user)
 
         return(domains)
+    } else if (intent == "cotweet") {
+        # Mapping overview
+        # text_normalized --> object_id
+        # author_id --> id_user
+        # tweet_id --> content_id:
+        # created_timestamp --> timestamp_share
+        referenced_tweets <- tweets$referenced
+        cotweets <- tweets$tweets
+
+        # filter out retweets
+        if (drop_retweets) {
+            filt <- cotweets$tweet_id %in% referenced_tweets[type == "retweeted", ]$tweet_id
+            cotweets <- cotweets[!filt, ]
+        }
+        if (drop_replies) {
+            filt <- cotweets$tweet_id %in% referenced_tweets[type == "replied_to", ]$tweet_id
+            cotweets <- cotweets[!filt, ]
+        }
+
+        # normalize text
+        cotweets[, text_normalized := normalize_text(text)]
+        if (drop_hashtags) {
+            cotweets[, text_normalized := remove_hashtags(text)]
+        }
+        data.table::setindex(cotweets, text_normalized)
+
+        tweet_cols <- c("text_normalized", "author_id", "tweet_id", "created_timestamp")
+        cotweets <- cotweets[, tweet_cols, with = FALSE]
+
+        data.table::setnames(cotweets, tweet_cols, output_cols)
+        data.table::setindex(cotweets, object_id)
+        data.table::setindex(cotweets, id_user)
+
+        return(cotweets)
     } else {
         .NotYetImplemented()
     }
+}
+
+
+#' Normalize text
+#'
+#' @description
+#' Utility function that normalizes text by removing mentions of other users, removing "RT",
+#' converting to lower case, and trimming whitespace.
+#'
+#' @param x The text to be normalized.
+#'
+#' @return The normalized text.
+#'
+#' @export
+
+normalize_text <- function(x) {
+    # remove mentions of other users
+    x <- gsub("@.+?(\\s|$)", "", x)
+    # remove "RT"
+    x <- gsub("RT", "", x)
+    x <- trimws(tolower(x))
+    return(x)
+}
+
+
+#' Remove hashtags
+#'
+#' @description
+#' Utility function that removes hashtags from tags.
+#'
+#' @param x The text to be processed.
+#'
+#' @return The text without hashtags.
+#'
+#' @export
+
+remove_hashtags <- function(x) {
+    # remove hashtags from text
+    x <- gsub("#.+?(\\s|$)", "", x)
+    return(x)
 }

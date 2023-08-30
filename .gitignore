@@ -41,3 +41,4 @@ sample_data
 inst/doc
 
 .vscode/
+.lintr
