@@ -8,5 +8,10 @@
 
 library(testthat)
 library(CooRTweet)
+library(data.table)
+
+if (testthat:::on_cran()) {
+    data.table::setDTthreads(threads = 2)
+}
 
 test_check("CooRTweet")

@@ -1,5 +1,9 @@
 library(data.table)
 
+if (testthat:::on_cran()) {
+    data.table::setDTthreads(threads = 2)
+}
+
 test_that("Sample dataset is consistent", {
     testthat::expect_equal(
         length(russian_coord_tweets$content_id),
