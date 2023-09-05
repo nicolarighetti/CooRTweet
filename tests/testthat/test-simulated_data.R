@@ -70,6 +70,7 @@ test_that("simulated data works with default parameters", {
 
 
 test_that("simulated data works with high values", {
+  testthat::skip_on_cran()
   res <- sim_test(n_users_coord =  50,
     n_users_noncoord = 100,
     n_objects = 100,
@@ -82,6 +83,7 @@ test_that("simulated data works with high values", {
 
 
 test_that("simulation is possible with random parameters", {
+  testthat::skip_on_cran()
   # run 10 tests
   for (i in 1:10) {
     n_users_coord <- sample(3:10, size = 1)
@@ -108,6 +110,7 @@ test_that("simulation is possible with random parameters", {
 
 
 test_that("balanced increase in number of users", {
+  testthat::skip_on_cran()
   # increasing number of users
   # fails with only 2 users
   for (i in 3:6) {
@@ -133,6 +136,7 @@ test_that("balanced increase in number of users", {
 
 
 test_that("unbalanced increase in number of users: A", {
+  testthat::skip_on_cran()
   # increasing number of users
   # Fails sometimes with 2 coord users
   # seems to be an inherent problem of the simulation
@@ -161,6 +165,7 @@ test_that("unbalanced increase in number of users: A", {
 
 
 test_that("unbalanced increase in number of users: B", {
+  testthat::skip_on_cran()
   # increasing number of users
   for (i in 3:6) {
     n_users_coord <- i + i
@@ -185,6 +190,7 @@ test_that("unbalanced increase in number of users: B", {
 
 
 test_that("increase in number of objects", {
+  testthat::skip_on_cran()
   # increasing number of objects
   for (i in 2:6) {
     n_users_coord <- 5
@@ -209,6 +215,7 @@ test_that("increase in number of objects", {
 
 
 test_that("larger time window", {
+  testthat::skip_on_cran()
   # longer and longer time window
   for (i in seq(1, 120, 20)) {
     n_users_coord <- 5
