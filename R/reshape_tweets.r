@@ -46,7 +46,7 @@ reshape_tweets <- function(
     drop_replies = TRUE,
     drop_hashtags = FALSE) {
     start <- tweet_id <- type <- referenced_tweet_id <- object_id <- id_user <-
-        text <- text_normalized <- NULL
+        text <- text_normalized <- domain <- NULL
     if (!inherits(tweets, "list")) {
         stop("Provided data probably not preprocessed yet.")
     }
