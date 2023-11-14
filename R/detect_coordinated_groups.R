@@ -99,6 +99,13 @@ do_detect_coordinated_groups <- function(x,
   # before they can be considered coordinated
   x <- x[, if (.N > min_repetition) .SD, by = id_user]
 
+  # --------------------------
+  # strings to factors
+  x[,
+     c('object_id', 'id_user', 'content_id') := lapply(.SD, as.factor),
+     .SDcols = c('object_id', 'id_user', 'content_id')]
+
+
   # ---------------------------
   # calculate time differences per group
 
@@ -113,6 +120,12 @@ do_detect_coordinated_groups <- function(x,
   if (min_repetition > 1) {
     result <- filter_min_repetition(x, result, min_repetition)
   }
+
+  # ----------------------------
+  # factors back to string
+  result[, c("object_id", "content_id", "content_id_y", "id_user", "id_user_y") := lapply(.SD, as.character),
+     .SDcols = c("object_id", "content_id", "content_id_y", "id_user", "id_user_y")]
+
 
   # ---------------------------
   # remove loops

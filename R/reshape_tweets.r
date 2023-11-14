@@ -46,7 +46,7 @@ reshape_tweets <- function(
     drop_replies = TRUE,
     drop_hashtags = FALSE) {
     start <- tweet_id <- type <- referenced_tweet_id <- object_id <- id_user <-
-        text <- text_normalized <- domain <- NULL
+        text <- text_normalized <- domain <- content_id <- NULL
     if (!inherits(tweets, "list")) {
         stop("Provided data probably not preprocessed yet.")
     }
@@ -108,7 +108,9 @@ reshape_tweets <- function(
         )
 
         data.table::setnames(retweets, tweet_cols, output_cols)
-        data.table::setindex(retweets, object_id, id_user)
+        data.table::setindex(retweets, object_id)
+        data.table::setindex(retweets, id_user)
+        data.table::setindex(retweets, content_id)
 
         return(retweets)
     } else if (intent == "hashtags") {
@@ -125,7 +127,10 @@ reshape_tweets <- function(
         hashtags <- hashtags[, tweet_cols, with = FALSE]
 
         data.table::setnames(hashtags, tweet_cols, output_cols)
-        data.table::setindex(hashtags, object_id, id_user)
+        data.table::setindex(hashtags, object_id)
+        data.table::setindex(hashtags, id_user)
+        data.table::setindex(hashtags, content_id)
+
 
         return(hashtags)
     } else if (intent == "urls") {
@@ -152,7 +157,9 @@ reshape_tweets <- function(
         urls <- urls[, tweet_cols, with = FALSE]
 
         data.table::setnames(urls, tweet_cols, output_cols)
-        data.table::setindex(urls, object_id, id_user)
+        data.table::setindex(urls, object_id)
+        data.table::setindex(urls, id_user)
+        data.table::setindex(urls, content_id)
 
         return(urls)
     } else if (intent == "urls_domains") {
@@ -176,7 +183,9 @@ reshape_tweets <- function(
         domains <- domains[, tweet_cols, with = FALSE]
 
         data.table::setnames(domains, tweet_cols, output_cols)
-        data.table::setindex(domains, object_id, id_user)
+        data.table::setindex(domains, object_id)
+        data.table::setindex(domains, id_user)
+        data.table::setindex(domains, content_id)
 
         return(domains)
     } else if (intent == "cotweet") {
@@ -211,6 +220,7 @@ reshape_tweets <- function(
         data.table::setnames(cotweets, tweet_cols, output_cols)
         data.table::setindex(cotweets, object_id)
         data.table::setindex(cotweets, id_user)
+        data.table::setindex(cotweets, content_id)
 
         return(cotweets)
     } else {
