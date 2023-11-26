@@ -139,6 +139,10 @@ do_detect_coordinated_groups <- function(x,
   }
 
   # ---------------------------
+  # remove loops
+  result <- remove_loops(result)
+
+  # ---------------------------
   # filter by minimum repetition
   if (min_repetition > 1) {
     result <- filter_min_repetition(x, result, min_repetition)
@@ -148,11 +152,6 @@ do_detect_coordinated_groups <- function(x,
   # factors back to string
   result[, c("object_id", "content_id", "content_id_y", "id_user", "id_user_y") := lapply(.SD, as.character),
      .SDcols = c("object_id", "content_id", "content_id_y", "id_user", "id_user_y")]
-
-
-  # ---------------------------
-  # remove loops
-  result <- remove_loops(result)
 
   # ---------------------------
   # Sort output: content_id should be older than content_id_y
