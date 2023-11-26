@@ -20,7 +20,7 @@
 #' are to be considered as coordinated (default to 10 seconds).
 #'
 #' @param min_repetition the minimum number of repeated coordinated
-#' actions a user has to perform (default to 2 times) 
+#' actions a user has to perform (default to 2 times)
 #'
 #' @return a data.table with ids of coordinated contents. Columns:
 #' `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`,
@@ -114,6 +114,29 @@ do_detect_coordinated_groups <- function(x,
     by = object_id
   ]
 
+  #' Remove loops from the result.
+  #'
+  #' This function is a private utility function that removes loops (i.e., users
+  #' sharing their own content) from the result.
+  #'
+  #' @param result The result of the previous filtering steps.
+  #'
+  #' @return The result with loops removed.
+  #'
+  #'
+
+  remove_loops <- function(result) {
+    object_id <- content_id <- id_user <- content_id_y <- id_user_y <- NULL
+    # remove loops
+    if ("object_id" %in% colnames(result)) {
+      result <- result[object_id != content_id]
+      result <- result[object_id != content_id_y]
+    }
+    result <- result[content_id != content_id_y]
+    result <- result[id_user != id_user_y]
+
+    return(result)
+  }
 
   # ---------------------------
   # filter by minimum repetition
@@ -186,29 +209,6 @@ filter_min_repetition <- function(x, result, min_repetition) {
   return(result)
 }
 
-#' Remove loops from the result.
-#'
-#' This function is a private utility function that removes loops (i.e., users
-#' sharing their own content) from the result.
-#'
-#' @param result The result of the previous filtering steps.
-#'
-#' @return The result with loops removed.
-#'
-#'
-
-remove_loops <- function(result) {
-  object_id <- content_id <- id_user <- content_id_y <- id_user_y <- NULL
-  # remove loops
-  if ("object_id" %in% colnames(result)) {
-    result <- result[object_id != content_id]
-    result <- result[object_id != content_id_y]
-  }
-  result <- result[content_id != content_id_y]
-  result <- result[id_user != id_user_y]
-
-  return(result)
-}
 
 #' detect_similar_text
 #'
@@ -249,7 +249,7 @@ remove_loops <- function(result) {
 #'   - time_delta: The time difference between the two posts
 #'
 #' @import textreuse
-#' 
+#'
 #' @export
 
 detect_similar_text <- function(x,
