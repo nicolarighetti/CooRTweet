@@ -4,7 +4,12 @@
 \alias{detect_coordinated_groups}
 \title{detect_coordinated_groups}
 \usage{
-detect_coordinated_groups(x, time_window = 10, min_repetition = 2)
+detect_coordinated_groups(
+  x,
+  time_window = 10,
+  min_repetition = 2,
+  loops = TRUE
+)
 }
 \arguments{
 \item{x}{a data.table with the columns: \code{object_id} (uniquely identifies

@@ -20,7 +20,10 @@
 #' are to be considered as coordinated (default to 10 seconds).
 #'
 #' @param min_repetition the minimum number of repeated coordinated
-#' actions a user has to perform (default to 2 times)
+#' actions a user has to perform (default to 2 times).
+#'
+#' @param loops Should loops (shares made by the same user within
+#' the time window) be removed? (default to TRUE).
 #'
 #' @return a data.table with ids of coordinated contents. Columns:
 #' `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`,
@@ -35,7 +38,8 @@
 
 detect_coordinated_groups <- function(x,
                                       time_window = 10,
-                                      min_repetition = 2) {
+                                      min_repetition = 2,
+                                      loops = TRUE) {
   # This function is a wrapper for actual calculation
   # We validate the input data before we go ahead
   # the actual functions are do_detect_coordinated_groups and
@@ -57,7 +61,8 @@ detect_coordinated_groups <- function(x,
 
   x <- do_detect_coordinated_groups(x,
     time_window = time_window,
-    min_repetition = min_repetition
+    min_repetition = min_repetition,
+    loops = loops
   )
 
   return(x)
@@ -88,7 +93,8 @@ detect_coordinated_groups <- function(x,
 
 do_detect_coordinated_groups <- function(x,
                                          time_window = 10,
-                                         min_repetition = 2) {
+                                         min_repetition = 2,
+                                         loops = TRUE) {
   object_id <- id_user <- content_id <- content_id_y <-
     id_user_y <- time_delta <- NULL
 
@@ -145,7 +151,9 @@ do_detect_coordinated_groups <- function(x,
 
   # ---------------------------
   # remove loops
-  result <- remove_loops(result)
+  if(loops == TRUE){
+    result <- remove_loops(result)
+  }
 
   # ---------------------------
   # filter by minimum repetition
