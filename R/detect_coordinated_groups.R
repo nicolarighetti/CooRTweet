@@ -157,7 +157,7 @@ do_detect_coordinated_groups <- function(x,
 
   # ---------------------------
   # filter by minimum repetition
-  if (min_repetition > 1) {
+  if (min_repetition >= 1) {
     result <- filter_min_repetition(x, result, min_repetition)
   }
 
@@ -206,7 +206,7 @@ filter_min_repetition <- function(x, result, min_repetition) {
   # finally, count by groups (id_user) and
   # only return rows with more than min_repetitions
   filt <- x[content_id %in% coordinated_content_ids,
-    if (.N > min_repetition) .SD,
+    if (.N >= min_repetition) .SD,
     by = id_user
   ]
 
