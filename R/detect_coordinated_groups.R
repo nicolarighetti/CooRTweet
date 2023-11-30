@@ -94,7 +94,7 @@ detect_coordinated_groups <- function(x,
 do_detect_coordinated_groups <- function(x,
                                          time_window = 10,
                                          min_repetition = 2,
-                                         loops = TRUE) {
+                                         remove_loops = TRUE) {
   object_id <- id_user <- content_id <- content_id_y <-
     id_user_y <- time_delta <- NULL
 
@@ -103,7 +103,7 @@ do_detect_coordinated_groups <- function(x,
   # pre-filter based on minimum repetitions
   # a user must have tweeted a minimum number of times
   # before they can be considered coordinated
-  x <- x[, if (.N > min_repetition) .SD, by = id_user]
+  x <- x[, if (.N >= min_repetition) .SD, by = id_user]
 
   # --------------------------
   # strings to factors
@@ -125,34 +125,10 @@ do_detect_coordinated_groups <- function(x,
   result[, c("object_id", "content_id", "content_id_y", "id_user", "id_user_y") := lapply(.SD, as.character),
          .SDcols = c("object_id", "content_id", "content_id_y", "id_user", "id_user_y")]
 
-  #' Remove loops from the result.
-  #'
-  #' This function is a private utility function that removes loops (i.e., users
-  #' sharing their own content) from the result.
-  #'
-  #' @param result The result of the previous filtering steps.
-  #'
-  #' @return The result with loops removed.
-  #'
-  #'
-
-  remove_loops <- function(result) {
-    object_id <- content_id <- id_user <- content_id_y <- id_user_y <- NULL
-    # remove loops
-    if ("object_id" %in% colnames(result)) {
-      result <- result[object_id != content_id]
-      result <- result[object_id != content_id_y]
-    }
-    result <- result[content_id != content_id_y]
-    result <- result[id_user != id_user_y]
-
-    return(result)
-  }
-
   # ---------------------------
   # remove loops
-  if(loops == TRUE){
-    result <- remove_loops(result)
+  if(remove_loops == TRUE){
+    result <- do_remove_loops(result)
   }
 
   # ---------------------------
@@ -172,6 +148,30 @@ do_detect_coordinated_groups <- function(x,
       .(content_id_y, content_id, id_user_y, id_user)
   ]
   result[, time_delta := abs(time_delta)]
+
+  return(result)
+}
+
+#' Remove loops from the result.
+#'
+#' This function is a private utility function that removes loops (i.e., users
+#' sharing their own content) from the result.
+#'
+#' @param result The result of the previous filtering steps.
+#'
+#' @return The result with loops removed.
+#'
+#'
+
+do_remove_loops <- function(result) {
+  object_id <- content_id <- id_user <- content_id_y <- id_user_y <- NULL
+  # remove loops
+  if ("object_id" %in% colnames(result)) {
+    result <- result[object_id != content_id]
+    result <- result[object_id != content_id_y]
+  }
+  result <- result[content_id != content_id_y]
+  result <- result[id_user != id_user_y]
 
   return(result)
 }
@@ -361,7 +361,7 @@ detect_similar_text <- function(x,
 
   # filter out loops
 
-  coordinated_cotweets <- remove_loops(coordinated_cotweets)
+  coordinated_cotweets <- do_remove_loops(coordinated_cotweets)
 
   # ---------------------------
   # Sort output: content_id should be older than content_id_y
