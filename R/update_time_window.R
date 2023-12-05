@@ -19,6 +19,7 @@
 #'         corresponds with the new time_window, and 0 otherwise.
 #'
 #' @import data.table
+#' @export
 
 update_time_window <- function(x, result, min_repetition, time_window){
   # update time window
