@@ -1,7 +1,7 @@
-#' update_time_window
+#' restrict_time_window
 #'
 #' @description
-#' Function to update result based on a new time_window.
+#' Function to update result based on a narrower time_window.
 #'
 #' @details
 #' This function identifies and marks the subset of results that match a more stringent time window.
@@ -21,7 +21,12 @@
 #' @import data.table
 #' @export
 
-update_time_window <- function(x, result, min_repetition, time_window){
+restrict_time_window <- function(x, result, min_repetition, time_window){
+
+  if (!inherits(x, "data.table")) {
+    x <- data.table::as.data.table(x)
+  }
+
   # update time window
   result_update <- result[result$time_delta <= time_window]
 
@@ -42,5 +47,5 @@ update_time_window <- function(x, result, min_repetition, time_window){
   # Update the new column to 0 for rows that find a match in result_update
   result[result_update, on = .(content_id, content_id_y), (column_name) := 1]
 
-  return(x)
+  return(result)
 }

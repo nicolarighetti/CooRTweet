@@ -4,12 +4,25 @@
 \alias{generate_network}
 \title{generate_network}
 \usage{
-generate_network(x, intent = c("users", "content", "objects"))
+generate_network(
+  x,
+  intent = c("users", "content", "objects"),
+  restrict_time_window = FALSE,
+  edge_weight = "median_weight",
+  weighted_subgraph = FALSE,
+  fast_subgraph = FALSE
+)
 }
 \arguments{
 \item{x}{a data.table (result from \code{detect_coordinated_groups}) with the Columns: \code{object_id}, \code{id_user}, \code{id_user_y}, \code{content_id}, \code{content_id_y}, \code{timedelta}}
 
-\item{intent}{the intended network. The option \code{"users"} generates a network of users who are connected over the same content that they share (default). Option "content" generates a network based on content ids. Option "objects" generates a network of the coordinated content (\code{object_id}) that is connected via the users.}
+\item{restrict_time_window}{if the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, a dichotomous restricted_time_window attribute is added to the vertices of the graph with value 1, if the vertex does not participate in the coordinated activity in the narrower time window, and 0, otherwise (default FALSE).}
+
+\item{edge_weight}{allows edges whose weight exceeds a certain threshold to be marked with a dichotomous 0/1 attribute. Any numeric value can be assigned. The default value is "median_weight" which represents the median value of the edges in the network.}
+
+\item{weighted_subgraph}{if TRUE reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (default FALSE).}
+
+\item{fast_subgraph}{if TRUE reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (default FALSE)}
 }
 \value{
 A weighted, undirected network (igraph object) where the vertices (nodes) are users (or \code{content_ids}) and edges (links) are the membership in coordinated groups (\code{object_id})
