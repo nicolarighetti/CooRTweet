@@ -4,7 +4,7 @@
 #'
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
 #' @param restrict_time_window if the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, a dichotomous attribute is added to the vertices of the graph with value 1, if the vertex does not participate in the coordinated activity in the narrower time window, and 0, otherwise (default FALSE). It is implemented only for intent = "users".
-#' @param edge_weight allows edges whose weight exceeds a certain threshold to be marked with a dichotomous 0/1 attribute. Any numeric value can be assigned. The default value is "median_weight" which represents the median value of the edges in the network. It is implemented only for intent = "users".
+#' @param edge_weight allows edges whose weight exceeds a certain threshold to be marked with a dichotomous 0/1 attribute. It is expressed in percentiles of the edge weight distribution in the network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network. It is implemented only for intent = "users".
 #' @param weighted_subgraph if TRUE reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (default FALSE). It is implemented only for intent = "users".
 #' @param fast_subgraph if TRUE reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (default FALSE). It is implemented only for intent = "users".
 #'
@@ -20,7 +20,7 @@
 # This function is heaviliy inspired by User "majom" on StackOverflow:
 # https://stackoverflow.com/questions/38991448/out-of-memory-error-when-projecting-a-bipartite-network-in-igraph
 
-generate_network <- function(x, intent = c("users", "content", "objects"), restrict_time_window = FALSE, edge_weight = "median_weight", weighted_subgraph = FALSE, fast_subgraph = FALSE) {
+generate_network <- function(x, intent = c("users", "content", "objects"), restrict_time_window = FALSE, edge_weight = 0.5, weighted_subgraph = FALSE, fast_subgraph = FALSE) {
     object_id <- nodes <- patterns <- NULL
 
     # TODO: Add data validation
@@ -86,21 +86,14 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
 
         # Add the weight_threshold attribute to the graph ---------------
         # Validate the input
-        if(!(edge_weight %in% c("median_weight") || is.numeric(edge_weight))){
-            stop("edge_weight must be either 'median_weight' or a numeric value.")
-        }
-
-        if(is.numeric(edge_weight) & edge_weight > max(E(coord_graph)$weight)){
-            stop(paste("edge_weight is out of range: please choose a value between", min(E(coord_graph)$weight), "and", max(E(coord_graph)$weight)))
+        if(!(is.numeric(edge_weight)) || edge_weight < 0 | edge_weight > 1){
+            stop("edge_weight must be a numeric value between 0 and 1")
         }
 
         # Set weight_threshold based on edge_weight
-        if(edge_weight == "median_weight"){
-            median_weight <- median(E(coord_graph)$weight)
-            coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight > median_weight, 1, 0))
-        } else {
-            coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight > edge_weight, 1, 0))
-        }
+        threshold <- quantile(E(coord_graph)$weight, edge_weight)
+        coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight > threshold, 1, 0))
+
 
         # Keep only the highly coordinated subgraph ---------------------
         if(weighted_subgraph == TRUE){
