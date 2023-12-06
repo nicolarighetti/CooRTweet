@@ -3,7 +3,7 @@
 #' Take the results of coordinated content detection and generate a network from the data. This function generates a two-mode (bipartite) incidence matrix first, and then projects the matrix to a weighted adjacency matrix.
 #'
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
-#' @param restrict_time_window if the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, a dichotomous restricted_time_window attribute is added to the vertices of the graph with value 1, if the vertex does not participate in the coordinated activity in the narrower time window, and 0, otherwise (default FALSE). It is implemented only for intent = "users".
+#' @param restrict_time_window if the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, a dichotomous attribute is added to the vertices of the graph with value 1, if the vertex does not participate in the coordinated activity in the narrower time window, and 0, otherwise (default FALSE). It is implemented only for intent = "users".
 #' @param edge_weight allows edges whose weight exceeds a certain threshold to be marked with a dichotomous 0/1 attribute. Any numeric value can be assigned. The default value is "median_weight" which represents the median value of the edges in the network. It is implemented only for intent = "users".
 #' @param weighted_subgraph if TRUE reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (default FALSE). It is implemented only for intent = "users".
 #' @param fast_subgraph if TRUE reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (default FALSE). It is implemented only for intent = "users".
@@ -76,11 +76,11 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
 
         # Add the restrict_time_window attribute to the graph
         if (restrict_time_window == TRUE){
-            restrict_time_window_column <- names(x)[7]
+            restrict_time_window_column <- names(x)[grep("time_window_", names(x))]
             restrict_time_window_data <- x[[restrict_time_window_column]]
             names(restrict_time_window_data) <- x[[nodes]]
 
-            set_vertex_attr(coord_graph, "restricted_time_window", value = restrict_time_window_data[V(coord_graph)$name])
+            coord_graph <- set_vertex_attr(coord_graph, name = restrict_time_window_column, value = restrict_time_window_data[V(coord_graph)$name])
         }
 
 
@@ -113,8 +113,11 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
 
         # Keep only the subgraph of nodes in the shorter time window ---------------------
         if (fast_subgraph == TRUE){
-            # Identify vertices where restrict_time_window equals 1
-            fastest_vertices <- V(coord_graph)[restricted_time_window == 1]
+            # Get the indices of vertices where the attribute equals 1
+            vertex_indices <- which(get.vertex.attribute(coord_graph, restrict_time_window_column) == 1)
+
+            # Use these indices to select the vertices
+            fastest_vertices <- V(coord_graph)[vertex_indices]
 
             # Create the subgraph
             coord_graph <- induced_subgraph(coord_graph, vids = fastest_vertices)
