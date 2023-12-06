@@ -3,7 +3,7 @@
 #' Take the results of coordinated content detection and generate a network from the data. This function generates a two-mode (bipartite) incidence matrix first, and then projects the matrix to a weighted adjacency matrix.
 #'
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
-#' @param restrict_time_window if the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, a dichotomous attribute is added to the vertices of the graph with value 1, if the vertex does not participate in the coordinated activity in the narrower time window, and 0, otherwise (default FALSE). It is implemented only for intent = "users".
+#' @param restrict_time_window if the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_1 and weight_2 are created, the first containing the edge weights of the complete graph, the second those of the subgraph that includes the shares made in the narrower time window. It is implemented only for intent = "users".
 #' @param edge_weight allows edges whose weight exceeds a certain threshold to be marked with a dichotomous 0/1 attribute. It is expressed in percentiles of the edge weight distribution in the network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network. It is implemented only for intent = "users".
 #' @param weighted_subgraph if TRUE reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (default FALSE). It is implemented only for intent = "users".
 #' @param weighted_subgraph_fast if TRUE reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (default FALSE). It is implemented only for intent = "users".
@@ -33,6 +33,19 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
         nodes <- "id_user"
     }else {
         .NotYetImplemented()
+    }
+
+    # Validate the input
+    if(!(is.numeric(edge_weight)) || edge_weight < 0 | edge_weight > 1){
+        stop("edge_weight must be a numeric value between 0 and 1")
+    }
+
+    if(weighted_subgraph == TRUE & weighted_subgraph_fast == TRUE){
+        stop("weighted_subgraph or weighted_subgraph_fast are both TRUE. Please choose one and set the other to FALSE.")
+    }
+
+    if(weighted_subgraph_fast == TRUE & fast_subgraph == TRUE){
+        stop("weighted_subgraph_fast and fast_subgraph are both TRUE. weighted_subgraph_fast is a subset of fast_subgraph. Please select only one and set the other to FALSE.")
     }
 
     df <- data.table::melt(x,
@@ -75,74 +88,55 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
     # Optional attributes and subsets for networks of users -------------------------
     if (intent == "users"){
 
+        restrict_time_window_col <- names(x)[grep("time_window_", names(x))]
+
         # Add the restrict_time_window attribute to the graph
         if (restrict_time_window == TRUE){
-            restrict_time_window_column <- names(x)[grep("time_window_", names(x))]
-            restrict_time_window_data <- x[[restrict_time_window_column]]
-            names(restrict_time_window_data) <- x[[nodes]]
 
-            coord_graph <- set_vertex_attr(coord_graph, name = restrict_time_window_column, value = restrict_time_window_data[V(coord_graph)$name])
-        }
+            # Create an edge list with the time_window_3600 attribute
+            edge_list <- data.table(
+                from = x$id_user,
+                to = x$id_user_y,
+                restrict_time_window_col = x[[restrict_time_window_col]]
+            )
 
+            filtered_edges <- edge_list[restrict_time_window_col == 1]
+            filtered_edges[, c('min_edge', 'max_edge') := .(pmin(from, to), pmax(from, to))]
+            g <- filtered_edges[, .(weight = .N), by = .(min_edge, max_edge)]
+            g <- graph_from_data_frame(g, directed = FALSE)
+
+            coord_graph <- igraph::graph.union(coord_graph, g)
+            }
 
         # Add the weight_threshold attribute to the graph ---------------
         # The threshold applies to both the full network, and the subnetwork defined by the restricted time window
 
-        # Validate the input
-        if(!(is.numeric(edge_weight)) || edge_weight < 0 | edge_weight > 1){
-            stop("edge_weight must be a numeric value between 0 and 1")
-        }
-
-        if(weighted_subgraph == TRUE & weighted_subgraph_fast == TRUE){
-            stop("weighted_subgraph or weighted_subgraph_fast are both TRUE. Please choose one and set the other to FALSE.")
-        }
-
-        if(weighted_subgraph_fast == TRUE & fast_subgraph == TRUE){
-            stop("weighted_subgraph_fast and fast_subgraph are both TRUE. weighted_subgraph_fast is a subset of fast_subgraph. Please select only one and set the other to FALSE.")
-        }
-
         # Set weight_threshold based on edge_weight
-        threshold <- quantile(E(coord_graph)$weight, edge_weight)
+        threshold <- quantile(E(coord_graph)$weight_1, edge_weight)
 
-        # Full network ---
-        coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight > threshold, 1, 0))
+        # Full network
+        coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight_1 > threshold, 1, 0))
 
-        # Sub-network defined by the restricted time window ---
-
-        vertex_indices <- which(get.vertex.attribute(coord_graph, restrict_time_window_column) == 1)
-        fastest_vertices <- V(coord_graph)[vertex_indices]
-        fast_coord_graph <- induced_subgraph(coord_graph, vids = fastest_vertices)
-
-        edge_ids_fast <- apply(get.edgelist(fast_coord_graph), 1, paste, collapse = "-")
-        fast_edge_weights <- ifelse(E(fast_coord_graph)$weight > threshold, 1, 0)
-        names(fast_edge_weights) <- edge_ids_fast
-
-        E(coord_graph)$weight_threshold_fast <- NA
-
-        edge_ids_coord <- apply(get.edgelist(coord_graph), 1, paste, collapse = "-")
-
-        matching_indices <- match(edge_ids_coord, names(fast_edge_weights))
-        valid_indices <- !is.na(matching_indices)
-        E(coord_graph)$weight_threshold_fast[valid_indices] <- fast_edge_weights[matching_indices[valid_indices]]
+        # Sub-network defined by the restricted time window
+        coord_graph <- set_edge_attr(coord_graph, "weight_threshold_fast", value = ifelse(E(coord_graph)$weight_2 > threshold, 1, 0))
 
         # Keep only the heavier subgraph ---------------------
         # Full network
         if(weighted_subgraph == TRUE){
-            weighted_subgraph_edges <- E(coord_graph)[which(E(coord_graph)$weight_threshold == 1)]
-            coord_graph <- induced_subgraph(coord_graph, ends(coord_graph, weighted_subgraph_edges))
+            edges_to_keep <- E(coord_graph)[which(E(coord_graph)$weight_threshold == 1)]
+            coord_graph <- subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
         # Fast network
         if(weighted_subgraph_fast == TRUE){
-            weighted_subgraph_fast_edges <- E(coord_graph)[which(E(coord_graph)$weight_threshold_fast == 1)]
-            coord_graph <- induced_subgraph(coord_graph, ends(coord_graph, weighted_subgraph_fast_edges))
+            edges_to_keep <- E(coord_graph)[which(E(coord_graph)$weight_threshold_fast == 1)]
+            coord_graph <- subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
         # Keep only the subgraph of nodes in the shorter time window ---------------------
         if (fast_subgraph == TRUE){
-            vertex_indices <- which(get.vertex.attribute(coord_graph, restrict_time_window_column) == 1)
-            fastest_vertices <- V(coord_graph)[vertex_indices]
-            coord_graph <- induced_subgraph(coord_graph, vids = fastest_vertices)
+            edges_to_keep <- !is.na(E(coord_graph)$weight_2)
+            coord_graph <- subgraph.edges(coord_graph, which(edges_to_keep), delete.vertices = TRUE)
         }
     }
 
