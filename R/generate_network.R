@@ -54,7 +54,12 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
         value.name = c("content_id", "id_user")
     )
 
-    subcols <- c(nodes, "object_id")
+    if (intent == "users") {
+        subcols <- c(nodes, c("object_id", "content_id"))
+    } else {
+        subcols <- c(nodes, "object_id")
+    }
+
     df <- unique(df[, subcols, with = FALSE])
     df <- df[, lapply(.SD, as.factor)]
 
