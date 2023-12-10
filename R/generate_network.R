@@ -22,7 +22,7 @@
 # This function is heaviliy inspired by User "majom" on StackOverflow:
 # https://stackoverflow.com/questions/38991448/out-of-memory-error-when-projecting-a-bipartite-network-in-igraph
 
-generate_network <- function(x, intent = c("users", "content", "objects"), restrict_time_window = FALSE, edge_weight = 0.5, subgraph = NULL) {
+generate_network <- function(x, intent = c("users", "content", "objects"), faster_nodes = FALSE, edge_weight = 0.5, subgraph = NULL) {
     object_id <- nodes <- patterns <- NULL
 
     # TODO: Add data validation
@@ -107,8 +107,7 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
             coord_graph <- igraph::graph.union(coord_graph, g)
             }
 
-        # Add the weight_threshold attribute to the graph ---------------
-        # The threshold applies to both the full network, and the subnetwork defined by the restricted time window
+        # Add the weight_threshold attribute ---------------
 
         # Set weight_threshold based on edge_weight
         threshold <- quantile(E(coord_graph)$weight_1, edge_weight)
@@ -116,30 +115,31 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
         # Full network
         coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight_1 > threshold, 1, 0))
 
-        # Sub-network defined by the restricted time window
+        # Sub-network of faster nodes
         coord_graph <- set_edge_attr(coord_graph, "weight_threshold_fast", value = ifelse(E(coord_graph)$weight_2 > threshold, 1, 0))
 
         # Create subgraphs ---------------------
-        # Full network above the edge weight threshold
+
+        # Full network > edge weight threshold
         if(subgraph == 1){
             edges_to_keep <- E(coord_graph)[which(E(coord_graph)$weight_threshold == 1)]
             coord_graph <- subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
-        # Fast network above the edge weight threshold
+        # Faster network > edge weight threshold
         if(subgraph == 2){
             edges_to_keep <- E(coord_graph)[which(E(coord_graph)$weight_threshold_fast == 1)]
             coord_graph <- subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
-        # Fast network ---------------------
+        # Faster network -----------------------
         if (subgraph == 3){
             edges_to_keep <- !is.na(E(coord_graph)$weight_2)
             coord_graph <- subgraph.edges(coord_graph, which(edges_to_keep), delete.vertices = TRUE)
         }
     }
 
-    # Edge weight contribution ------------------
+    # Edge weight contribution index ------------------
     # When one user share the same object_id in the defined time window many times (such as a spammer),
     # along with other less active users, the edge weight between them is inflated by the hyper-activity
     # of that user. To account for this possibility, we define a measure of relative contribution
@@ -199,7 +199,6 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
     E(coord_graph)$median_edge_weight_contrib_index <- final_edge_attributes$median_edge_weight_contrib_index
     E(coord_graph)$mean_edge_weight_contrib_index <- final_edge_attributes$mean_edge_weight_contrib_index
     E(coord_graph)$sd_edge_weight_contrib_index <- final_edge_attributes$sd_edge_weight_contrib_index
-
 
     return(coord_graph)
 }
