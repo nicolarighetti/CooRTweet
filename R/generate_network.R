@@ -156,4 +156,80 @@ generate_network <- function(x, intent = c("users", "content", "objects"), faste
         }
 
     return(coord_graph)
+
+
+        # Under construction work -----------------
+        # Note: it currently applies to the full network, but it should also apply to the faster
+        # subnetwork, considering only the related data subset
+
+        #' Calculate the contribution of each vertex to the edge weight
+        #'
+        #' This function is a private utility function that calculates summary measures of edge
+        #' weight contribution.
+        #'
+        #' @description When one user share the same object_id in the defined time window many times
+        #' (such as a spammer), along with other less active users, the edge weight between them is
+        #' inflated by the hyper-activity of that user. To account for this possibility, we define a
+        #' measure of relative contribution to the edge weight, which can be used to analyze or filter
+        #' the resulting graph.
+        #'
+        #' @param g The coord_graph resulting from the previous steps.
+        #'
+        #' @return The coord_graph with additional attributes.
+        #'
+        #'
+
+        edge_weight_contribution <- function(g = coord_graph){
+
+            # Convert edge list of g to data.table
+            edge_dt <- as.data.table(as_data_frame(g))
+
+            # Count actions initiated by each user for each object
+            action_counts <- df[, .N, by = .(id_user, object_id)]
+            setnames(action_counts, "N", "actions")
+
+            # Convert edge list of g to data.table
+            edge_dt <- as.data.table(as_data_frame(g))
+
+            # Merge edge data table with action counts
+            edge_dt <- merge(edge_dt, action_counts, by.g = "from", by.y = "id_user", all.g = TRUE)
+            edge_dt <- merge(edge_dt, action_counts, by.g = c("to", "object_id"), by.y = c("id_user", "object_id"), all.g = TRUE, suffixes = c("_from", "_to"))
+
+            # Replace NA with 0 in actions columns
+            edge_dt[is.na(actions_from), actions_from := 0]
+            edge_dt[is.na(actions_to), actions_to := 0]
+
+            # Calculate total actions
+            edge_dt[, total_actions := actions_from + actions_to]
+
+            # Calculate contributions to edge weight
+            edge_dt[, contribution_from := fifelse(total_actions > 0, (actions_from / total_actions) * weight_full, 0)]
+            edge_dt[, contribution_to := fifelse(total_actions > 0, (actions_to / total_actions) * weight_full, 0)]
+
+            # Calculate the index of contribution equilibrium for each edge
+            edge_dt[, contribution_index := 1 - abs((contribution_from / weight_full) - (contribution_to / weight_full))]
+
+            # Summarize edge_dt to get median, average, and standard deviation values for each unique pair
+            summary_dt <- edge_dt[, .(median_contribution = median(contribution_index),
+                                      mean_contribution = mean(contribution_index),
+                                      sd_contribution = sd(contribution_index)),
+                                  by = .(from, to)]
+
+            # Convert edge list from g to data.table for matching
+            edges_graph_dt <- as.data.table(get.edgelist(g))
+            setnames(edges_graph_dt, c("from", "to"))
+
+            # Join summary_dt with edges_graph_dt to match the summary with the edges
+            final_edge_attributes <- merge(edges_graph_dt, summary_dt, by = c("from", "to"), all.g = TRUE)
+
+            # Assign the summary attributes to the edges of the igraph object
+            E(g)$median_contribution <- final_edge_attributes$median_contribution
+            E(g)$mean_contribution <- final_edge_attributes$mean_contribution
+            E(g)$sd_contribution <- final_edge_attributes$sd_contribution
+
+            return(g)
+        }
+
+
+
 }
