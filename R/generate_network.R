@@ -5,9 +5,10 @@
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
 #' @param restrict_time_window if the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_1 and weight_2 are created, the first containing the edge weights of the complete graph, the second those of the subgraph that includes the shares made in the narrower time window. It is implemented only for intent = "users".
 #' @param edge_weight allows edges whose weight exceeds a certain threshold to be marked with a dichotomous 0/1 attribute. It is expressed in percentiles of the edge weight distribution in the network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network. It is implemented only for intent = "users".
-#' @param weighted_subgraph if TRUE reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (default FALSE). It is implemented only for intent = "users".
-#' @param weighted_subgraph_fast if TRUE reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (default FALSE). It is implemented only for intent = "users".
-#' @param fast_subgraph if TRUE reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (default FALSE). It is implemented only for intent = "users".
+#' @param subgraph implemented only for intent = "users". if 1 reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (weighted subgraph).
+#'                 If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (fast weighted subgraph).
+#'                 If 3 reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (fast subgraph).
+#'                 The default value is NULL, meaning that no subgraph is created.
 #'
 #' @return A weighted, undirected network (igraph object) where the vertices (nodes) are users (or `content_ids`) and edges (links) are the membership in coordinated groups (`object_id`)
 #'
@@ -21,7 +22,7 @@
 # This function is heaviliy inspired by User "majom" on StackOverflow:
 # https://stackoverflow.com/questions/38991448/out-of-memory-error-when-projecting-a-bipartite-network-in-igraph
 
-generate_network <- function(x, intent = c("users", "content", "objects"), restrict_time_window = FALSE, edge_weight = 0.5, weighted_subgraph = FALSE, weighted_subgraph_fast = FALSE, fast_subgraph = FALSE) {
+generate_network <- function(x, intent = c("users", "content", "objects"), restrict_time_window = FALSE, edge_weight = 0.5, subgraph = NULL) {
     object_id <- nodes <- patterns <- NULL
 
     # TODO: Add data validation
@@ -40,13 +41,6 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
         stop("edge_weight must be a numeric value between 0 and 1")
     }
 
-    if(weighted_subgraph == TRUE & weighted_subgraph_fast == TRUE){
-        stop("weighted_subgraph or weighted_subgraph_fast are both TRUE. Please choose one and set the other to FALSE.")
-    }
-
-    if(weighted_subgraph_fast == TRUE & fast_subgraph == TRUE){
-        stop("weighted_subgraph_fast and fast_subgraph are both TRUE. weighted_subgraph_fast is a subset of fast_subgraph. Please select only one and set the other to FALSE.")
-    }
 
     df <- data.table::melt(x,
         id.vars = c("object_id", "time_delta"),
@@ -93,10 +87,10 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
     # Optional attributes and subsets for networks of users -------------------------
     if (intent == "users"){
 
-        restrict_time_window_col <- names(x)[grep("time_window_", names(x))]
-
         # Add the restrict_time_window attribute to the graph
         if (restrict_time_window == TRUE){
+
+            restrict_time_window_col <- names(x)[grep("time_window_", names(x))]
 
             # Create an edge list with the time_window_3600 attribute
             edge_list <- data.table(
@@ -125,21 +119,21 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
         # Sub-network defined by the restricted time window
         coord_graph <- set_edge_attr(coord_graph, "weight_threshold_fast", value = ifelse(E(coord_graph)$weight_2 > threshold, 1, 0))
 
-        # Keep only the heavier subgraph ---------------------
-        # Full network
-        if(weighted_subgraph == TRUE){
+        # Create subgraphs ---------------------
+        # Full network above the edge weight threshold
+        if(subgraph == 1){
             edges_to_keep <- E(coord_graph)[which(E(coord_graph)$weight_threshold == 1)]
             coord_graph <- subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
-        # Fast network
-        if(weighted_subgraph_fast == TRUE){
+        # Fast network above the edge weight threshold
+        if(subgraph == 2){
             edges_to_keep <- E(coord_graph)[which(E(coord_graph)$weight_threshold_fast == 1)]
             coord_graph <- subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
-        # Keep only the subgraph of nodes in the shorter time window ---------------------
-        if (fast_subgraph == TRUE){
+        # Fast network ---------------------
+        if (subgraph == 3){
             edges_to_keep <- !is.na(E(coord_graph)$weight_2)
             coord_graph <- subgraph.edges(coord_graph, which(edges_to_keep), delete.vertices = TRUE)
         }
