@@ -3,12 +3,12 @@
 #' Take the results of coordinated content detection and generate a network from the data. This function generates a two-mode (bipartite) incidence matrix first, and then projects the matrix to a weighted adjacency matrix.
 #'
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
-#' @param faster_nodes implemented only for intent = "users". If the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_1 and weight_2 are created, the first containing the edge weights of the full graph, the second those of the subgraph that includes the shares made in the narrower time window.
-#' @param edge_weight implemented only for intent = "users". The edges with weight that exceeds a threshold are marked with 0 (not exceeding) or 1 (exceeding). The threshold is expressed in percentiles of the edge weight distribution in the full network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network.
+#' @param faster_nodes implemented only for intent = "users". If the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_full and weight_fast are created, the first containing the edge weights of the full graph, the second those of the subgraph that includes the shares made in the narrower time window.
+#' @param edge_weight implemented only for intent = "users". The edges with weight that exceeds a threshold are marked with 0 (not exceeding) or 1 (exceeding). The threshold is expressed in percentiles of the edge weight distribution in the full network and in the faster network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network.
 #' @param subgraph implemented only for intent = "users". if 1 reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (weighted subgraph).
 #'                 If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (fast weighted subgraph).
 #'                 If 3 reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (fast subgraph).
-#'                 The default value is NULL, meaning that no subgraph is created.
+#'                 The default value is 0, meaning that no subgraph is created.
 #'
 #' @return A weighted, undirected network (igraph object) where the vertices (nodes) are users (or `content_ids`) and edges (links) are the membership in coordinated groups (`object_id`)
 #'
@@ -22,7 +22,7 @@
 # This function is heaviliy inspired by User "majom" on StackOverflow:
 # https://stackoverflow.com/questions/38991448/out-of-memory-error-when-projecting-a-bipartite-network-in-igraph
 
-generate_network <- function(x, intent = c("users", "content", "objects"), faster_nodes = FALSE, edge_weight = 0.5, subgraph = NULL) {
+generate_network <- function(x, intent = c("users", "content", "objects"), faster_nodes = FALSE, edge_weight = 0.5, subgraph = 0) {
     object_id <- nodes <- patterns <- NULL
 
     # TODO: Add data validation
@@ -41,6 +41,11 @@ generate_network <- function(x, intent = c("users", "content", "objects"), faste
         stop("edge_weight must be a numeric value between 0 and 1")
     }
 
+    if(faster_nodes == TRUE){
+        if(any(grepl("time_window_", names(x))) == FALSE){
+            stop("faster_nodes = TRUE but input data is not available. Please check and update the dataset with 'restrict_time_window' function if necessary.")
+        }
+    }
 
     df <- data.table::melt(x,
         id.vars = c("object_id", "time_delta"),
@@ -92,7 +97,7 @@ generate_network <- function(x, intent = c("users", "content", "objects"), faste
 
             faster_nodes_col <- names(x)[grep("time_window_", names(x))]
 
-            # Create an edge list with the time_window_3600 attribute
+            # Create an edge list with the time_window_{...} attribute
             edge_list <- data.table(
                 from = x$id_user,
                 to = x$id_user_y,
@@ -105,18 +110,30 @@ generate_network <- function(x, intent = c("users", "content", "objects"), faste
             g <- graph_from_data_frame(g, directed = FALSE)
 
             coord_graph <- igraph::graph.union(coord_graph, g)
-            }
+
+            # Rename 'weight_1'and 'weight_2'
+            coord_graph <- set_edge_attr(coord_graph, "weight_full", value = E(coord_graph)$weight_1)
+            coord_graph <- set_edge_attr(coord_graph, "weight_fast", value = E(coord_graph)$weight_2)
+
+            # Remove old attributes
+            coord_graph <- delete_edge_attr(coord_graph, "weight_1")
+            coord_graph <- delete_edge_attr(coord_graph, "weight_2")
+
+        }
+    }
 
         # Add the weight_threshold attribute ---------------
 
-        # Set weight_threshold based on edge_weight
-        threshold <- quantile(E(coord_graph)$weight_1, edge_weight)
-
         # Full network
-        coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight_1 > threshold, 1, 0))
+        threshold_full <- quantile(E(coord_graph)$weight_full, edge_weight)
+
+        coord_graph <- set_edge_attr(coord_graph, "weight_threshold_full", value = ifelse(E(coord_graph)$weight_full > threshold_full, 1, 0))
 
         # Sub-network of faster nodes
-        coord_graph <- set_edge_attr(coord_graph, "weight_threshold_fast", value = ifelse(E(coord_graph)$weight_2 > threshold, 1, 0))
+        if (faster_nodes == TRUE){
+        threshold_fast <- quantile(E(coord_graph)$weight_fast, edge_weight)
+        coord_graph <- set_edge_attr(coord_graph, "weight_threshold_fast", value = ifelse(E(coord_graph)$weight_fast > threshold_fast, 1, 0))
+        }
 
         # Create subgraphs ---------------------
 
@@ -137,68 +154,6 @@ generate_network <- function(x, intent = c("users", "content", "objects"), faste
             edges_to_keep <- !is.na(E(coord_graph)$weight_2)
             coord_graph <- subgraph.edges(coord_graph, which(edges_to_keep), delete.vertices = TRUE)
         }
-    }
-
-    # Edge weight contribution index ------------------
-    # When one user share the same object_id in the defined time window many times (such as a spammer),
-    # along with other less active users, the edge weight between them is inflated by the hyper-activity
-    # of that user. To account for this possibility, we define a measure of relative contribution
-    # to the edge weight, which can be used to analyze or filter the resulting graph.
-
-    # Convert edge list of coord_graph to data.table
-    edge_dt <- as.data.table(as_data_frame(coord_graph))
-
-    # Count actions initiated by each user for each object
-    action_counts <- df[, .N, by = .(id_user, object_id)]
-    setnames(action_counts, "N", "actions")
-
-    # Convert edge list of coord_graph to data.table
-    edge_dt <- as.data.table(as_data_frame(coord_graph))
-    setnames(edge_dt, c("V1", "V2", "weight"))
-
-    # Merge edge data table with action counts
-    edge_dt <- merge(edge_dt, action_counts, by.x = "V1", by.y = "id_user", all.x = TRUE)
-    edge_dt <- merge(edge_dt, action_counts, by.x = c("V2", "object_id"), by.y = c("id_user", "object_id"), all.x = TRUE, suffixes = c("_V1", "_V2"))
-
-    # Replace NA with 0 in actions columns
-    edge_dt[is.na(actions_V1), actions_V1 := 0]
-    edge_dt[is.na(actions_V2), actions_V2 := 0]
-
-    # Calculate total actions
-    edge_dt[, total_actions := actions_V1 + actions_V2]
-
-    # Calculate contributions to edge weight
-    edge_dt[, contribution_V1 := fifelse(total_actions > 0, (actions_V1 / total_actions) * weight, 0)]
-    edge_dt[, contribution_V2 := fifelse(total_actions > 0, (actions_V2 / total_actions) * weight, 0)]
-
-    # Calculate the index of contribution equilibrium for each edge
-    edge_dt[, edge_weight_contribution_index := 1 - abs((contribution_V1 / weight) - (contribution_V2 / weight))]
-
-    # Summarize edge_dt to get median, average, and standard deviation values for each unique pair
-    summary_dt <- edge_dt[, .(# median_contribution_V1 = median(contribution_V1),
-                              # mean_contribution_V1 = mean(contribution_V1),
-                              # median_contribution_V2 = median(contribution_V2),
-                              # mean_contribution_V2 = mean(contribution_V2),
-                              median_edge_weight_contrib_index = median(edge_weight_contribution_index),
-                              mean_edge_weight_contrib_index = mean(edge_weight_contribution_index),
-                              sd_edge_weight_contrib_index = sd(edge_weight_contribution_index)),
-                          by = .(V1, V2)]
-
-    # Convert edge list from coord_graph to data.table for matching
-    edges_graph_dt <- as.data.table(get.edgelist(coord_graph))
-    setnames(edges_graph_dt, c("V1", "V2"))
-
-    # Join summary_dt with edges_graph_dt to match the summary with the edges
-    final_edge_attributes <- merge(edges_graph_dt, summary_dt, by = c("V1", "V2"), all.x = TRUE)
-
-    # Assign the summary attributes to the edges of the igraph object
-    # E(coord_graph)$median_contribution_V1 <- final_edge_attributes$median_contribution_V1
-    # E(coord_graph)$mean_contribution_V1 <- final_edge_attributes$mean_contribution_V1
-    # E(coord_graph)$median_contribution_V2 <- final_edge_attributes$median_contribution_V2
-    # E(coord_graph)$mean_contribution_V2 <- final_edge_attributes$mean_contribution_V2
-    E(coord_graph)$median_edge_weight_contrib_index <- final_edge_attributes$median_edge_weight_contrib_index
-    E(coord_graph)$mean_edge_weight_contrib_index <- final_edge_attributes$mean_edge_weight_contrib_index
-    E(coord_graph)$sd_edge_weight_contrib_index <- final_edge_attributes$sd_edge_weight_contrib_index
 
     return(coord_graph)
 }
