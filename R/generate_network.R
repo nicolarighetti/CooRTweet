@@ -145,5 +145,65 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
         }
     }
 
+    # Edge weight contribution ------------------
+    # When one user share the same object_id in the defined time window many times (such as a spammer),
+    # along with other less active users, the edge weight between them is inflated by the hyper-activity
+    # of that user. To keep this possibility into account, we define a measure of relative contribution
+    # to the edge weight.
+
+    # Convert edge list of coord_graph to data.table
+    edge_dt <- as.data.table(as_data_frame(coord_graph))
+
+    # Count actions initiated by each user for each object
+    action_counts <- df[, .N, by = .(id_user, object_id)]
+    setnames(action_counts, "N", "actions")
+
+    # Convert edge list of coord_graph to data.table
+    edge_dt <- as.data.table(as_data_frame(coord_graph))
+    setnames(edge_dt, c("V1", "V2", "weight"))
+
+    # Merge edge data table with action counts
+    edge_dt <- merge(edge_dt, action_counts, by.x = "V1", by.y = "id_user", all.x = TRUE)
+    edge_dt <- merge(edge_dt, action_counts, by.x = c("V2", "object_id"), by.y = c("id_user", "object_id"), all.x = TRUE, suffixes = c("_V1", "_V2"))
+
+    # Replace NA with 0 in actions columns
+    edge_dt[is.na(actions_V1), actions_V1 := 0]
+    edge_dt[is.na(actions_V2), actions_V2 := 0]
+
+    # Calculate total actions
+    edge_dt[, total_actions := actions_V1 + actions_V2]
+
+    # Calculate contributions to edge weight
+    edge_dt[, contribution_V1 := fifelse(total_actions > 0, (actions_V1 / total_actions) * weight, 0)]
+    edge_dt[, contribution_V2 := fifelse(total_actions > 0, (actions_V2 / total_actions) * weight, 0)]
+
+    # Calculate the index of contribution equilibrium for each edge
+    edge_dt[, contribution_equilibrium_index := 1 - abs((contribution_V1 / weight) - (contribution_V2 / weight))]
+
+    # Summarize edge_dt to get median and average values for each unique pair
+    summary_dt <- edge_dt[, .(median_contribution_V1 = median(contribution_V1),
+                              mean_contribution_V1 = mean(contribution_V1),
+                              median_contribution_V2 = median(contribution_V2),
+                              mean_contribution_V2 = mean(contribution_V2),
+                              median_equilibrium_index = median(contribution_equilibrium_index),
+                              mean_equilibrium_index = mean(contribution_equilibrium_index)),
+                          by = .(V1, V2)]
+
+    # Convert edge list from coord_graph to data.table for matching
+    edges_graph_dt <- as.data.table(get.edgelist(coord_graph))
+    setnames(edges_graph_dt, c("V1", "V2"))
+
+    # Join summary_dt with edges_graph_dt to match the summary with the edges
+    final_edge_attributes <- merge(edges_graph_dt, summary_dt, by = c("V1", "V2"), all.x = TRUE)
+
+    # Assign the summary attributes to the edges of the igraph object
+    E(coord_graph)$median_contribution_V1 <- final_edge_attributes$median_contribution_V1
+    E(coord_graph)$mean_contribution_V1 <- final_edge_attributes$mean_contribution_V1
+    E(coord_graph)$median_contribution_V2 <- final_edge_attributes$median_contribution_V2
+    E(coord_graph)$mean_contribution_V2 <- final_edge_attributes$mean_contribution_V2
+    E(coord_graph)$median_equilibrium_index <- final_edge_attributes$median_equilibrium_index
+    E(coord_graph)$mean_equilibrium_index <- final_edge_attributes$mean_equilibrium_index
+
+
     return(coord_graph)
 }
