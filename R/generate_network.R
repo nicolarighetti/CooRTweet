@@ -3,8 +3,8 @@
 #' Take the results of coordinated content detection and generate a network from the data. This function generates a two-mode (bipartite) incidence matrix first, and then projects the matrix to a weighted adjacency matrix.
 #'
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
-#' @param restrict_time_window if the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_1 and weight_2 are created, the first containing the edge weights of the complete graph, the second those of the subgraph that includes the shares made in the narrower time window. It is implemented only for intent = "users".
-#' @param edge_weight allows edges whose weight exceeds a certain threshold to be marked with a dichotomous 0/1 attribute. It is expressed in percentiles of the edge weight distribution in the network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network. It is implemented only for intent = "users".
+#' @param faster_nodes implemented only for intent = "users". If the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_1 and weight_2 are created, the first containing the edge weights of the full graph, the second those of the subgraph that includes the shares made in the narrower time window.
+#' @param edge_weight implemented only for intent = "users". The edges with weight that exceeds a threshold are marked with 0 (not exceeding) or 1 (exceeding). The threshold is expressed in percentiles of the edge weight distribution in the full network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network.
 #' @param subgraph implemented only for intent = "users". if 1 reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (weighted subgraph).
 #'                 If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (fast weighted subgraph).
 #'                 If 3 reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (fast subgraph).
@@ -88,18 +88,18 @@ generate_network <- function(x, intent = c("users", "content", "objects"), restr
     if (intent == "users"){
 
         # Add the restrict_time_window attribute to the graph
-        if (restrict_time_window == TRUE){
+        if (faster_nodes == TRUE){
 
-            restrict_time_window_col <- names(x)[grep("time_window_", names(x))]
+            faster_nodes_col <- names(x)[grep("time_window_", names(x))]
 
             # Create an edge list with the time_window_3600 attribute
             edge_list <- data.table(
                 from = x$id_user,
                 to = x$id_user_y,
-                restrict_time_window_col = x[[restrict_time_window_col]]
+                faster_nodes_col = x[[faster_nodes_col]]
             )
 
-            filtered_edges <- edge_list[restrict_time_window_col == 1]
+            filtered_edges <- edge_list[faster_nodes_col == 1]
             filtered_edges[, c('min_edge', 'max_edge') := .(pmin(from, to), pmax(from, to))]
             g <- filtered_edges[, .(weight = .N), by = .(min_edge, max_edge)]
             g <- graph_from_data_frame(g, directed = FALSE)
