@@ -169,9 +169,13 @@ generate_network <- function(x, intent = c("users", "content", "objects"), faste
         #'
         #' @description When one user share the same object_id in the defined time window many times
         #' (such as a spammer), along with other less active users, the edge weight between them is
-        #' inflated by the hyper-activity of that user. To account for this possibility, we define a
-        #' measure of relative contribution to the edge weight, which can be used to analyze or filter
-        #' the resulting graph.
+        #' inflated by the hyper-activity of that user. This situation can occur in the case of (1)
+        #' outliers in the network such as a spammer, but also (2) in the case where object_ids are
+        #' prone to repetition by their very nature, such as a hashtag. The second possibility appears
+        #' rarer if object_ids are analyzed that, in a normal common context normally do not repeat
+        #' identically repeatedly, such as URLs, leaving mainly the problem of spammers.
+        #' To account for these possibilities, we define a measure of relative contribution to the
+        #' edge weight, which can be used to analyze or filter the resulting graph.
         #'
         #' @param g The coord_graph resulting from the previous steps.
         #'
