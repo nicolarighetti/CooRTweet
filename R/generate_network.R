@@ -22,19 +22,8 @@
 # This function is heaviliy inspired by User "majom" on StackOverflow:
 # https://stackoverflow.com/questions/38991448/out-of-memory-error-when-projecting-a-bipartite-network-in-igraph
 
-generate_network <- function(x, intent = c("users", "content", "objects"), fast_net = FALSE, edge_weight = 0.5, subgraph = 0) {
+generate_network <- function(x, intent = c("users", "content", "objects"), fast_net = FALSE, edge_weight = 0.5, subgraph = 0, edge_contrib = FALSE) {
     object_id <- nodes <- patterns <- NULL
-
-    # TODO: Add data validation
-    if (intent == "users") {
-        nodes <- "id_user"
-    } else if (intent == "content") {
-        nodes <- "content_id"
-    } else if (intent == "objects") {
-        nodes <- "id_user"
-    }else {
-        .NotYetImplemented()
-    }
 
     # Validate the input
     if(!(is.numeric(edge_weight)) || edge_weight < 0 | edge_weight > 1){
@@ -45,6 +34,22 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
         if(any(grepl("time_window_", names(x))) == FALSE){
             stop("fast_net = TRUE but input data is not available. Please check and update the dataset with 'restrict_time_window' function if necessary.")
         }
+    }
+
+    if(length(intent) != 1 || !intent %in% c("users", "content", "objects")){
+        stop("The value of the 'intent' argument must be specified, and must be one of 'users', 'content', 'objects'")
+    }
+
+
+    # TODO: Add data validation
+    if (intent == "users") {
+        nodes <- "id_user"
+    } else if (intent == "content") {
+        nodes <- "content_id"
+    } else if (intent == "objects") {
+        nodes <- "id_user"
+    }else {
+        .NotYetImplemented()
     }
 
     # Reshape data
@@ -99,7 +104,7 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
             fast_net_col <- names(x)[grep("time_window_", names(x))]
 
             # Create an edge list with the time_window_{...} attribute
-            edge_list <- data.table(
+            edge_list <- data.table::data.table(
                 from = x$id_user,
                 to = x$id_user_y,
                 fast_net_col = x[[fast_net_col]]
@@ -111,34 +116,49 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
             filtered_edges[, c('min_edge', 'max_edge') := .(pmin(from, to), pmax(from, to))]
             g <- filtered_edges[, .(weight = .N), by = .(min_edge, max_edge)]
 
-            g <- graph_from_data_frame(g, directed = FALSE)
+            g <- igraph::graph_from_data_frame(g, directed = FALSE)
 
             # add attributed time_window_[...] with value 1 for subsequent filtering
-            g <- set_edge_attr(g, fast_net_col, value = 1)
+            g <- igraph::set_edge_attr(g, fast_net_col, value = 1)
 
             coord_graph <- igraph::graph.union(coord_graph, g)
 
             # Rename 'weight_1'and 'weight_2'
-            coord_graph <- set_edge_attr(coord_graph, "weight_full", value = E(coord_graph)$weight_1)
-            coord_graph <- set_edge_attr(coord_graph, "weight_fast", value = E(coord_graph)$weight_2)
+            coord_graph <-
+                igraph::set_edge_attr(coord_graph, "weight_full", value = igraph::E(coord_graph)$weight_1)
+            coord_graph <-
+                igraph::set_edge_attr(coord_graph, "weight_fast", value = igraph::E(coord_graph)$weight_2)
 
             # Remove old attributes
-            coord_graph <- delete_edge_attr(coord_graph, "weight_1")
-            coord_graph <- delete_edge_attr(coord_graph, "weight_2")
+            coord_graph <- igraph::delete_edge_attr(coord_graph, "weight_1")
+            coord_graph <- igraph::delete_edge_attr(coord_graph, "weight_2")
 
             # Full network weight threshold
-            threshold_full <- quantile(E(coord_graph)$weight_full, edge_weight)
-            coord_graph <- set_edge_attr(coord_graph, "weight_threshold_full", value = ifelse(E(coord_graph)$weight_full > threshold_full, 1, 0))
+            threshold_full <- quantile(igraph::E(coord_graph)$weight_full, edge_weight)
+            coord_graph <-
+                igraph::set_edge_attr(
+                    coord_graph,
+                    "weight_threshold_full",
+                    value = ifelse(igraph::E(coord_graph)$weight_full > threshold_full, 1, 0)
+                )
 
             # Fast nodes subnetwork weight threshold
-            threshold_fast <- quantile(E(coord_graph)$weight_fast, edge_weight)
-            coord_graph <- set_edge_attr(coord_graph, "weight_threshold_fast", value = ifelse(E(coord_graph)$weight_fast > threshold_fast, 1, 0))
+            threshold_fast <- quantile(igraph::E(coord_graph)$weight_fast, edge_weight, na.rm = TRUE)
+            coord_graph <-
+                igraph::set_edge_attr(
+                    coord_graph,
+                    "weight_threshold_fast",
+                    value = ifelse(igraph::E(coord_graph)$weight_fast > threshold_fast, 1, 0)
+                )
 
         } else {
 
             # Add the weight_threshold attribute to the full network only
-            threshold_full <- quantile(E(coord_graph)$weight, edge_weight)
-            coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight > threshold_full, 1, 0))
+            threshold_full <- quantile(igraph::E(coord_graph)$weight, edge_weight)
+            coord_graph <-
+                igraph::set_edge_attr(coord_graph,
+                                      "weight_threshold",
+                                      value = ifelse(igraph::E(coord_graph)$weight > threshold_full, 1, 0))
         }
     }
 
@@ -146,32 +166,27 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
 
         # Full network > edge weight threshold
         if(subgraph == 1){
-            edges_to_keep <- E(coord_graph)[which(E(coord_graph)$weight_threshold == 1)]
-            coord_graph <- subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+            edges_to_keep <- igraph::E(coord_graph)[which(igraph::E(coord_graph)$weight_threshold == 1)]
+            coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
         # Faster network > edge weight threshold
         if(subgraph == 2){
-            edges_to_keep <- E(coord_graph)[which(E(coord_graph)$weight_threshold_fast == 1)]
-            coord_graph <- subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+            edges_to_keep <- igraph::E(coord_graph)[which(igraph::E(coord_graph)$weight_threshold_fast == 1)]
+            coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
         # Faster network -----------------------
         if (subgraph == 3){
-            edges_to_keep <- !is.na(E(coord_graph)$weight_2)
-            coord_graph <- subgraph.edges(coord_graph, which(edges_to_keep), delete.vertices = TRUE)
+            edge_attr_values <- igraph::get.edge.attribute(coord_graph, fast_net_col)
+            edges_to_keep <- igraph::E(coord_graph)[which(edge_attr_values == 1)]
+            coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
-
-        # Calculate edge weight equilibrium index --------------------
-        # coord_graph <- edge_weight_equilibrium_index(
-        #     g = coord_graph,
-        #     x = x,
-        #     df = df,
-        #     fast_net = fast_net,
-        #     intent = intent,
-        #     nodes = nodes
-        # )
+    # Calculate the edge contribution and the contribution index
+    if(edge_contrib == TRUE){
+        coord_graph <- edge_weight_contribution(coord_graph, incidence_matrix, fast_net, fast_net_col)
+    }
 
         return(coord_graph)
 }
