@@ -9,6 +9,9 @@
 #'                 If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (fast weighted subgraph).
 #'                 If 3 reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (fast subgraph).
 #'                 The default value is 0, meaning that no subgraph is created.
+#' @param edge_contrib when TRUE (default FALSE), calculates the contribution of each node on their edge, and a contribution index that summarizes the equality of contributions between nodes on an edge.
+#'                     The index is 0 when the inequality is maximum, and 1 when there is perfect equality of contribution between nodes.
+#'                     When the faster network is requested (subgraph=3), the equilibrium index is computed on the subset of faster nodes. Otherwise, it is computed on the full network.
 #'
 #' @return A weighted, undirected network (igraph object) where the vertices (nodes) are users (or `content_ids`) and edges (links) are the membership in coordinated groups (`object_id`)
 #'
@@ -181,7 +184,13 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
             edge_attr_values <- igraph::get.edge.attribute(coord_graph, fast_net_col)
             edges_to_keep <- igraph::E(coord_graph)[which(edge_attr_values == 1)]
             coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+
+            # Calculate the edge contribution and the contribution index
+            if(edge_contrib == TRUE){
+                coord_graph <- edge_weight_contribution(coord_graph, incidence_matrix, fast_net, fast_net_col)
+            }
         }
+
 
     # Calculate the edge contribution and the contribution index
     if(edge_contrib == TRUE){

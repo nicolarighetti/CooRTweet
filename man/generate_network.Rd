@@ -24,6 +24,10 @@ generate_network(
 If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (fast weighted subgraph).
 If 3 reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (fast subgraph).
 The default value is 0, meaning that no subgraph is created.}
+
+\item{edge_contrib}{when TRUE (default FALSE), calculates the contribution of each node on their edge, and a contribution index that summarizes the equality of contributions between nodes on an edge.
+The index is 0 when the inequality is maximum, and 1 when there is perfect equality of contribution between nodes.
+When the faster network is requested (subgraph=3), the equilibrium index is computed on the subset of faster nodes. Otherwise, it is computed on the full network.}
 }
 \value{
 A weighted, undirected network (igraph object) where the vertices (nodes) are users (or \code{content_ids}) and edges (links) are the membership in coordinated groups (\code{object_id})
