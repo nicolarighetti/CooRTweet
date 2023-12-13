@@ -1,4 +1,4 @@
-#' restrict_time_window
+#' flag_speed_share
 #'
 #' @description
 #' Function to update result based on a narrower time_window.
@@ -8,7 +8,7 @@
 #'
 #' @param x A data table from a coordination detection function
 #' @param result A data table containing the result data.
-#' @param min_repetition The minimum repetition threshold. Users with repetition count
+#' @param min_participation The minimum repetition threshold. Users with repetition count
 #'                       greater than this threshold will be retained (default parameter equal to
 #'                       the one used in the detect_coordinated_groups function).
 #' @param time_window The number of seconds within which shared contents are to be considered as
@@ -21,7 +21,7 @@
 #' @import data.table
 #' @export
 
-restrict_time_window <- function(x, result, min_repetition, time_window){
+flag_speed_share <- function(x, result, min_participation, time_window){
 
   if (!inherits(x, "data.table")) {
     x <- data.table::as.data.table(x)
@@ -32,7 +32,7 @@ restrict_time_window <- function(x, result, min_repetition, time_window){
 
   # filter by minimum repetition
   result_update <-
-    filter_min_repetition(x, result_update, min_repetition)
+    filter_min_repetition(x, result_update, min_participation)
 
   # set keys for joining
   setkey(result, content_id, content_id_y)
