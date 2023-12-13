@@ -4,14 +4,14 @@
 \alias{filter_min_repetition}
 \title{Filter the result by minimum repetition.}
 \usage{
-filter_min_repetition(x, result, min_repetition)
+filter_min_repetition(x, result, min_participation)
 }
 \arguments{
 \item{x}{A data table from a coordination detection function}
 
 \item{result}{A data table containing the result data.}
 
-\item{min_repetition}{The minimum repetition threshold. Users with repetition count
+\item{min_participation}{The minimum repetition threshold. Users with repetition count
 greater than this threshold will be retained.}
 }
 \value{

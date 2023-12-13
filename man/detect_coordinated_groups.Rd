@@ -7,8 +7,9 @@
 detect_coordinated_groups(
   x,
   time_window = 10,
-  min_repetition = 2,
-  remove_loops = TRUE
+  min_participation = 2,
+  remove_loops = TRUE,
+  ...
 )
 }
 \arguments{
@@ -19,7 +20,7 @@ coordinated content), \code{id_user} (unique ids for users), \code{content_id}
 \item{time_window}{the number of seconds within which shared contents
 are to be considered as coordinated (default to 10 seconds).}
 
-\item{min_repetition}{the minimum number of repeated coordinated
+\item{min_participation}{the minimum number of repeated coordinated
 actions a user has to perform (default to 2 times).}
 
 \item{remove_loops}{Should loops (shares made by the same user within

@@ -6,7 +6,7 @@
 \usage{
 detect_similar_text(
   x,
-  min_repetition = 2,
+  min_participation = 2,
   time_window = 10,
   min_similarity = 0.8,
   similarity_function = textreuse::jaccard_similarity,
@@ -24,7 +24,7 @@ detect_similar_text(
 \item timestamp_share: The timestamp when the content was shared
 }}
 
-\item{min_repetition}{the minimum number of repeated coordinated
+\item{min_participation}{the minimum number of repeated coordinated
 actions a user has to perform (defaults to 2 times)}
 
 \item{time_window}{The maximum time difference between two posts in order

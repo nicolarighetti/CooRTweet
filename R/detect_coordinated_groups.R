@@ -19,7 +19,7 @@
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
-#' @param min_repetition the minimum number of repeated coordinated
+#' @param min_participation the minimum number of repeated coordinated
 #' actions a user has to perform (default to 2 times).
 #'
 #' @param remove_loops Should loops (shares made by the same user within
@@ -38,8 +38,9 @@
 
 detect_coordinated_groups <- function(x,
                                       time_window = 10,
-                                      min_repetition = 2,
-                                      remove_loops = TRUE) {
+                                      min_participation = 2,
+                                      remove_loops = TRUE,
+                                      ...) {
   # This function is a wrapper for actual calculation
   # We validate the input data before we go ahead
   # the actual functions are do_detect_coordinated_groups and
@@ -57,11 +58,18 @@ detect_coordinated_groups <- function(x,
     }
   }
 
+  # Check for additional unnamed arguments (compatibility with min_repetition)
+  additional_args <- list(...)
+  if ("min_repetition" %in% names(additional_args)) {
+    warning("The argument 'min_repetition' is deprecated. Use 'min_participation' instead.")
+    min_participation <- additional_args$min_repetition
+  }
+
   # TODO: add more assertions here. E.g., content_id is unique
 
   x <- do_detect_coordinated_groups(x,
     time_window = time_window,
-    min_repetition = min_repetition,
+    min_participation = min_participation,
     remove_loops = remove_loops
   )
 
@@ -80,7 +88,7 @@ detect_coordinated_groups <- function(x,
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
-#' @param min_repetition the minimum number of published coordinated
+#' @param min_participation the minimum number of published coordinated
 #' contents necessary for a user to be included it in the coordinated
 #' network. (defaults to 2)
 #'
@@ -93,7 +101,7 @@ detect_coordinated_groups <- function(x,
 
 do_detect_coordinated_groups <- function(x,
                                          time_window = 10,
-                                         min_repetition = 2,
+                                         min_participation = 2,
                                          remove_loops = TRUE) {
   object_id <- id_user <- content_id <- content_id_y <-
     id_user_y <- time_delta <- NULL
@@ -103,7 +111,7 @@ do_detect_coordinated_groups <- function(x,
   # pre-filter based on minimum repetitions
   # a user must have tweeted a minimum number of times
   # before they can be considered coordinated
-  x <- x[, if (.N >= min_repetition) .SD, by = id_user]
+  x <- x[, if (.N >= min_participation) .SD, by = id_user]
 
   # --------------------------
   # strings to factors
@@ -133,8 +141,8 @@ do_detect_coordinated_groups <- function(x,
 
   # ---------------------------
   # filter by minimum repetition
-  if (min_repetition >= 1) {
-    result <- filter_min_repetition(x, result, min_repetition)
+  if (min_participation >= 1) {
+    result <- filter_min_repetition(x, result, min_participation)
   }
 
   # ---------------------------
@@ -182,14 +190,14 @@ do_remove_loops <- function(result) {
 #'
 #' @param x A data table from a coordination detection function
 #' @param result A data table containing the result data.
-#' @param min_repetition The minimum repetition threshold. Users with repetition count
+#' @param min_participation The minimum repetition threshold. Users with repetition count
 #'                       greater than this threshold will be retained.
 #'
 #' @return A data table with filtered rows based on the specified minimum repetition.
 #'
 #' @import data.table
 
-filter_min_repetition <- function(x, result, min_repetition) {
+filter_min_repetition <- function(x, result, min_participation) {
   content_id <- id_user <- content_id_y <- NULL
   # ---------------------------
   # filter by minimum repetition
@@ -206,7 +214,7 @@ filter_min_repetition <- function(x, result, min_repetition) {
   # finally, count by groups (id_user) and
   # only return rows with more than min_repetitions
   filt <- x[content_id %in% coordinated_content_ids,
-    if (.N >= min_repetition) .SD,
+    if (.N >= min_participation) .SD,
     by = id_user
   ]
 
@@ -231,7 +239,7 @@ filter_min_repetition <- function(x, result, min_repetition) {
 #'   - object_id: The text of the social media post
 #'   - id_user: The ID of the user who shared the content
 #'   - timestamp_share: The timestamp when the content was shared
-#' @param min_repetition the minimum number of repeated coordinated
+#' @param min_participation the minimum number of repeated coordinated
 #'   actions a user has to perform (defaults to 2 times)
 #' @param time_window The maximum time difference between two posts in order
 #'   for them to be considered coordinated cotweets (defaults to 10 seconds).
@@ -260,7 +268,7 @@ filter_min_repetition <- function(x, result, min_repetition) {
 #' @export
 
 detect_similar_text <- function(x,
-                                min_repetition = 2,
+                                min_participation = 2,
                                 time_window = 10,
                                 min_similarity = 0.8,
                                 similarity_function = textreuse::jaccard_similarity,
@@ -276,7 +284,7 @@ detect_similar_text <- function(x,
   # Check arguments
 
   stopifnot(is.data.table(x))
-  stopifnot(min_repetition >= 1)
+  stopifnot(min_participation >= 1)
   stopifnot(time_window >= 0)
   stopifnot(min_similarity >= 0 && min_similarity <= 1)
   stopifnot(is.function(similarity_function))
@@ -357,7 +365,7 @@ detect_similar_text <- function(x,
 
   # filter by minimum repetition
   coordinated_cotweets <-
-    filter_min_repetition(x, coordinated_cotweets, min_repetition)
+    filter_min_repetition(x, coordinated_cotweets, min_participation)
 
   # filter out loops
 
