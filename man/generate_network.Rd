@@ -9,7 +9,8 @@ generate_network(
   intent = c("users", "content", "objects"),
   fast_net = FALSE,
   edge_weight = 0.5,
-  subgraph = 0
+  subgraph = 0,
+  edge_contrib = FALSE
 )
 }
 \arguments{
