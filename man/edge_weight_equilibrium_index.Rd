@@ -7,7 +7,14 @@ Calculate a edge weight equilibrium index that summarizes the contribution of ea
 to their total edge weight. When the faster network is provided, the equilibrium index
 is computed on the subset of faster nodes. Otherwise, it is computed on the full network.}
 \usage{
-edge_weight_equilibrium_index(g = coord_graph, x = x, df = df)
+edge_weight_equilibrium_index(
+  g = coord_graph,
+  x = x,
+  df = df,
+  fast_net = fast_net,
+  intent = intent,
+  nodes = nodes
+)
 }
 \arguments{
 \item{g}{The coord_graph resulting from the previous steps.}

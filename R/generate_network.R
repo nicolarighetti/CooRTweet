@@ -126,21 +126,21 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
             coord_graph <- delete_edge_attr(coord_graph, "weight_1")
             coord_graph <- delete_edge_attr(coord_graph, "weight_2")
 
+            # Full network weight threshold
+            threshold_full <- quantile(E(coord_graph)$weight_full, edge_weight)
+            coord_graph <- set_edge_attr(coord_graph, "weight_threshold_full", value = ifelse(E(coord_graph)$weight_full > threshold_full, 1, 0))
+
+            # Fast nodes subnetwork weight threshold
+            threshold_fast <- quantile(E(coord_graph)$weight_fast, edge_weight)
+            coord_graph <- set_edge_attr(coord_graph, "weight_threshold_fast", value = ifelse(E(coord_graph)$weight_fast > threshold_fast, 1, 0))
+
+        } else {
+
+            # Add the weight_threshold attribute to the full network only
+            threshold_full <- quantile(E(coord_graph)$weight, edge_weight)
+            coord_graph <- set_edge_attr(coord_graph, "weight_threshold", value = ifelse(E(coord_graph)$weight > threshold_full, 1, 0))
         }
     }
-
-        # Add the weight_threshold attribute ---------------
-
-        # Full network
-        threshold_full <- quantile(E(coord_graph)$weight_full, edge_weight)
-
-        coord_graph <- set_edge_attr(coord_graph, "weight_threshold_full", value = ifelse(E(coord_graph)$weight_full > threshold_full, 1, 0))
-
-        # Sub-network of faster nodes
-        if (fast_net == TRUE){
-        threshold_fast <- quantile(E(coord_graph)$weight_fast, edge_weight)
-        coord_graph <- set_edge_attr(coord_graph, "weight_threshold_fast", value = ifelse(E(coord_graph)$weight_fast > threshold_fast, 1, 0))
-        }
 
         # Create subgraphs ---------------------
 
@@ -164,7 +164,14 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
 
 
         # Calculate edge weight equilibrium index --------------------
-        coord_graph <- edge_weight_equilibrium_index(g = coord_graph, x = x, df = df)
+        # coord_graph <- edge_weight_equilibrium_index(
+        #     g = coord_graph,
+        #     x = x,
+        #     df = df,
+        #     fast_net = fast_net,
+        #     intent = intent,
+        #     nodes = nodes
+        # )
 
         return(coord_graph)
 }

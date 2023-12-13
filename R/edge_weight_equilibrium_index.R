@@ -23,7 +23,7 @@
 #'
 #'
 
-edge_weight_equilibrium_index <- function(g = coord_graph, x = x, df = df){
+edge_weight_equilibrium_index <- function(g, x, df, fast_net, intent, nodes) {
 
   # ------------------------------
   # If the faster network has been identified we calculate the filtered edge list for the
