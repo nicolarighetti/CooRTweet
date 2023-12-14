@@ -6,9 +6,6 @@
 #' The function offers multiple options to identify various types of networks, allowing for
 #' filtering based on different edge weights and facilitating the extraction of distinct subgraphs.
 #'
-#' @details This function generates a two-mode (bipartite) incidence matrix first,
-#' and then projects the matrix to a weighted adjacency matrix.
-#'
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
 #' @param fast_net implemented only for intent = "users". If the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_full and weight_fast are created, the first containing the edge weights of the full graph, the second those of the subgraph that includes the shares made in the narrower time window.
 #' @param edge_weight implemented only for intent = "users". The edges with weight that exceeds a threshold are marked with 0 (not exceeding) or 1 (exceeding). The threshold is expressed in percentiles of the edge weight distribution in the full network and in the faster network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network.
@@ -62,48 +59,59 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
         .NotYetImplemented()
     }
 
-    # Reshape data
-    df <- data.table::melt(x,
-        id.vars = c("object_id", "time_delta"),
-        measure.vars = patterns("^content_id", "^id_user"),
-        value.name = c("content_id", "id_user")
-    )
+    # Old version ---------------
+    # # Reshape data
+    # df <- data.table::melt(x,
+    #     id.vars = c("object_id", "time_delta"),
+    #     measure.vars = patterns("^content_id", "^id_user"),
+    #     value.name = c("content_id", "id_user")
+    # )
+    #
+    # if (intent == "users") {
+    #     subcols <- c(nodes, c("object_id", "content_id"))
+    # } else {
+    #     subcols <- c(nodes, "object_id")
+    # }
+    #
+    # df <- unique(df[, subcols, with = FALSE])
+    # df <- df[, lapply(.SD, as.factor)]
+    #
+    # # Transform data to a sparse matrix
+    # # This creates a link between all pairs of users who have shared any object in common.
+    # incidence_matrix <- Matrix::sparseMatrix(
+    #     i = as.numeric(df[, get(nodes)]),
+    #     j = as.numeric(df[, object_id]),
+    #     dims = c(
+    #         length(unique(df[, get(nodes)])),
+    #         length(unique(df[, object_id]))
+    #     ),
+    #     x = rep(1, length(as.numeric(df[, get(nodes)])))
+    # )
+    #
+    # row.names(incidence_matrix) <- levels(df[, get(nodes)])
+    # colnames(incidence_matrix) <- levels(df[, object_id])
+    #
+    # if (intent == "objects") {
+    #     projected_adjacency_matrix <- Matrix::crossprod(incidence_matrix)
+    # } else {
+    #     projected_adjacency_matrix <- Matrix::tcrossprod(incidence_matrix)
+    # }
 
-    if (intent == "users") {
-        subcols <- c(nodes, c("object_id", "content_id"))
-    } else {
-        subcols <- c(nodes, "object_id")
-    }
+    # coord_graph <- igraph::graph_from_adjacency_matrix(
+    #     projected_adjacency_matrix,
+    #     mode = "upper",
+    #     weighted = TRUE,
+    #     diag = FALSE
+    # )
 
-    df <- unique(df[, subcols, with = FALSE])
-    df <- df[, lapply(.SD, as.factor)]
 
-    # Transform data to a sparse matrix
-    incidence_matrix <- Matrix::sparseMatrix(
-        i = as.numeric(df[, get(nodes)]),
-        j = as.numeric(df[, object_id]),
-        dims = c(
-            length(unique(df[, get(nodes)])),
-            length(unique(df[, object_id]))
-        ),
-        x = rep(1, length(as.numeric(df[, get(nodes)])))
-    )
+    # Aggregate edges and compute weight
+    x_aggregated <- x[, .(weight = .N,
+                          avg_time_delta = mean(time_delta)),
+                      by = .(id_user, id_user_y)]
 
-    row.names(incidence_matrix) <- levels(df[, get(nodes)])
-    colnames(incidence_matrix) <- levels(df[, object_id])
-
-    if (intent == "objects") {
-        projected_adjacency_matrix <- Matrix::crossprod(incidence_matrix)
-    } else {
-        projected_adjacency_matrix <- Matrix::tcrossprod(incidence_matrix)
-    }
-
-    coord_graph <- igraph::graph_from_adjacency_matrix(
-        projected_adjacency_matrix,
-        mode = "upper",
-        weighted = TRUE,
-        diag = FALSE
-    )
+    # Create the graph with edge weights
+    coord_graph <- graph_from_data_frame(x_aggregated, directed = FALSE)
 
     # Optional attributes and subsets for networks of users -------------------------
     if (intent == "users"){
@@ -111,27 +119,39 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
         # Add the restrict_time_window attribute to the graph
         if (fast_net == TRUE){
 
-            fast_net_col <- names(x)[grep("time_window_", names(x))]
+            fast_net_col_name <- names(x)[grep("time_window_", names(x))]
+            fast_x <- x[get(fast_net_col_name) == 1]
 
-            # Create an edge list with the time_window_{...} attribute
-            edge_list <- data.table::data.table(
-                from = x$id_user,
-                to = x$id_user_y,
-                fast_net_col = x[[fast_net_col]]
-            )
+            # Aggregate edges and compute weight
+            fast_x_aggregated <- fast_x[, .(weight = .N,
+                                  avg_time_delta = mean(time_delta)),
+                              by = .(id_user, id_user_y)]
 
-            filtered_edges <- edge_list[fast_net_col == 1]
+            # Create the graph with edge weights
+            fast_coord_graph <- graph_from_data_frame(fast_x_aggregated, directed = FALSE)
 
-            # ensure a consistent ordering of node pairs for each edge
-            filtered_edges[, c('min_edge', 'max_edge') := .(pmin(from, to), pmax(from, to))]
-            g <- filtered_edges[, .(weight = .N), by = .(min_edge, max_edge)]
+        # Old code -------
+        #    fast_net_col <- names(x)[grep("time_window_", names(x))]
+        #
+        #    # Create an edge list with the time_window_{...} attribute
+        #    edge_list <- data.table::data.table(
+        #        from = x$id_user,
+        #        to = x$id_user_y,
+        #        fast_net_col = x[[fast_net_col]]
+        #    )
+        #
+        #    filtered_edges <- edge_list[fast_net_col == 1]
+        #
+        #    # ensure a consistent ordering of node pairs for each edge
+        #    filtered_edges[, c('min_edge', 'max_edge') := .(pmin(from, to), pmax(from, to))]
+        #    g <- filtered_edges[, .(weight = .N), by = .(min_edge, max_edge)]
+        #
+        #    g <- igraph::graph_from_data_frame(g, directed = FALSE)
+        #
+        #    # add attributed time_window_[...] with value 1 for subsequent filtering
+        #    g <- igraph::set_edge_attr(g, fast_net_col, value = 1)
 
-            g <- igraph::graph_from_data_frame(g, directed = FALSE)
-
-            # add attributed time_window_[...] with value 1 for subsequent filtering
-            g <- igraph::set_edge_attr(g, fast_net_col, value = 1)
-
-            coord_graph <- igraph::graph.union(coord_graph, g)
+            coord_graph <- igraph::graph.union(coord_graph, fast_coord_graph)
 
             # Rename 'weight_1'and 'weight_2'
             coord_graph <-
@@ -139,12 +159,21 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
             coord_graph <-
                 igraph::set_edge_attr(coord_graph, "weight_fast", value = igraph::E(coord_graph)$weight_2)
 
+            # Rename 'weight_1'and 'weight_2'
+            coord_graph <-
+                igraph::set_edge_attr(coord_graph, "avg_time_delta_full", value = igraph::E(coord_graph)$avg_time_delta_1)
+            coord_graph <-
+                igraph::set_edge_attr(coord_graph, "avg_time_delta_fast", value = igraph::E(coord_graph)$avg_time_delta_2)
+
             # Remove old attributes
             coord_graph <- igraph::delete_edge_attr(coord_graph, "weight_1")
             coord_graph <- igraph::delete_edge_attr(coord_graph, "weight_2")
+            coord_graph <- igraph::delete_edge_attr(coord_graph, "avg_time_delta_1")
+            coord_graph <- igraph::delete_edge_attr(coord_graph, "avg_time_delta_2")
 
             # Full network weight threshold
             threshold_full <- quantile(igraph::E(coord_graph)$weight_full, edge_weight)
+
             coord_graph <-
                 igraph::set_edge_attr(
                     coord_graph,
@@ -154,6 +183,7 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
 
             # Fast nodes subnetwork weight threshold
             threshold_fast <- quantile(igraph::E(coord_graph)$weight_fast, edge_weight, na.rm = TRUE)
+
             coord_graph <-
                 igraph::set_edge_attr(
                     coord_graph,
@@ -165,6 +195,7 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
 
             # Add the weight_threshold attribute to the full network only
             threshold_full <- quantile(igraph::E(coord_graph)$weight, edge_weight)
+
             coord_graph <-
                 igraph::set_edge_attr(coord_graph,
                                       "weight_threshold",
@@ -176,7 +207,7 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
 
         # Full network > edge weight threshold
         if(subgraph == 1){
-            edges_to_keep <- igraph::E(coord_graph)[which(igraph::E(coord_graph)$weight_threshold == 1)]
+            edges_to_keep <- igraph::E(coord_graph)[which(igraph::E(coord_graph)$weight_threshold_full == 1)]
             coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
         }
 
@@ -188,21 +219,24 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
 
         # Faster network -----------------------
         if (subgraph == 3){
-            edge_attr_values <- igraph::get.edge.attribute(coord_graph, fast_net_col)
-            edges_to_keep <- igraph::E(coord_graph)[which(edge_attr_values == 1)]
+           # edge_attr_values <- igraph::get.edge.attribute(coord_graph, fast_net_col)
+           # edges_to_keep <- igraph::E(coord_graph)[which(edge_attr_values == 1)]
+           # coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+
+            edges_to_keep <- igraph::E(coord_graph)[which(!is.na(igraph::E(coord_graph)$weight_threshold_fast))]
             coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
 
-            # Calculate the edge contribution and the contribution index
-            if(edge_contrib == TRUE){
-                coord_graph <- edge_weight_contribution(coord_graph, incidence_matrix, fast_net, fast_net_col)
-            }
+            # # Calculate the edge contribution and the contribution index
+            # if(edge_contrib == TRUE){
+            #     coord_graph <- edge_weight_contribution(coord_graph, incidence_matrix, fast_net, fast_net_col)
+            # }
         }
 
 
     # Calculate the edge contribution and the contribution index
-    if(edge_contrib == TRUE){
-        coord_graph <- edge_weight_contribution(coord_graph, incidence_matrix, fast_net, fast_net_col)
-    }
+   # if(edge_contrib == TRUE){
+   #     coord_graph <- edge_weight_contribution(coord_graph, incidence_matrix, fast_net, fast_net_col)
+   # }
 
         return(coord_graph)
 }

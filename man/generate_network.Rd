@@ -39,7 +39,3 @@ It takes the results of \code{detect_coordinated_groups} and generate a network 
 The function offers multiple options to identify various types of networks, allowing for
 filtering based on different edge weights and facilitating the extraction of distinct subgraphs.
 }
-\details{
-This function generates a two-mode (bipartite) incidence matrix first,
-and then projects the matrix to a weighted adjacency matrix.
-}

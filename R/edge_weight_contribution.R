@@ -27,7 +27,10 @@ edge_weight_contribution <- function(coord_graph, incidence_matrix, fast_net, fa
 
   # Function to calculate contributions to edge weight
   calculate_contributions <- function(edge, incidence_matrix) {
+
+    # Incident vertices of graph edges
     nodes_involved <- ends(coord_graph, edge, names = TRUE)
+
     shared_objects_indices <-
       which(incidence_matrix[nodes_involved[1],] &
               incidence_matrix[nodes_involved[2],])
@@ -36,7 +39,10 @@ edge_weight_contribution <- function(coord_graph, incidence_matrix, fast_net, fa
     to_contrib <- sum(incidence_matrix[nodes_involved[2], shared_objects_indices])
     total_contrib <- from_contrib + to_contrib
 
-    c(from_contrib = from_contrib / total_contrib, to_contrib = to_contrib / total_contrib)
+    c(from_contrib = from_contrib,
+      to_contrib = to_contrib,
+      from_contrib_prop = from_contrib / total_contrib,
+      to_contrib_prop = to_contrib / total_contrib)
   }
 
     # Apply the function to all edges in the unimodal graph
@@ -46,10 +52,12 @@ edge_weight_contribution <- function(coord_graph, incidence_matrix, fast_net, fa
     # Assign the calculated contributions as edge attributes
     igraph::E(coord_graph)$from_contrib <- contributions[1,]
     igraph::E(coord_graph)$to_contrib <- contributions[2,]
+    igraph::E(coord_graph)$from_contrib_prop <- contributions[3,]
+    igraph::E(coord_graph)$to_contrib_prop <- contributions[4,]
 
     # Assign the calculated equality index
     igraph::E(coord_graph)$contrib_index <-
-      1 - abs(igraph::E(coord_graph)$from_contrib - igraph::E(coord_graph)$to_contrib)
+      1 - abs(igraph::E(coord_graph)$from_contrib_prop - igraph::E(coord_graph)$to_contrib_prop)
 
   return(coord_graph)
 }
