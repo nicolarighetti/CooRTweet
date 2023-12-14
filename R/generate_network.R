@@ -104,6 +104,8 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
     #     diag = FALSE
     # )
 
+    # standardize the order of the vertices
+    x[, `:=`(id_user = pmin(id_user, id_user_y), id_user_y = pmax(id_user, id_user_y))]
 
     # Aggregate edges and compute weight
     x_aggregated <- x[, .(weight = .N,
@@ -121,6 +123,9 @@ generate_network <- function(x, intent = c("users", "content", "objects"), fast_
 
             fast_net_col_name <- names(x)[grep("time_window_", names(x))]
             fast_x <- x[get(fast_net_col_name) == 1]
+
+            # standardize the order of the vertices
+            fast_x[, `:=`(id_user = pmin(id_user, id_user_y), id_user_y = pmax(id_user, id_user_y))]
 
             # Aggregate edges and compute weight
             fast_x_aggregated <- fast_x[, .(weight = .N,
