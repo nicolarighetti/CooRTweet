@@ -20,11 +20,16 @@ coordinated content), \code{id_user} (unique ids for users), \code{content_id}
 \item{time_window}{the number of seconds within which shared contents
 are to be considered as coordinated (default to 10 seconds).}
 
-\item{min_participation}{the minimum number of repeated coordinated
-actions a user has to perform (default to 2 times).}
+\item{remove_loops}{Should loops (shares of the same objects made by the same user
+within the time window) be removed? (default to TRUE).}
 
-\item{remove_loops}{Should loops (shares made by the same user within
-the time window) be removed? (default to TRUE).}
+\item{min_participationThe}{minimum number of actions within a specified timeframe
+required for a user to be included in subsequent analysis (default set at two).
+This criterion in network analysis corresponds with the concept of degree.
+It is important to differentiate this from the frequency of repeated interactions
+a user has with a particular other user, which is represented by edge weight.
+The edge weight parameter is utilized in the \code{generate_network} function as a
+concluding step in identifying coordinated behavior.}
 }
 \value{
 a data.table with ids of coordinated contents. Columns:
@@ -35,10 +40,13 @@ data points. For example, User A retweets from User B, then User A's
 content is newer (i.e., \code{id_user_y}).
 }
 \description{
-Function to detect coordinated behaviour based on content groups.
+Function to identify pairs of users that share the same objects in a time_window.
 See details.
 }
 \details{
+This function achieves the initial stage in detecting coordinated behavior
+by identifying users who share identical objects within the same temporal window, and is
+preliminary to the network analysis conducted using the \code{generate_network} function.
 The function groups the data by \code{object_id} (uniquely identifies
 coordinated content) and calculates the time differences between all
 \code{content_id} (ids of user generated contents) within their groups.

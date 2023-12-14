@@ -1,6 +1,13 @@
 #' generate_network
 #'
-#' Take the results of coordinated content detection and generate a network from the data. This function generates a two-mode (bipartite) incidence matrix first, and then projects the matrix to a weighted adjacency matrix.
+#' This function performs the final step in coordinated detection analysis by identifying
+#' users who repeatedly engage in identical actions within a predefined time window.
+#' It takes the results of `detect_coordinated_groups` and generate a network from the data.
+#' The function offers multiple options to identify various types of networks, allowing for
+#' filtering based on different edge weights and facilitating the extraction of distinct subgraphs.
+#'
+#' @details This function generates a two-mode (bipartite) incidence matrix first,
+#' and then projects the matrix to a weighted adjacency matrix.
 #'
 #' @param x a data.table (result from `detect_coordinated_groups`) with the Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`, `timedelta`
 #' @param fast_net implemented only for intent = "users". If the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_full and weight_fast are created, the first containing the edge weights of the full graph, the second those of the subgraph that includes the shares made in the narrower time window.

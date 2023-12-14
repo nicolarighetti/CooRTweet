@@ -15,8 +15,8 @@ filter_min_repetition(x, result, min_participation)
 greater than this threshold will be retained.}
 }
 \value{
-A data table with filtered rows based on the specified minimum repetition.
+A data table with filtered rows based on the specified minimum participation.
 }
 \description{
-This private function filters the result by the minimum number of repetitions required.
+This private function filters the result by the minimum number of participation required.
 }

@@ -33,5 +33,13 @@ When the faster network is requested (subgraph=3), the equilibrium index is comp
 A weighted, undirected network (igraph object) where the vertices (nodes) are users (or \code{content_ids}) and edges (links) are the membership in coordinated groups (\code{object_id})
 }
 \description{
-Take the results of coordinated content detection and generate a network from the data. This function generates a two-mode (bipartite) incidence matrix first, and then projects the matrix to a weighted adjacency matrix.
+This function performs the final step in coordinated detection analysis by identifying
+users who repeatedly engage in identical actions within a predefined time window.
+It takes the results of \code{detect_coordinated_groups} and generate a network from the data.
+The function offers multiple options to identify various types of networks, allowing for
+filtering based on different edge weights and facilitating the extraction of distinct subgraphs.
+}
+\details{
+This function generates a two-mode (bipartite) incidence matrix first,
+and then projects the matrix to a weighted adjacency matrix.
 }
