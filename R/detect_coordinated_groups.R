@@ -1,10 +1,13 @@
 #' detect_coordinated_groups
 #'
 #' @description
-#' Function to detect coordinated behaviour based on content groups.
+#' Function to identify pairs of users that share the same objects in a time_window.
 #' See details.
 #'
-#' @details The function groups the data by `object_id` (uniquely identifies
+#' @details This function achieves the initial stage in detecting coordinated behavior
+#' by identifying users who share identical objects within the same temporal window, and is
+#' preliminary to the network analysis conducted using the `generate_network` function.
+#' The function groups the data by `object_id` (uniquely identifies
 #' coordinated content) and calculates the time differences between all
 #' `content_id` (ids of user generated contents) within their groups.
 #' It then filters out all `content_id` that are higher than the `time_window`
@@ -19,11 +22,16 @@
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
-#' @param min_participation the minimum number of repeated coordinated
-#' actions a user has to perform (default to 2 times).
+#' @param min_participationThe minimum number of actions within a specified timeframe
+#' required for a user to be included in subsequent analysis (default set at two).
+#' This criterion in network analysis corresponds with the concept of degree.
+#' It is important to differentiate this from the frequency of repeated interactions
+#' a user has with a particular other user, which is represented by edge weight.
+#' The edge weight parameter is utilized in the `generate_network` function as a
+#' concluding step in identifying coordinated behavior.
 #'
-#' @param remove_loops Should loops (shares made by the same user within
-#' the time window) be removed? (default to TRUE).
+#' @param remove_loops Should loops (shares of the same objects made by the same user
+#' within the time window) be removed? (default to TRUE).
 #'
 #' @return a data.table with ids of coordinated contents. Columns:
 #' `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`,
@@ -186,14 +194,14 @@ do_remove_loops <- function(result) {
 
 #' Filter the result by minimum repetition.
 #'
-#' This private function filters the result by the minimum number of repetitions required.
+#' This private function filters the result by the minimum number of participation required.
 #'
 #' @param x A data table from a coordination detection function
 #' @param result A data table containing the result data.
 #' @param min_participation The minimum repetition threshold. Users with repetition count
-#'                       greater than this threshold will be retained.
+#'                          greater than this threshold will be retained.
 #'
-#' @return A data table with filtered rows based on the specified minimum repetition.
+#' @return A data table with filtered rows based on the specified minimum participation.
 #'
 #' @import data.table
 
@@ -201,8 +209,8 @@ filter_min_repetition <- function(x, result, min_participation) {
   content_id <- id_user <- content_id_y <- NULL
   # ---------------------------
   # filter by minimum repetition
-  # first get all content_ids that are flagged as coordinated
-  coordinated_content_ids <- unique(
+  # first get all content_ids
+  content_ids <- unique(
     c(
       unique(result$content_id),
       unique(result$content_id_y)
@@ -210,10 +218,10 @@ filter_min_repetition <- function(x, result, min_participation) {
   )
 
   # group input data by id_user,
-  # then filter only the rows, where content_id is flagged as coordinated
+  # then filter only the rows in content_ids
   # finally, count by groups (id_user) and
-  # only return rows with more than min_repetitions
-  filt <- x[content_id %in% coordinated_content_ids,
+  # only return rows with more than min_participation
+  filt <- x[content_id %in% content_ids,
     if (.N >= min_participation) .SD,
     by = id_user
   ]
