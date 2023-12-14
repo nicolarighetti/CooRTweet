@@ -4,33 +4,22 @@
 \alias{generate_network}
 \title{generate_network}
 \usage{
-generate_network(
-  x,
-  intent = c("users", "content", "objects"),
-  fast_net = FALSE,
-  edge_weight = 0.5,
-  subgraph = 0,
-  edge_contrib = FALSE
-)
+generate_network(x, fast_net = FALSE, edge_weight = 0.5, subgraph = 0)
 }
 \arguments{
 \item{x}{a data.table (result from \code{detect_coordinated_groups}) with the Columns: \code{object_id}, \code{id_user}, \code{id_user_y}, \code{content_id}, \code{content_id_y}, \code{timedelta}}
 
-\item{fast_net}{implemented only for intent = "users". If the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_full and weight_fast are created, the first containing the edge weights of the full graph, the second those of the subgraph that includes the shares made in the narrower time window.}
+\item{fast_net}{If the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_full and weight_fast are created, the first containing the edge weights of the full graph, the second those of the subgraph that includes the shares made in the narrower time window.}
 
-\item{edge_weight}{implemented only for intent = "users". The edges with weight that exceeds a threshold are marked with 0 (not exceeding) or 1 (exceeding). The threshold is expressed in percentiles of the edge weight distribution in the full network and in the faster network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network.}
+\item{edge_weight}{The edges with weight that exceeds a threshold are marked with 0 (not exceeding) or 1 (exceeding). The threshold is expressed in percentiles of the edge weight distribution in the full network and in the faster network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network.}
 
-\item{subgraph}{implemented only for intent = "users". if 1 reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (weighted subgraph).
+\item{subgraph}{If 1 reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (weighted subgraph).
 If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (fast weighted subgraph).
 If 3 reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (fast subgraph).
 The default value is 0, meaning that no subgraph is created.}
-
-\item{edge_contrib}{when TRUE (default FALSE), calculates the contribution of each node on their edge, and a contribution index that summarizes the equality of contributions between nodes on an edge.
-The index is 0 when the inequality is maximum, and 1 when there is perfect equality of contribution between nodes.
-When the faster network is requested (subgraph=3), the equilibrium index is computed on the subset of faster nodes. Otherwise, it is computed on the full network.}
 }
 \value{
-A weighted, undirected network (igraph object) where the vertices (nodes) are users (or \code{content_ids}) and edges (links) are the membership in coordinated groups (\code{object_id})
+A weighted, undirected network (igraph object) where the vertices (nodes) are users and edges (links) are the membership in coordinated groups (\code{object_id})
 }
 \description{
 This function performs the final step in coordinated detection analysis by identifying
