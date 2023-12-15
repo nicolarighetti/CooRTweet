@@ -32,7 +32,7 @@ flag_speed_share <- function(x, result, min_participation, time_window){
 
   # filter by minimum repetition
   result_update <-
-    filter_min_repetition(x, result_update, min_participation)
+    filter_min_participation(x, result_update, min_participation)
 
   # set keys for joining
   setkey(result, content_id, content_id_y)
