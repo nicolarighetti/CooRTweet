@@ -1,7 +1,8 @@
-#' detect_coordinated_groups
+#' detect_groups
 #'
 #' @description
-#' Function to identify pairs of users that share the same objects in a time_window.
+#' Function to perform the initial stage in detecting coordinated behavior, identify pairs of users
+#' that share the same objects in a time_window.
 #' See details.
 #'
 #' @details This function achieves the initial stage in detecting coordinated behavior
@@ -44,14 +45,14 @@
 #' @export
 
 
-detect_coordinated_groups <- function(x,
+detect_groups <- function(x,
                                       time_window = 10,
                                       min_participation = 2,
                                       remove_loops = TRUE,
                                       ...) {
   # This function is a wrapper for actual calculation
   # We validate the input data before we go ahead
-  # the actual functions are do_detect_coordinated_groups and
+  # the actual functions are do_detect_groups and
   # calc_group_combinations
   if (!inherits(x, "data.table")) {
     x <- data.table::as.data.table(x)
@@ -75,7 +76,7 @@ detect_coordinated_groups <- function(x,
 
   # TODO: add more assertions here. E.g., content_id is unique
 
-  x <- do_detect_coordinated_groups(x,
+  x <- do_detect_groups(x,
     time_window = time_window,
     min_participation = min_participation,
     remove_loops = remove_loops
@@ -84,10 +85,10 @@ detect_coordinated_groups <- function(x,
   return(x)
 }
 
-#' do_detect_coordinated_groups
+#' do_detect_groups
 #'
 #' @description
-#' Private function that actually performs \link{detect_coordinated_groups}.
+#' Private function that actually performs \link{detect_groups}.
 #'
 #' @param x a data.table with the columns: `object_id` (uniquely identifies
 #' coordinated content), `id_user` (unique ids for users), `content_id`
@@ -107,7 +108,7 @@ detect_coordinated_groups <- function(x,
 #' @import data.table
 #' @noRd
 
-do_detect_coordinated_groups <- function(x,
+do_detect_groups <- function(x,
                                          time_window = 10,
                                          min_participation = 2,
                                          remove_loops = TRUE) {
@@ -150,7 +151,7 @@ do_detect_coordinated_groups <- function(x,
   # ---------------------------
   # filter by minimum repetition
   if (min_participation >= 1) {
-    result <- filter_min_repetition(x, result, min_participation)
+    result <- filter_min_participation(x, result, min_participation)
   }
 
   # ---------------------------
@@ -192,7 +193,7 @@ do_remove_loops <- function(result) {
   return(result)
 }
 
-#' Filter the result by minimum repetition.
+#' Filter the result by minimum participation
 #'
 #' This private function filters the result by the minimum number of participation required.
 #'
@@ -205,7 +206,7 @@ do_remove_loops <- function(result) {
 #'
 #' @import data.table
 
-filter_min_repetition <- function(x, result, min_participation) {
+filter_min_participation <- function(x, result, min_participation) {
   content_id <- id_user <- content_id_y <- NULL
   # ---------------------------
   # filter by minimum repetition

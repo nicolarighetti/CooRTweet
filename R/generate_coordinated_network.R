@@ -1,6 +1,6 @@
-#' generate_network
+#' generate_coordinated_network
 #'
-#' This function performs the final step in coordinated detection analysis by identifying
+#' @description This function performs the second step in coordinated detection analysis by identifying
 #' users who repeatedly engage in identical actions within a predefined time window.
 #' It takes the results of `detect_coordinated_groups` and generate a network from the data.
 #' The function offers multiple options to identify various types of networks, allowing for
@@ -22,7 +22,7 @@
 #' @export
 #'
 
-generate_network <- function(x, fast_net = FALSE, edge_weight = 0.5, subgraph = 0) {
+generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5, subgraph = 0) {
     object_id <- nodes <- patterns <- NULL
 
     # Validate the input
