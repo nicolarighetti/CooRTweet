@@ -23,7 +23,7 @@
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
-#' @param min_participationThe minimum number of actions within a specified timeframe
+#' @param min_participation The minimum number of actions within a specified timeframe
 #' required for a user to be included in subsequent analysis (default set at two).
 #' This criterion in network analysis corresponds with the concept of degree.
 #' It is important to differentiate this from the frequency of repeated interactions
@@ -46,10 +46,11 @@
 
 
 detect_groups <- function(x,
-                                      time_window = 10,
-                                      min_participation = 2,
-                                      remove_loops = TRUE,
-                                      ...) {
+                          time_window = 10,
+                          min_participation = 2,
+                          remove_loops = TRUE,
+                          ...) {
+
   # This function is a wrapper for actual calculation
   # We validate the input data before we go ahead
   # the actual functions are do_detect_groups and
@@ -61,9 +62,10 @@ detect_groups <- function(x,
 
   for (cname in required_cols) {
     if (!cname %in% colnames(x)) {
-      stop("Columns or their names are incorrect.
-      Ensure your data has the columns:
-      object_id, id_user, content_id, timestamp_share")
+      stop("Either the columns or their names are incorrect.
+           Please ensure your data includes the columns
+           'object_id', 'id_user', 'content_id', and 'timestamp_share',
+           or use the 'prep_data' function to prepare the dataset.")
     }
   }
 
@@ -108,10 +110,12 @@ detect_groups <- function(x,
 #' @import data.table
 #' @noRd
 
+
 do_detect_groups <- function(x,
-                                         time_window = 10,
-                                         min_participation = 2,
-                                         remove_loops = TRUE) {
+                             time_window = 10,
+                             min_participation = 2,
+                             remove_loops = TRUE) {
+
   object_id <- id_user <- content_id <- content_id_y <-
     id_user_y <- time_delta <- NULL
 

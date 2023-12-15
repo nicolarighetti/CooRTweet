@@ -20,16 +20,16 @@ coordinated content), \code{id_user} (unique ids for users), \code{content_id}
 \item{time_window}{the number of seconds within which shared contents
 are to be considered as coordinated (default to 10 seconds).}
 
-\item{remove_loops}{Should loops (shares of the same objects made by the same user
-within the time window) be removed? (default to TRUE).}
-
-\item{min_participationThe}{minimum number of actions within a specified timeframe
+\item{min_participation}{The minimum number of actions within a specified timeframe
 required for a user to be included in subsequent analysis (default set at two).
 This criterion in network analysis corresponds with the concept of degree.
 It is important to differentiate this from the frequency of repeated interactions
 a user has with a particular other user, which is represented by edge weight.
 The edge weight parameter is utilized in the \code{generate_network} function as a
 concluding step in identifying coordinated behavior.}
+
+\item{remove_loops}{Should loops (shares of the same objects made by the same user
+within the time window) be removed? (default to TRUE).}
 }
 \value{
 a data.table with ids of coordinated contents. Columns:
