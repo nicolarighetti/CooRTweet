@@ -378,7 +378,7 @@ detect_similar_text <- function(x,
 
   # filter by minimum repetition
   coordinated_cotweets <-
-    filter_min_repetition(x, coordinated_cotweets, min_participation)
+    filter_min_participation(x, coordinated_cotweets, min_participation)
 
   # filter out loops
 
