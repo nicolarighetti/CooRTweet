@@ -148,7 +148,7 @@ do_detect_groups <- function(x,
 
   # ---------------------------
   # remove loops
-  if(remove_loops == TRUE){
+  if (remove_loops == TRUE){
     result <- do_remove_loops(result)
   }
 
