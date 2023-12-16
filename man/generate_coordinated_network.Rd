@@ -16,20 +16,45 @@ generate_coordinated_network(
 
 \item{fast_net}{If the data.table x has been updated with the restrict_time_window function and this parameter is set to TRUE, two columns weight_full and weight_fast are created, the first containing the edge weights of the full graph, the second those of the subgraph that includes the shares made in the narrower time window.}
 
-\item{edge_weight}{The edges with weight that exceeds a threshold are marked with 0 (not exceeding) or 1 (exceeding). The threshold is expressed in percentiles of the edge weight distribution in the full network and in the faster network, and any numeric value between 0 and 1 can be assigned. The default value is "0.5" which represents the median value of the edges in the network.}
+\item{edge_weight}{The edges with weight that exceeds a threshold are marked with 0 (not exceeding) or 1 (exceeding).
+The threshold is expressed in percentiles of the edge weight distribution in the full network and
+in the faster network, and any numeric value between 0 and 1 can be assigned. The default value
+is "0.5" which represents the median value of the edges in the network.}
 
-\item{subgraph}{If 1 reduces the graph to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (weighted subgraph).
-If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window, as established with the restrict_time_window function, to the subgraph whose edges have a value that exceeds the threshold given in the edge_weight parameter (fast weighted subgraph).
-If 3 reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the restrict_time_window function (fast subgraph).
-The default value is 0, meaning that no subgraph is created.}
+\item{subgraph}{Generate and return the following subgraph
+\itemize{
+\item If 1 reduces the graph to the subgraph whose edges have a value that exceeds the threshold given
+in the edge_weight parameter (weighted subgraph).
+\item If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the narrowest time window,
+as established with the restrict_time_window function, to the subgraph whose edges have a value
+that exceeds the threshold given in the edge_weight parameter (fast weighted subgraph).
+\item If 3 reduces the graph to the subgraph whose nodes exhibit coordinated behavior in the narrowest
+time window established with the restrict_time_window function (fast subgraph).
+The default value is 0, meaning that no subgraph is created.
+}}
 }
 \value{
 A weighted, undirected network (igraph object) where the vertices (nodes) are users and edges (links) are the membership in coordinated groups (\code{object_id})
 }
 \description{
-This function performs the second step in coordinated detection analysis by identifying
-users who repeatedly engage in identical actions within a predefined time window.
-It takes the results of \code{detect_coordinated_groups} and generate a network from the data.
-The function offers multiple options to identify various types of networks, allowing for
-filtering based on different edge weights and facilitating the extraction of distinct subgraphs.
+This function takes the results of \code{detect_coordinated_groups} and generate a network
+from the data. It performs the second step in coordinated detection analysis by identifying
+users who repeatedly engage in identical actions within a predefined time window. The function
+offers multiple options to identify various types of networks, allowing for filtering based on
+different edge weights and facilitating the extraction of distinct subgraphs.
+See details.
+}
+\details{
+Two users may coincidentally share the same objects within the same time window, but it is
+unlikely that they do so repeatedly (Giglietto et al., 2020). Such repetition is thus considered
+an indicator of potential coordination. This function utilizes percentile edge weight to represent
+recurrent shares by the same user pairs within a predefined time window. By considering the edge
+weight distribution across the data and setting the percentile value \emph{p} between 0 and 1, we can
+identify edges that fall within the top \emph{p} percentile of the edge weight distribution. Selecting
+a sufficiently high percentile (e.g., 0.99) allows us to pinpoint users who share an unusually
+high number of objects (for instance, more than 99\% of user pairs in the network) in the same time
+window.
+}
+\references{
+Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. \emph{Information, Communication & Society}, 23(6), 867-891.
 }
