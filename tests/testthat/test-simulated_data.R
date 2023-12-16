@@ -3,7 +3,7 @@ library(data.table)
 sim_test <- function(n_users_coord = 5,
                      n_users_noncoord = 4,
                      n_objects = 5,
-                     min_repetition = 3,
+                     min_participation = 3,
                      time_window = 10) {
   coordinated = NULL
   
@@ -11,7 +11,7 @@ sim_test <- function(n_users_coord = 5,
     n_users_coord = n_users_coord,
     n_users_noncoord = n_users_noncoord,
     n_objects = n_objects,
-    min_repetition = min_repetition,
+    min_repetition = min_participation,
     time_window = time_window
   )
 
@@ -40,9 +40,9 @@ sim_test <- function(n_users_coord = 5,
     simulated_result <- simulated_result[coordinated == TRUE]
     simulated_result <- simulated_result[, coordinated := NULL]
 
-    result <- detect_coordinated_groups(sim[[1]],
+    result <- detect_groups(sim[[1]],
       time_window = time_window,
-      min_repetition = min_repetition
+      min_participation = min_participation
     )
 
     result_stats <- group_stats(result)
@@ -74,7 +74,7 @@ test_that("simulated data works with high values", {
   res <- sim_test(n_users_coord =  50,
     n_users_noncoord = 100,
     n_objects = 100,
-    min_repetition = 3,
+    min_participation = 3,
     time_window = 100)
 
   testthat::expect_equal(res[[1]], res[[2]])
@@ -89,14 +89,14 @@ test_that("simulation is possible with random parameters", {
     n_users_coord <- sample(3:10, size = 1)
     n_users_noncoord <- sample(3:10, size = 1)
     n_objects <- sample(3:10, size = 1)
-    min_repetition <- sample(1:10, size = 1)
+    min_participation <- sample(1:10, size = 1)
     time_window <- sample(1:60, size = 1)
 
     sim <- sim_test(
       n_users_coord = n_users_coord,
       n_users_noncoord = n_users_noncoord,
       n_objects = n_objects,
-      min_repetition = min_repetition,
+      min_participation = min_participation,
       time_window = time_window
     )
 
@@ -117,14 +117,14 @@ test_that("balanced increase in number of users", {
     n_users_coord <- i
     n_users_noncoord <- i
     n_objects <- 5
-    min_repetition <- 3
+    min_participation <- 3
     time_window <- 10
 
     sim <- sim_test(
       n_users_coord = n_users_coord,
       n_users_noncoord = n_users_noncoord,
       n_objects = n_objects,
-      min_repetition = min_repetition,
+      min_participation = min_participation,
       time_window = time_window
     )
 
@@ -144,14 +144,14 @@ test_that("unbalanced increase in number of users: A", {
     n_users_coord <- i
     n_users_noncoord <- i + i
     n_objects <- 5
-    min_repetition <- 3
+    min_participation <- 3
     time_window <- 10
 
     sim <- sim_test(
       n_users_coord = n_users_coord,
       n_users_noncoord = n_users_noncoord,
       n_objects = n_objects,
-      min_repetition = min_repetition,
+      min_participation = min_participation,
       time_window = time_window
     )
 
@@ -171,14 +171,14 @@ test_that("unbalanced increase in number of users: B", {
     n_users_coord <- i + i
     n_users_noncoord <- i
     n_objects <- 5
-    min_repetition <- 3
+    min_participation <- 3
     time_window <- 10
 
     sim <- sim_test(
       n_users_coord = n_users_coord,
       n_users_noncoord = n_users_noncoord,
       n_objects = n_objects,
-      min_repetition = min_repetition,
+      min_participation = min_participation,
       time_window = time_window
     )
 
@@ -196,14 +196,14 @@ test_that("increase in number of objects", {
     n_users_coord <- 5
     n_users_noncoord <- 5
     n_objects <- i
-    min_repetition <- 3
+    min_participation <- 3
     time_window <- 10
 
     sim <- sim_test(
       n_users_coord = n_users_coord,
       n_users_noncoord = n_users_noncoord,
       n_objects = n_objects,
-      min_repetition = min_repetition,
+      min_participation = min_participation,
       time_window = time_window
     )
 
@@ -221,14 +221,14 @@ test_that("larger time window", {
     n_users_coord <- 5
     n_users_noncoord <- 5
     n_objects <- 5
-    min_repetition <- 3
+    min_participation <- 3
     time_window <- i
 
     sim <- sim_test(
       n_users_coord = n_users_coord,
       n_users_noncoord = n_users_noncoord,
       n_objects = n_objects,
-      min_repetition = min_repetition,
+      min_participation = min_participation,
       time_window = time_window
     )
 
