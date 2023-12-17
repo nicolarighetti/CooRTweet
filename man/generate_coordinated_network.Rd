@@ -34,7 +34,8 @@ The default value is 0, meaning that no subgraph is created.
 }}
 }
 \value{
-A weighted, undirected network (igraph object) where the vertices (nodes) are users and edges (links) are the membership in coordinated groups (\code{object_id})
+A weighted, undirected network (igraph object) where the vertices (nodes) are users and
+edges (links) are the membership in coordinated groups (\code{object_id}).
 }
 \description{
 This function takes the results of \code{detect_coordinated_groups} and generate a network
@@ -54,6 +55,20 @@ identify edges that fall within the top \emph{p} percentile of the edge weight d
 a sufficiently high percentile (e.g., 0.99) allows us to pinpoint users who share an unusually
 high number of objects (for instance, more than 99\% of user pairs in the network) in the same time
 window.
+
+The graph also incorporates the contribution of each node within the pair to the pair's edge weight,
+specifically, the number of shared \code{content_id} that contribute to the edge weight. Additionally, an
+\code{edge_symmetry_score} is included, which equals 1 in cases of equal contributions from both users and
+approaches 0 as the contributions become increasingly unequal. This score, along with the value of
+contributions, can be utilized for further filtering or examining cases where the score is particularly
+low. Working with an undirected graph, it is plausible that the activity of highly active users
+disproportionately affects the weight of edges connecting them to less active users. For instance,
+if user A shares the same objects (\code{object_id}) 100 times, and user B shares the same object only once,
+but within a time frame that matches the \code{time_window} defined in the parameter for all of user A's
+100 shares, then the edge weight between A and B will be 100, although this weight is almost entirely
+influenced by the hyperactivity of user A. The \code{edge_symmetry_score}, along with the counts of shares
+by each user \code{user_id} and \code{user_id_y} (\code{n_content_id} and \code{n_content_id_y}), allows for monitoring
+and controlling this phenomenon.
 }
 \references{
 Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. \emph{Information, Communication & Society}, 23(6), 867-891.
