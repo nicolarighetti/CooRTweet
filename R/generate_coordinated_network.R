@@ -119,9 +119,6 @@ generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5,
         # n_content_id_y: Counts the number of unique content_id_ys for each user pair
         n_content_id_y = uniqueN(content_id_y),
 
-        # Include object_ids if 'objects' is TRUE
-        object_ids = if (objects == TRUE) paste(unique(object_id), collapse = ",") else NULL,
-
         # edge_symmetry_score: Computes a score representing the symmetry of content sharing between users.
         # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both users),
         # and approaches 0 as the contribution becomes more unequal.
@@ -131,6 +128,18 @@ generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5,
                               min(n_cid, n_cidy) / max(n_cid, n_cidy)
                           }),
                       by = .(id_user, id_user_y)] # Grouping by pairs of users for the aggregation
+
+    if (objects == TRUE){
+        # Aggregate edges and compute weight and edge_symmetry_score
+        x_aggregated_obj <- x[, .(
+            # Include object_ids if 'objects' is TRUE
+            object_ids = paste(unique(object_id), collapse = ",")
+        ),
+        by = .(id_user, id_user_y)]
+
+        x_aggregated <- x_aggregated[x_aggregated_obj, on = .(id_user, id_user_y), nomatch = 0]
+    }
+
 
     # Create the graph with edge weights
     coord_graph <- graph_from_data_frame(x_aggregated, directed = FALSE)
@@ -159,9 +168,6 @@ generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5,
                 # n_content_id_y: Counts the number of unique content_id_ys for each user pair
                 n_content_id_y = uniqueN(content_id_y),
 
-                # Include object_ids if 'objects' is TRUE
-                object_ids = if (objects == TRUE) paste(unique(object_id), collapse = ",") else NULL,
-
                 # edge_symmetry_score: Computes a score representing the symmetry of content sharing between users.
                 # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both users),
                 # and approaches 0 as the contribution becomes more unequal.
@@ -171,6 +177,18 @@ generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5,
                     min(n_cid, n_cidy) / max(n_cid, n_cidy)
                 }),
                 by = .(id_user, id_user_y)] # Grouping by pairs of users for the aggregation
+
+            if (objects == TRUE){
+                # Aggregate edges and compute weight and edge_symmetry_score
+                fast_x_obj <- fast_x[, .(
+                    # Include object_ids if 'objects' is TRUE
+                    object_ids = paste(unique(object_id), collapse = ",")
+                ),
+                by = .(id_user, id_user_y)]
+
+                fast_x_aggregated <- fast_x_aggregated[fast_x_obj, on = .(id_user, id_user_y), nomatch = 0]
+            }
+
 
             # Create the graph with edge weights
             fast_coord_graph <- graph_from_data_frame(fast_x_aggregated, directed = FALSE)

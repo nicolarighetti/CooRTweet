@@ -23,16 +23,28 @@ group_stats <- function(coord_graph, network = c("full", "fast")) {
 
     if (network == "full"){
 
-        x[, object_id_list := strsplit(object_ids_full, split = ",", fixed = TRUE)]
+        # Identify the column name that starts with 'object_ids'
+        object_ids_column <- names(x)[startsWith(names(x), "object_ids")]
+
+        # Ensure that the column exists
+        if (length(object_ids_column) == 0) {
+            stop("Column starting with 'object_ids' not found in the data.table")
+        }
+
+        # Use the identified column in the subsequent code
+        x[, object_id_list := strsplit(get(object_ids_column), split = ",", fixed = TRUE)]
 
         unnested <- x[, .(object_id = unlist(object_id_list)), by = .(from, to)]
 
         object_id_summary <- unnested[, .(num_users = uniqueN(from)), by = .(object_id)]
 
+        # Filter out NA values in 'object_id'
         object_id_summary <- object_id_summary[!is.na(object_id)]
 
+        # Order by 'num_users' in descending order
         setorder(object_id_summary, -num_users)
 
+        # Return the summary table
         return(object_id_summary)
 
     } else {

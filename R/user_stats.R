@@ -27,19 +27,20 @@
 
 user_stats <- function(coord_graph, weight_threshold = c("full", "fast", "none")) {
 
-    # List of edge attributes to be removed
-    edge_attrs_to_remove <- c("object_ids_full", "object_ids_fast")
-
-    # Removing edge attributes using a loop
-    for (attr in edge_attrs_to_remove) {
-        coord_graph <- delete_edge_attr(coord_graph, attr)
-    }
-
-    x <- data.table::as.data.table(igraph::as_data_frame(coord_graph))
 
     # Check if "_fast" and "_full" are in column names
-    if (any(grepl("_fast", names(x))) &&
-        any(grepl("_full", names(x)))) {
+    if (any(grepl("_fast", names(coord_graph))) &&
+        any(grepl("_full", names(coord_graph)))) {
+
+        # List of edge attributes to be removed
+        edge_attrs_to_remove <- c("object_ids_full", "object_ids_fast")
+
+        # Removing edge attributes using a loop
+        for (attr in edge_attrs_to_remove) {
+            coord_graph <- delete_edge_attr(coord_graph, attr)
+        }
+
+        x <- data.table::as.data.table(igraph::as_data_frame(coord_graph))
 
         # Filter by edge weight threshold
         if (weight_threshold == "full"){
@@ -90,6 +91,11 @@ user_stats <- function(coord_graph, weight_threshold = c("full", "fast", "none")
         return(user_summary)
 
     } else {
+
+        # Remove unused edge attributes
+        coord_graph <- delete_edge_attr(coord_graph, "object_ids")
+
+        x <- data.table::as.data.table(igraph::as_data_frame(coord_graph))
 
         # Filter by edge weight threshold
         if (weight_threshold == "full"){
