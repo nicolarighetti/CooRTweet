@@ -17,8 +17,24 @@ testthat::test_that("Self-coordinated posts are filtered out", {
         time_window = 10
     )
 
+    coord_graph <- generate_coordinated_network(result)
+
     # Generate summary of user statistics
-    summary_users <- user_stats(result)
+    summary_users <- user_stats(result, weight_threshold = "none")
     user_self_coord <- summary_users[account_id == "9fa51ef17278c01d13d313741eddfc0b"]
     testthat::expect_equal(nrow(user_self_coord), 0)
+})
+
+testthat::test_that("Self-coordinated posts are not filtered out", {
+    result <- detect_groups(russian_coord_tweets,
+                            min_participation = 5,
+                            time_window = 10
+    )
+
+    coord_graph <- generate_coordinated_network(result)
+
+    # Generate summary of user statistics
+    summary_users <- user_stats(result, weight_threshold = "none")
+    user_self_coord <- summary_users[account_id == "9fa51ef17278c01d13d313741eddfc0b"]
+    testthat::expect_gt(nrow(user_self_coord), 0)
 })
