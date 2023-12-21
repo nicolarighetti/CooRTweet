@@ -17,7 +17,7 @@
 #' retweeted, or URLs being shared.
 #'
 #' @param x a data.table with the columns: `object_id` (uniquely identifies
-#' coordinated content), `id_user` (unique ids for users), `content_id`
+#' coordinated content), `account_id` (unique ids for users), `content_id`
 #' (id of user generated content), `timestamp_share` (integer)
 #'
 #' @param time_window the number of seconds within which shared contents
@@ -34,12 +34,14 @@
 #' @param remove_loops Should loops (shares of the same objects made by the same user
 #' within the time window) be removed? (default to TRUE).
 #'
+#' @param ... keyword arguments for backwards compatibility.
+#'
 #' @return a data.table with ids of coordinated contents. Columns:
-#' `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`,
-#' `timedelta`. The `id_user` and `content_id` represent the "older"
-#' data points, `id_user_y` and `content_id_y` represent the "newer"
+#' `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
+#' `timedelta`. The `account_id` and `content_id` represent the "older"
+#' data points, `account_id_y` and `content_id_y` represent the "newer"
 #' data points. For example, User A retweets from User B, then User A's
-#' content is newer (i.e., `id_user_y`).
+#' content is newer (i.e., `account_id_y`).
 #'
 #' @import data.table
 #' @export
@@ -50,7 +52,6 @@ detect_groups <- function(x,
                           min_participation = 2,
                           remove_loops = TRUE,
                           ...) {
-
   # This function is a wrapper for actual calculation
   # We validate the input data before we go ahead
   # the actual functions are do_detect_groups and
@@ -58,13 +59,18 @@ detect_groups <- function(x,
   if (!inherits(x, "data.table")) {
     x <- data.table::as.data.table(x)
   }
-  required_cols <- c("object_id", "id_user", "content_id", "timestamp_share")
+  required_cols <- c("object_id", "account_id", "content_id", "timestamp_share")
+
+  if ("id_user" %in% colnames(x)) {
+    data.table::setnames(x, "id_user", "account_id")
+    warning("Your data contained the column `id_user`, this name is deprecated, renamed it to `account_id`")
+  }
 
   for (cname in required_cols) {
     if (!cname %in% colnames(x)) {
       stop("Either the columns or their names are incorrect.
            Please ensure your data includes the columns
-           'object_id', 'id_user', 'content_id', and 'timestamp_share',
+           'object_id', 'account_id', 'content_id', and 'timestamp_share',
            or use the 'prep_data' function to prepare the dataset.")
     }
   }
@@ -93,7 +99,7 @@ detect_groups <- function(x,
 #' Private function that actually performs \link{detect_groups}.
 #'
 #' @param x a data.table with the columns: `object_id` (uniquely identifies
-#' coordinated content), `id_user` (unique ids for users), `content_id`
+#' coordinated content), `account_id` (unique ids for users), `content_id`
 #' (id of user generated content), `timestamp_share` (integer)
 #'
 #' @param time_window the number of seconds within which shared contents
@@ -104,7 +110,7 @@ detect_groups <- function(x,
 #' network. (defaults to 2)
 #'
 #' @return a data.table with ids of coordinated contents. Columns:
-#' `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`,
+#' `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
 #' `timedelta`
 #'
 #' @import data.table
@@ -115,22 +121,22 @@ do_detect_groups <- function(x,
                              time_window = 10,
                              min_participation = 2,
                              remove_loops = TRUE) {
-
-  object_id <- id_user <- content_id <- content_id_y <-
-    id_user_y <- time_delta <- NULL
+  object_id <- account_id <- content_id <- content_id_y <-
+    account_id_y <- time_delta <- NULL
 
   # --------------------------
   # Pre-filter
   # pre-filter based on minimum repetitions
   # a user must have tweeted a minimum number of times
   # before they can be considered coordinated
-  x <- x[, if (.N >= min_participation) .SD, by = id_user]
+  x <- x[, if (.N >= min_participation) .SD, by = account_id]
 
   # --------------------------
   # strings to factors
   x[,
-     c('object_id', 'id_user', 'content_id') := lapply(.SD, as.factor),
-     .SDcols = c('object_id', 'id_user', 'content_id')]
+    c("object_id", "account_id", "content_id") := lapply(.SD, as.factor),
+    .SDcols = c("object_id", "account_id", "content_id")
+  ]
 
 
   # ---------------------------
@@ -143,12 +149,13 @@ do_detect_groups <- function(x,
 
   # ----------------------------
   # factors back to string
-  result[, c("object_id", "content_id", "content_id_y", "id_user", "id_user_y") := lapply(.SD, as.character),
-         .SDcols = c("object_id", "content_id", "content_id_y", "id_user", "id_user_y")]
+  result[, c("object_id", "content_id", "content_id_y", "account_id", "account_id_y") := lapply(.SD, as.character),
+    .SDcols = c("object_id", "content_id", "content_id_y", "account_id", "account_id_y")
+  ]
 
   # ---------------------------
   # remove loops
-  if (remove_loops == TRUE){
+  if (remove_loops == TRUE) {
     result <- do_remove_loops(result)
   }
 
@@ -165,8 +172,8 @@ do_detect_groups <- function(x,
 
   result[
     time_delta > 0,
-    c("content_id", "content_id_y", "id_user", "id_user_y") :=
-      .(content_id_y, content_id, id_user_y, id_user)
+    c("content_id", "content_id_y", "account_id", "account_id_y") :=
+      .(content_id_y, content_id, account_id_y, account_id)
   ]
   result[, time_delta := abs(time_delta)]
 
@@ -185,14 +192,14 @@ do_detect_groups <- function(x,
 #'
 
 do_remove_loops <- function(result) {
-  object_id <- content_id <- id_user <- content_id_y <- id_user_y <- NULL
+  object_id <- content_id <- account_id <- content_id_y <- account_id_y <- NULL
   # remove loops
   if ("object_id" %in% colnames(result)) {
     result <- result[object_id != content_id]
     result <- result[object_id != content_id_y]
   }
   result <- result[content_id != content_id_y]
-  result <- result[id_user != id_user_y]
+  result <- result[account_id != account_id_y]
 
   return(result)
 }
@@ -211,7 +218,7 @@ do_remove_loops <- function(result) {
 #' @import data.table
 
 filter_min_participation <- function(x, result, min_participation) {
-  content_id <- id_user <- content_id_y <- NULL
+  content_id <- account_id <- content_id_y <- NULL
   # ---------------------------
   # filter by minimum repetition
   # first get all content_ids
@@ -222,13 +229,13 @@ filter_min_participation <- function(x, result, min_participation) {
     )
   )
 
-  # group input data by id_user,
+  # group input data by account_id,
   # then filter only the rows in content_ids
-  # finally, count by groups (id_user) and
+  # finally, count by groups (account_id) and
   # only return rows with more than min_participation
   filt <- x[content_id %in% content_ids,
     if (.N >= min_participation) .SD,
-    by = id_user
+    by = account_id
   ]
 
   # filter the result to only contain content_ids from above
@@ -250,7 +257,7 @@ filter_min_participation <- function(x, result, min_participation) {
 #' @param x A data.table with the following columns:
 #'   - content_id: The ID of the content (e.g. a tweet ID)
 #'   - object_id: The text of the social media post
-#'   - id_user: The ID of the user who shared the content
+#'   - account_id: The ID of the user who shared the content
 #'   - timestamp_share: The timestamp when the content was shared
 #' @param min_participation the minimum number of repeated coordinated
 #'   actions a user has to perform (defaults to 2 times)
@@ -269,8 +276,8 @@ filter_min_participation <- function(x, result, min_participation) {
 #' @return A data.table with the following columns:
 #'   - content_id: The ID of the first post
 #'   - content_id_y: The ID of the second post
-#'   - id_user: The ID of the user who shared the first post
-#'   - id_user_y: The ID of the user who shared the second post
+#'   - account_id: The ID of the user who shared the first post
+#'   - account_id_y: The ID of the user who shared the second post
 #'   - timestamp_share: The timestamp when the first post was shared
 #'   - timestamp_share_y: The timestamp when the second post was shared
 #'   - similarity_score: The similarity score between the two posts
@@ -288,11 +295,10 @@ detect_similar_text <- function(x,
                                 tokenizer = textreuse::tokenize_ngrams,
                                 minhash_seed = NULL,
                                 minhash_n = 200) {
-
-  a <- b <- score <- content_id <- id_user <-
+  a <- b <- score <- content_id <- account_id <-
     timestamp_share <- similarity_score <-
     time_delta <- timestamp_share_y <-
-    content_id_y <- id_user_y <- NULL
+    content_id_y <- account_id_y <- NULL
 
   # Check arguments
 
@@ -312,6 +318,10 @@ detect_similar_text <- function(x,
     stopifnot(minhash_n >= 1)
   }
 
+  if ("id_user" %in% colnames(x)) {
+    data.table::setnames(x, "id_user", "account_id")
+    warning("Your data contained the column `id_user`, this name is deprecated, renamed it to `account_id`")
+  }
 
   # https://cran.r-project.org/web/packages/textreuse/vignettes/textreuse-minhash.html
   minhash <- textreuse::minhash_generator(n = minhash_n, seed = minhash_seed)
@@ -352,18 +362,18 @@ detect_similar_text <- function(x,
   setnames(result_b, "b", "content_id")
 
   cotweet_pairs_x <- x[result_a,
-    .(content_id, id_user, timestamp_share, score),
+    .(content_id, account_id, timestamp_share, score),
     on = "content_id"
   ]
   cotweet_pairs_y <- x[result_b,
-    .(content_id, id_user, timestamp_share),
+    .(content_id, account_id, timestamp_share),
     on = "content_id"
   ]
 
   setnames(
     cotweet_pairs_y,
-    c("content_id", "id_user", "timestamp_share"),
-    c("content_id_y", "id_user_y", "timestamp_share_y")
+    c("content_id", "account_id", "timestamp_share"),
+    c("content_id_y", "account_id_y", "timestamp_share_y")
   )
 
   cotweet_pairs <- cbind(cotweet_pairs_x, cotweet_pairs_y)
@@ -391,8 +401,8 @@ detect_similar_text <- function(x,
 
   coordinated_cotweets[
     time_delta > 0,
-    c("content_id", "content_id_y", "id_user", "id_user_y") :=
-      .(content_id_y, content_id, id_user_y, id_user)
+    c("content_id", "content_id_y", "account_id", "account_id_y") :=
+      .(content_id_y, content_id, account_id_y, account_id)
   ]
   coordinated_cotweets[, time_delta := abs(time_delta)]
 

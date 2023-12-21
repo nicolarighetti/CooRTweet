@@ -73,7 +73,7 @@ russian_coord_tweets
 The dataset has four columns which is the minimum required input data for detecting coordinated behavior:
 
 -   `object_id`: the coordinated content. In this example the ID of retweeted content.
--   `id_user`: the unique ID of a twitter user.
+-   `account_id`: the unique ID of a twitter user.
 -   `content_id`: the unique IDs of the twitter users' posts.
 -   `timestamp_share`: the exact time `content_id` was posted by the user.
 
@@ -149,13 +149,13 @@ coord_graph_fast <-
 
 # Using your own data
 
-Any dataset can be utilized with CooRTweet, provided it includes the necessary data. The convenience function `prep_data` facilitates the creation of an appropriate data format for further processing. Users need only to specify the columns in their dataset corresponding to the required ones, namely, a column with the desired object to be tracked (`object_id`), the user IDs (`id_user`), the IDs of the content featuring the object (`content_id`), and the timestamps of the shares (`timestamp_share`).
+Any dataset can be utilized with CooRTweet, provided it includes the necessary data. The convenience function `prep_data` facilitates the creation of an appropriate data format for further processing. Users need only to specify the columns in their dataset corresponding to the required ones, namely, a column with the desired object to be tracked (`object_id`), the user IDs (`account_id`), the IDs of the content featuring the object (`content_id`), and the timestamps of the shares (`timestamp_share`).
 
 ```{r eval=FALSE}
 prep_data <-
   function(x,
            object_id = NULL,
-           id_user = NULL,
+           account_id = NULL,
            content_id = NULL,
            timestamp_share = NULL
   )

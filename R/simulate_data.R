@@ -2,7 +2,7 @@
 #'
 #' @description
 #' Create a simulated input and output of
-#' \link{detect_coordinated_groups} function.
+#' \link{detect_groups} function.
 #'
 #' @details
 #' This function generates a simulated dataset with fixed
@@ -24,10 +24,10 @@
 #'
 #' @return a list with two data frames: a data frame
 #' with the columns required by the function detect_
-#' coordinated_groups (`object_id`, `id_user`, `content_id`, `timestamp_share`)
+#' coordinated_groups (`object_id`, `account_id`, `content_id`, `timestamp_share`)
 #' and the output table of the same
-#' \link{detect_coordinated_groups} function and columns:
-#' `object_id`, `id_user`, `id_user_y`,
+#' \link{detect_groups} function and columns:
+#' `object_id`, `account_id`, `account_id_y`,
 #' `content_id`, `content_id_y`, `time_delta`.
 #'
 #' @importFrom stringi stri_rand_strings
@@ -243,7 +243,7 @@ simulate_data <- function(
         (1 + (length(share_ids) / 2)):length(share_ids)
     ]
 
-    # subset and rename accordingly to the detect_coordinated_groups output
+    # subset and rename accordingly to the detect_groups output
     output_table <- output_table[
         ,
         c(
@@ -255,7 +255,7 @@ simulate_data <- function(
 
     colnames(output_table) <- c(
         "object_id", "content_id",
-        "content_id_y", "time_delta", "id_user", "id_user_y",
+        "content_id_y", "time_delta", "account_id", "account_id_y",
         "coordinated", "share_time_A", "share_time_B"
     )
 
@@ -272,9 +272,9 @@ simulate_data <- function(
                 output_table$object_id,
                 output_table$object_id
             ),
-            id_user = c(
-                output_table$id_user,
-                output_table$id_user_y
+            account_id = c(
+                output_table$account_id,
+                output_table$account_id_y
             ),
             content_id = c(
                 output_table$content_id,

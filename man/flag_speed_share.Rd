@@ -13,11 +13,11 @@ flag_speed_share(x, result, min_participation, time_window)
 
 \item{min_participation}{The minimum repetition threshold. Users with repetition count
 greater than this threshold will be retained (default parameter equal to
-the one used in the detect_coordinated_groups function).}
+the one used in the \link{detect_groups} function).}
 
 \item{time_window}{The number of seconds within which shared contents are to be considered as
 coordinated according to the new time_window (default parameter equal to
-the one used in the detect_coordinated_groups function).}
+the one used in the \link{detect_groups} function).}
 }
 \value{
 A results data table that includes an additional column set to 1 when the share

@@ -2,7 +2,7 @@
 #'
 #' @description
 #' Function to rename columns of a given data.table. This function standardizes
-#' column names to "object_id", "id_user", "content_id", and "timestamp_share".
+#' column names to "object_id", "account_id", "content_id", and "timestamp_share".
 #' It is useful for preparing datasets for further analysis by ensuring
 #' consistent column naming.
 #'
@@ -22,7 +22,7 @@
 #' @param object_id The current name of the column that should be renamed to "object_id".
 #' If NULL, no renaming is performed on this column.
 #'
-#' @param id_user The current name of the column that should be renamed to "id_user".
+#' @param account_id The current name of the column that should be renamed to "account_id".
 #' If NULL, no renaming is performed on this column.
 #'
 #' @param content_id The current name of the column that should be renamed to "content_id".
@@ -37,15 +37,15 @@
 #' If no renaming is required, the original data.table is returned unaltered.
 #'
 #' @examples
-#' dt <- data.table(old_object_id = 1:3, old_id_user = 4:6)
-#' dt <- prep_data(dt, object_id = "old_object_id", id_user = "old_id_user")
+#' dt <- data.table::data.table(old_object_id = 1:3, old_account_id_y = 4:6)
+#' dt <- prep_data(dt, object_id = "old_object_id", account_id = "old_account_id_y")
 #'
 #' @import data.table
 #' @export
 
 
 
-prep_data <- function(x, object_id = NULL, id_user = NULL, content_id = NULL, timestamp_share = NULL) {
+prep_data <- function(x, object_id = NULL, account_id = NULL, content_id = NULL, timestamp_share = NULL) {
 
   # Convert x to a data.table if it's not already
   if (!inherits(x, "data.table")) {
@@ -56,8 +56,8 @@ prep_data <- function(x, object_id = NULL, id_user = NULL, content_id = NULL, ti
   if (!is.null(object_id)) {
     setnames(x, old = object_id, new = "object_id")
   }
-  if (!is.null(id_user)) {
-    setnames(x, old = id_user, new = "id_user")
+  if (!is.null(account_id)) {
+    setnames(x, old = account_id, new = "account_id")
   }
   if (!is.null(content_id)) {
     setnames(x, old = content_id, new = "content_id")

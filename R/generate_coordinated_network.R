@@ -1,6 +1,6 @@
 #' generate_coordinated_network
 #'
-#' @description This function takes the results of `detect_coordinated_groups`
+#' @description This function takes the results of \link{detect_groups}
 #' and generates a network from the data. It performs the second step in
 #' coordinated detection analysis by identifying users who repeatedly engage in
 #' identical actions within a predefined time window. The function offers
@@ -38,8 +38,8 @@
 #' and `user_id_y` (`n_content_id` and `n_content_id_y`), allows for monitoring
 #' and controlling this phenomenon.
 #'
-#' @param x a data.table (result from `detect_coordinated_groups`) with the
-#' Columns: `object_id`, `id_user`, `id_user_y`, `content_id`, `content_id_y`,
+#' @param x a data.table (result from \link{detect_groups}) with the
+#' Columns: `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
 #' `timedelta`
 #' @param fast_net If the data.table x has been updated with the
 #' restrict_time_window function and this parameter is set to TRUE, two columns
@@ -78,20 +78,26 @@
 #' @import data.table
 #' @import Matrix
 #' @import igraph
+#' @importFrom stats quantile
 #' @export
 #'
 
 
-generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5, subgraph = 0, objects = FALSE) {
-    object_id <- nodes <- patterns <- NULL
-
+generate_coordinated_network <- function(x,
+                                         fast_net = FALSE,
+                                         edge_weight = 0.5,
+                                         subgraph = 0,
+                                         objects = FALSE) {
+    object_id <- account_id <- account_id_y <- time_delta <- 
+        content_id <- content_id_y <- NULL
+    
     # Validate the input
-    if(!(is.numeric(edge_weight)) || edge_weight < 0 | edge_weight > 1){
+    if (!(is.numeric(edge_weight)) || edge_weight < 0 | edge_weight > 1) {
         stop("edge_weight must be a numeric value between 0 and 1")
     }
 
-    if(fast_net == TRUE){
-        if(any(grepl("time_window_", names(x))) == FALSE){
+    if (fast_net == TRUE) {
+        if (any(grepl("time_window_", names(x))) == FALSE) {
             stop("fast_net = TRUE but input data is not available. Please check and update the dataset with 'flag_speed_share' function if necessary.")
         }
     }
@@ -102,8 +108,13 @@ generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5,
         }
     }
 
+    if ("id_user" %in% colnames(x)) {
+        data.table::setnames(x, "id_user", "account_id")
+        warning("Your data contained the column `id_user`, this name is deprecated, renamed it to `account_id`")
+    }
+
     # standardize the order of the vertices
-    x[, `:=`(id_user = pmin(id_user, id_user_y), id_user_y = pmax(id_user, id_user_y))]
+    x[, `:=`(account_id = pmin(account_id, account_id_y), account_id_y = pmax(account_id, account_id_y))]
 
     # Aggregate edges and compute weight and edge_symmetry_score
     x_aggregated <- x[, .(
@@ -122,22 +133,25 @@ generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5,
         # edge_symmetry_score: Computes a score representing the symmetry of content sharing between users.
         # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both users),
         # and approaches 0 as the contribution becomes more unequal.
-                          edge_symmetry_score = {
-                              n_cid = uniqueN(content_id)
-                              n_cidy = uniqueN(content_id_y)
-                              min(n_cid, n_cidy) / max(n_cid, n_cidy)
-                          }),
-                      by = .(id_user, id_user_y)] # Grouping by pairs of users for the aggregation
+        edge_symmetry_score = {
+            n_cid <- uniqueN(content_id)
+            n_cidy <- uniqueN(content_id_y)
+            min(n_cid, n_cidy) / max(n_cid, n_cidy)
+        }
+    ),
+    by = .(account_id, account_id_y)
+    ] # Grouping by pairs of users for the aggregation
 
-    if (objects == TRUE){
+    if (objects == TRUE) {
         # Aggregate edges and compute weight and edge_symmetry_score
         x_aggregated_obj <- x[, .(
             # Include object_ids if 'objects' is TRUE
             object_ids = paste(unique(object_id), collapse = ",")
         ),
-        by = .(id_user, id_user_y)]
+        by = .(account_id, account_id_y)
+        ]
 
-        x_aggregated <- x_aggregated[x_aggregated_obj, on = .(id_user, id_user_y), nomatch = 0]
+        x_aggregated <- x_aggregated[x_aggregated_obj, on = .(account_id, account_id_y), nomatch = 0]
     }
 
 
@@ -145,159 +159,158 @@ generate_coordinated_network <- function(x, fast_net = FALSE, edge_weight = 0.5,
     coord_graph <- graph_from_data_frame(x_aggregated, directed = FALSE)
 
     # Optional attributes and subsets -------------------------
-        # Add the restrict_time_window attribute to the graph
-        if (fast_net == TRUE){
+    # Add the restrict_time_window attribute to the graph
+    if (fast_net == TRUE) {
+        fast_net_col_name <- names(x)[grep("time_window_", names(x))]
+        fast_x <- x[get(fast_net_col_name) == 1]
 
-            fast_net_col_name <- names(x)[grep("time_window_", names(x))]
-            fast_x <- x[get(fast_net_col_name) == 1]
+        # Standardize the order of the vertices
+        fast_x[, `:=`(account_id = pmin(account_id, account_id_y), account_id_y = pmax(account_id, account_id_y))]
 
-            # Standardize the order of the vertices
-            fast_x[, `:=`(id_user = pmin(id_user, id_user_y), id_user_y = pmax(id_user, id_user_y))]
+        # Aggregate edges and compute weight and edge_symmetry_score
+        fast_x_aggregated <- fast_x[, .(
+            # weight: Counts the number of connections (edges) between each pair of users
+            weight = .N,
 
+            # avg_time_delta: Calculates the average time difference across all connections for each user pair
+            avg_time_delta = mean(time_delta),
+
+            # n_content_id: Counts the number of unique content_ids for each user pair
+            n_content_id = uniqueN(content_id),
+
+            # n_content_id_y: Counts the number of unique content_id_ys for each user pair
+            n_content_id_y = uniqueN(content_id_y),
+
+            # edge_symmetry_score: Computes a score representing the symmetry of content sharing between users.
+            # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both users),
+            # and approaches 0 as the contribution becomes more unequal.
+            edge_symmetry_score = {
+                n_cid <- uniqueN(content_id)
+                n_cidy <- uniqueN(content_id_y)
+                min(n_cid, n_cidy) / max(n_cid, n_cidy)
+            }
+        ),
+        by = .(account_id, account_id_y)
+        ] # Grouping by pairs of users for the aggregation
+
+        if (objects == TRUE) {
             # Aggregate edges and compute weight and edge_symmetry_score
-            fast_x_aggregated <- fast_x[, .(
-                # weight: Counts the number of connections (edges) between each pair of users
-                weight = .N,
+            fast_x_obj <- fast_x[, .(
+                # Include object_ids if 'objects' is TRUE
+                object_ids = paste(unique(object_id), collapse = ",")
+            ),
+            by = .(account_id, account_id_y)
+            ]
 
-                # avg_time_delta: Calculates the average time difference across all connections for each user pair
-                avg_time_delta = mean(time_delta),
-
-                # n_content_id: Counts the number of unique content_ids for each user pair
-                n_content_id = uniqueN(content_id),
-
-                # n_content_id_y: Counts the number of unique content_id_ys for each user pair
-                n_content_id_y = uniqueN(content_id_y),
-
-                # edge_symmetry_score: Computes a score representing the symmetry of content sharing between users.
-                # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both users),
-                # and approaches 0 as the contribution becomes more unequal.
-                edge_symmetry_score = {
-                    n_cid = uniqueN(content_id)
-                    n_cidy = uniqueN(content_id_y)
-                    min(n_cid, n_cidy) / max(n_cid, n_cidy)
-                }),
-                by = .(id_user, id_user_y)] # Grouping by pairs of users for the aggregation
-
-            if (objects == TRUE){
-                # Aggregate edges and compute weight and edge_symmetry_score
-                fast_x_obj <- fast_x[, .(
-                    # Include object_ids if 'objects' is TRUE
-                    object_ids = paste(unique(object_id), collapse = ",")
-                ),
-                by = .(id_user, id_user_y)]
-
-                fast_x_aggregated <- fast_x_aggregated[fast_x_obj, on = .(id_user, id_user_y), nomatch = 0]
-            }
-
-
-            # Create the graph with edge weights
-            fast_coord_graph <- graph_from_data_frame(fast_x_aggregated, directed = FALSE)
-
-            # Merge with the full graph
-            coord_graph <- igraph::graph.union(coord_graph, fast_coord_graph)
-
-            # Rename
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "weight_full", value = igraph::E(coord_graph)$weight_1)
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "weight_fast", value = igraph::E(coord_graph)$weight_2)
-
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "avg_time_delta_full", value = igraph::E(coord_graph)$avg_time_delta_1)
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "avg_time_delta_fast", value = igraph::E(coord_graph)$avg_time_delta_2)
-
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "n_content_id_full", value = igraph::E(coord_graph)$n_content_id_1)
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "n_content_id_y_full", value = igraph::E(coord_graph)$n_content_id_y_1)
-
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "n_content_id_fast", value = igraph::E(coord_graph)$n_content_id_2)
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "n_content_id_y_fast", value = igraph::E(coord_graph)$n_content_id_y_2)
-
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "edge_symmetry_score_full", value = igraph::E(coord_graph)$edge_symmetry_score_1)
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph, "edge_symmetry_score_fast", value = igraph::E(coord_graph)$edge_symmetry_score_2)
-
-            if (objects == TRUE){
-
-                coord_graph <-
-                    igraph::set_edge_attr(coord_graph, "object_ids_full", value = igraph::E(coord_graph)$object_ids_1)
-                coord_graph <-
-                    igraph::set_edge_attr(coord_graph, "object_ids_fast", value = igraph::E(coord_graph)$object_ids_2)
-            }
-
-            # Remove old attributes
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "weight_1")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "weight_2")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "avg_time_delta_1")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "avg_time_delta_2")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "n_content_id_1")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "n_content_id_y_1")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "n_content_id_2")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "n_content_id_y_2")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "edge_symmetry_score_1")
-            coord_graph <- igraph::delete_edge_attr(coord_graph, "edge_symmetry_score_2")
-
-            if (objects == TRUE){
-                coord_graph <- igraph::delete_edge_attr(coord_graph, "object_ids_1")
-                coord_graph <- igraph::delete_edge_attr(coord_graph, "object_ids_2")
-            }
-
-            # Full network weight threshold
-            threshold_full <- quantile(igraph::E(coord_graph)$weight_full, edge_weight)
-
-            coord_graph <-
-                igraph::set_edge_attr(
-                    coord_graph,
-                    "weight_threshold_full",
-                    value = ifelse(igraph::E(coord_graph)$weight_full > threshold_full, 1, 0)
-                )
-
-            # Fast nodes subnetwork weight threshold
-            threshold_fast <- quantile(igraph::E(coord_graph)$weight_fast, edge_weight, na.rm = TRUE)
-
-            coord_graph <-
-                igraph::set_edge_attr(
-                    coord_graph,
-                    "weight_threshold_fast",
-                    value = ifelse(igraph::E(coord_graph)$weight_fast > threshold_fast, 1, 0)
-                )
-
-        } else {
-
-            # Add the weight_threshold attribute to the full network only
-            threshold_full <- quantile(igraph::E(coord_graph)$weight, edge_weight, na.rm = TRUE)
-
-            coord_graph <-
-                igraph::set_edge_attr(coord_graph,
-                                      "weight_threshold",
-                                      value = ifelse(igraph::E(coord_graph)$weight > threshold_full, 1, 0))
+            fast_x_aggregated <- fast_x_aggregated[fast_x_obj, on = .(account_id, account_id_y), nomatch = 0]
         }
 
-        # Create subgraphs ---------------------
 
-        # Full network > edge weight threshold
-        if(subgraph == 1){
-            edges_to_keep <- igraph::E(coord_graph)[which(igraph::E(coord_graph)$weight_threshold == 1)]
-            coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+        # Create the graph with edge weights
+        fast_coord_graph <- graph_from_data_frame(fast_x_aggregated, directed = FALSE)
+
+        # Merge with the full graph
+        coord_graph <- igraph::graph.union(coord_graph, fast_coord_graph)
+
+        # Rename
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "weight_full", value = igraph::E(coord_graph)$weight_1)
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "weight_fast", value = igraph::E(coord_graph)$weight_2)
+
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "avg_time_delta_full", value = igraph::E(coord_graph)$avg_time_delta_1)
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "avg_time_delta_fast", value = igraph::E(coord_graph)$avg_time_delta_2)
+
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "n_content_id_full", value = igraph::E(coord_graph)$n_content_id_1)
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "n_content_id_y_full", value = igraph::E(coord_graph)$n_content_id_y_1)
+
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "n_content_id_fast", value = igraph::E(coord_graph)$n_content_id_2)
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "n_content_id_y_fast", value = igraph::E(coord_graph)$n_content_id_y_2)
+
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "edge_symmetry_score_full", value = igraph::E(coord_graph)$edge_symmetry_score_1)
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph, "edge_symmetry_score_fast", value = igraph::E(coord_graph)$edge_symmetry_score_2)
+
+        if (objects == TRUE) {
+            coord_graph <-
+                igraph::set_edge_attr(coord_graph, "object_ids_full", value = igraph::E(coord_graph)$object_ids_1)
+            coord_graph <-
+                igraph::set_edge_attr(coord_graph, "object_ids_fast", value = igraph::E(coord_graph)$object_ids_2)
         }
 
-        # Faster network > edge weight threshold
-        if(subgraph == 2){
-            edges_to_keep <- igraph::E(coord_graph)[which(igraph::E(coord_graph)$weight_threshold_fast == 1)]
-            coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+        # Remove old attributes
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "weight_1")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "weight_2")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "avg_time_delta_1")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "avg_time_delta_2")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "n_content_id_1")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "n_content_id_y_1")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "n_content_id_2")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "n_content_id_y_2")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "edge_symmetry_score_1")
+        coord_graph <- igraph::delete_edge_attr(coord_graph, "edge_symmetry_score_2")
+
+        if (objects == TRUE) {
+            coord_graph <- igraph::delete_edge_attr(coord_graph, "object_ids_1")
+            coord_graph <- igraph::delete_edge_attr(coord_graph, "object_ids_2")
         }
 
-        # Faster network -----------------------
-        if (subgraph == 3){
+        # Full network weight threshold
+        threshold_full <- quantile(igraph::E(coord_graph)$weight_full, edge_weight)
 
-            edges_to_keep <- igraph::E(coord_graph)[which(!is.na(igraph::E(coord_graph)$weight_threshold_fast))]
-            coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
-        }
+        coord_graph <-
+            igraph::set_edge_attr(
+                coord_graph,
+                "weight_threshold_full",
+                value = ifelse(igraph::E(coord_graph)$weight_full > threshold_full, 1, 0)
+            )
 
-        return(coord_graph)
+        # Fast nodes subnetwork weight threshold
+        threshold_fast <- quantile(igraph::E(coord_graph)$weight_fast, edge_weight, na.rm = TRUE)
+
+        coord_graph <-
+            igraph::set_edge_attr(
+                coord_graph,
+                "weight_threshold_fast",
+                value = ifelse(igraph::E(coord_graph)$weight_fast > threshold_fast, 1, 0)
+            )
+    } else {
+        # Add the weight_threshold attribute to the full network only
+        threshold_full <- quantile(igraph::E(coord_graph)$weight, edge_weight, na.rm = TRUE)
+
+        coord_graph <-
+            igraph::set_edge_attr(coord_graph,
+                "weight_threshold",
+                value = ifelse(igraph::E(coord_graph)$weight > threshold_full, 1, 0)
+            )
+    }
+
+    # Create subgraphs ---------------------
+
+    # Full network > edge weight threshold
+    if (subgraph == 1) {
+        edges_to_keep <- igraph::E(coord_graph)[which(igraph::E(coord_graph)$weight_threshold == 1)]
+        coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+    }
+
+    # Faster network > edge weight threshold
+    if (subgraph == 2) {
+        edges_to_keep <- igraph::E(coord_graph)[which(igraph::E(coord_graph)$weight_threshold_fast == 1)]
+        coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+    }
+
+    # Faster network -----------------------
+    if (subgraph == 3) {
+        edges_to_keep <- igraph::E(coord_graph)[which(!is.na(igraph::E(coord_graph)$weight_threshold_fast))]
+        coord_graph <- igraph::subgraph.edges(coord_graph, edges_to_keep, delete.vertices = TRUE)
+    }
+
+    return(coord_graph)
 }

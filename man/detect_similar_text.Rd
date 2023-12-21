@@ -20,7 +20,7 @@ detect_similar_text(
 \itemize{
 \item content_id: The ID of the content (e.g. a tweet ID)
 \item object_id: The text of the social media post
-\item id_user: The ID of the user who shared the content
+\item account_id: The ID of the user who shared the content
 \item timestamp_share: The timestamp when the content was shared
 }}
 
@@ -49,8 +49,8 @@ A data.table with the following columns:
 \itemize{
 \item content_id: The ID of the first post
 \item content_id_y: The ID of the second post
-\item id_user: The ID of the user who shared the first post
-\item id_user_y: The ID of the user who shared the second post
+\item account_id: The ID of the user who shared the first post
+\item account_id_y: The ID of the user who shared the second post
 \item timestamp_share: The timestamp when the first post was shared
 \item timestamp_share_y: The timestamp when the second post was shared
 \item similarity_score: The similarity score between the two posts

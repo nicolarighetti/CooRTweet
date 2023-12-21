@@ -27,15 +27,15 @@ action to define two user as coordinated.}
 \value{
 a list with two data frames: a data frame
 with the columns required by the function detect_
-coordinated_groups (\code{object_id}, \code{id_user}, \code{content_id}, \code{timestamp_share})
+coordinated_groups (\code{object_id}, \code{account_id}, \code{content_id}, \code{timestamp_share})
 and the output table of the same
-\link{detect_coordinated_groups} function and columns:
-\code{object_id}, \code{id_user}, \code{id_user_y},
+\link{detect_groups} function and columns:
+\code{object_id}, \code{account_id}, \code{account_id_y},
 \code{content_id}, \code{content_id_y}, \code{time_delta}.
 }
 \description{
 Create a simulated input and output of
-\link{detect_coordinated_groups} function.
+\link{detect_groups} function.
 }
 \details{
 This function generates a simulated dataset with fixed

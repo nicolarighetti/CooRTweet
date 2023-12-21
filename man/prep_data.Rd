@@ -7,7 +7,7 @@
 prep_data(
   x,
   object_id = NULL,
-  id_user = NULL,
+  account_id = NULL,
   content_id = NULL,
   timestamp_share = NULL
 )
@@ -19,7 +19,7 @@ This is the dataset whose columns will be renamed.}
 \item{object_id}{The current name of the column that should be renamed to "object_id".
 If NULL, no renaming is performed on this column.}
 
-\item{id_user}{The current name of the column that should be renamed to "id_user".
+\item{account_id}{The current name of the column that should be renamed to "account_id".
 If NULL, no renaming is performed on this column.}
 
 \item{content_id}{The current name of the column that should be renamed to "content_id".
@@ -36,7 +36,7 @@ If no renaming is required, the original data.table is returned unaltered.
 }
 \description{
 Function to rename columns of a given data.table. This function standardizes
-column names to "object_id", "id_user", "content_id", and "timestamp_share".
+column names to "object_id", "account_id", "content_id", and "timestamp_share".
 It is useful for preparing datasets for further analysis by ensuring
 consistent column naming.
 }
@@ -51,7 +51,7 @@ For the 'timestamp_share' column, the function expects the format to be either U
 is in a different format, the function attempts to convert it to UNIX format using base R functions.
 }
 \examples{
-dt <- data.table(old_object_id = 1:3, old_id_user = 4:6)
-dt <- prep_data(dt, object_id = "old_object_id", id_user = "old_id_user")
+dt <- data.table::data.table(old_object_id = 1:3, old_account_id_y = 4:6)
+dt <- prep_data(dt, object_id = "old_object_id", account_id = "old_account_id_y")
 
 }

@@ -19,6 +19,6 @@ testthat::test_that("Self-coordinated posts are filtered out", {
 
     # Generate summary of user statistics
     summary_users <- user_stats(result)
-    user_self_coord <- summary_users[id_user == "9fa51ef17278c01d13d313741eddfc0b"]
+    user_self_coord <- summary_users[account_id == "9fa51ef17278c01d13d313741eddfc0b"]
     testthat::expect_equal(nrow(user_self_coord), 0)
 })

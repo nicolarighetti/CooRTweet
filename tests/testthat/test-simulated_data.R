@@ -21,8 +21,8 @@ sim_test <- function(n_users_coord = 5,
     testthat::expect_gt(delta_uncoord_min, time_window)
 
     # test number of coordinated users
-    users_coord <- unique(c(simulated_result[simulated_result$coordinated == TRUE, ]$id_user,
-                            simulated_result[simulated_result$coordinated == TRUE, ]$id_user_y))
+    users_coord <- unique(c(simulated_result[simulated_result$coordinated == TRUE, ]$account_id,
+                            simulated_result[simulated_result$coordinated == TRUE, ]$account_id_y))
 
     testthat::expect_equal(length(users_coord), n_users_coord)
 
@@ -31,8 +31,8 @@ sim_test <- function(n_users_coord = 5,
     testthat::expect_lte(delta_coord_max, time_window)
 
     # test number of non coordinated users
-    users_noncoord <- unique(c(simulated_result[simulated_result$coordinated == FALSE, ]$id_user,
-                            simulated_result[simulated_result$coordinated == FALSE, ]$id_user_y))
+    users_noncoord <- unique(c(simulated_result[simulated_result$coordinated == FALSE, ]$account_id,
+                            simulated_result[simulated_result$coordinated == FALSE, ]$account_id_y))
 
     testthat::expect_equal(length(users_noncoord), n_users_noncoord)
 

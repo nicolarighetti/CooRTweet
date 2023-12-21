@@ -8,7 +8,7 @@
 #' \describe{
 #'   \item{object_id}{ID of retweeted content.
 #' Twitter API calls this "referenced_tweet_id".}
-#'   \item{id_user}{ID of the user who tweeted. Twitter API: "author_id"}
+#'   \item{account_id}{ID of the user who tweeted. Twitter API: "author_id"}
 #'   \item{content_id}{Tweet ID.}
 #'   \item{timestamp_share}{Ingeger. Timestamp (posix time)}
 #' }

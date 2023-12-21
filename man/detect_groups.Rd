@@ -14,7 +14,7 @@ detect_groups(
 }
 \arguments{
 \item{x}{a data.table with the columns: \code{object_id} (uniquely identifies
-coordinated content), \code{id_user} (unique ids for users), \code{content_id}
+coordinated content), \code{account_id} (unique ids for users), \code{content_id}
 (id of user generated content), \code{timestamp_share} (integer)}
 
 \item{time_window}{the number of seconds within which shared contents
@@ -30,14 +30,16 @@ concluding step in identifying coordinated behavior.}
 
 \item{remove_loops}{Should loops (shares of the same objects made by the same user
 within the time window) be removed? (default to TRUE).}
+
+\item{...}{keyword arguments for backwards compatibility.}
 }
 \value{
 a data.table with ids of coordinated contents. Columns:
-\code{object_id}, \code{id_user}, \code{id_user_y}, \code{content_id}, \code{content_id_y},
-\code{timedelta}. The \code{id_user} and \code{content_id} represent the "older"
-data points, \code{id_user_y} and \code{content_id_y} represent the "newer"
+\code{object_id}, \code{account_id}, \code{account_id_y}, \code{content_id}, \code{content_id_y},
+\code{timedelta}. The \code{account_id} and \code{content_id} represent the "older"
+data points, \code{account_id_y} and \code{content_id_y} represent the "newer"
 data points. For example, User A retweets from User B, then User A's
-content is newer (i.e., \code{id_user_y}).
+content is newer (i.e., \code{account_id_y}).
 }
 \description{
 Function to perform the initial stage in detecting coordinated behavior, identify pairs of users

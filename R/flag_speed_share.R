@@ -10,10 +10,10 @@
 #' @param result A data table containing the result data.
 #' @param min_participation The minimum repetition threshold. Users with repetition count
 #'                       greater than this threshold will be retained (default parameter equal to
-#'                       the one used in the detect_coordinated_groups function).
+#'                       the one used in the \link{detect_groups} function).
 #' @param time_window The number of seconds within which shared contents are to be considered as
 #'                    coordinated according to the new time_window (default parameter equal to
-#'                    the one used in the detect_coordinated_groups function).
+#'                    the one used in the \link{detect_groups} function).
 #'
 #' @return A results data table that includes an additional column set to 1 when the share
 #'         corresponds with the new time_window, and 0 otherwise.
@@ -21,7 +21,8 @@
 #' @import data.table
 #' @export
 
-flag_speed_share <- function(x, result, min_participation, time_window){
+flag_speed_share <- function(x, result, min_participation, time_window) {
+  content_id <- content_id_y <- NULL
 
   if (!inherits(x, "data.table")) {
     x <- data.table::as.data.table(x)
