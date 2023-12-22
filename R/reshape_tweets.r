@@ -51,23 +51,6 @@ reshape_tweets <- function(
         stop("Provided data probably not preprocessed yet.")
     }
 
-    required_elements <- c(
-        "tweets",
-        "referenced",
-        "urls",
-        "mentions",
-        "hashtags"
-    )
-
-    for (el in required_elements) {
-        if (!el %in% names(tweets)) {
-            stop(
-                paste("Provided data does not have the right structure.
-                Please ensure the list contains:", el)
-            )
-        }
-    }
-
     output_cols <- c("object_id", "account_id", "content_id", "timestamp_share")
 
     if (intent == "retweets") {
@@ -80,6 +63,21 @@ reshape_tweets <- function(
         # filter only mentions that start at position 3
         # these are direct retweets:
         # "RT @username"
+
+        required_elements <- c(
+            "tweets",
+            "referenced",
+            "mentions"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
 
         candidates <- tweets$mentions[start == 3, tweet_id]
         retweets <- tweets$referenced[tweet_id %in% candidates]
@@ -120,6 +118,20 @@ reshape_tweets <- function(
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
 
+        required_elements <- c(
+            "tweets",
+            "hashtags"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
+
         # join meta data with hashtags table
         hashtags <- tweets$tweets[tweets$hashtags, on = "tweet_id"]
 
@@ -139,6 +151,19 @@ reshape_tweets <- function(
         # author_id --> account_id
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
+        required_elements <- c(
+            "tweets",
+            "urls"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
 
         # remove Twitter's internal URLs
         filt <- startsWith(tweets$urls$expanded_url, "https://twitter.com")
@@ -169,6 +194,20 @@ reshape_tweets <- function(
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
 
+        required_elements <- c(
+            "tweets",
+            "urls"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
+
         # remove Twitter's internal URLs
         filt <- startsWith(tweets$urls$expanded_url, "https://twitter.com")
         domains <- tweets$urls[!filt]
@@ -194,6 +233,21 @@ reshape_tweets <- function(
         # author_id --> account_id
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
+
+        required_elements <- c(
+            "tweets",
+            "referenced"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
+
         referenced_tweets <- tweets$referenced
         cotweets <- tweets$tweets
 
