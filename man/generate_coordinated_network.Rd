@@ -51,47 +51,47 @@ difference might be negligible. However, for very large datasets, or in scenario
 where optimal performance is crucial, you might experience a more significant slowdown.}
 }
 \value{
-A weighted, undirected network (igraph object) where the vertices (nodes) are users and
+A weighted, undirected network (igraph object) where the vertices (nodes) are accounts and
 edges (links) are the membership in coordinated groups (\code{object_id}).
 }
 \description{
 This function takes the results of \link{detect_groups}
 and generates a network from the data. It performs the second step in
-coordinated detection analysis by identifying users who repeatedly engage in
+coordinated detection analysis by identifying accounts who repeatedly engage in
 identical actions within a predefined time window. The function offers
 multiple options to identify various types of networks, allowing for
 filtering based on different edge weights and facilitating the extraction
 of distinct subgraphs. See details.
 }
 \details{
-Two users may coincidentally share the same objects within the same
+Two accounts may coincidentally share the same objects within the same
 time window, but it is unlikely that they do so repeatedly (Giglietto et al.,
 2020). Such repetition is thus considered an indicator of potential
 coordination. This function utilizes percentile edge weight to represent
-recurrent shares by the same user pairs within a predefined time window. By
+recurrent shares by the same account pairs within a predefined time window. By
 considering the edge weight distribution across the data and setting the
 percentile value \emph{p} between 0 and 1, we can identify edges that fall within
 the top \emph{p} percentile of the edge weight distribution. Selecting a
-sufficiently high percentile (e.g., 0.99) allows us to pinpoint users who
+sufficiently high percentile (e.g., 0.99) allows us to pinpoint accounts who
 share an unusually high number of objects (for instance, more than 99\% of
-user pairs in the network) in the same time window.
+account pairs in the network) in the same time window.
 
 The graph also incorporates the contribution of each node within the pair to
 the pair's edge weight, specifically, the number of shared \code{content_id} that
 contribute to the edge weight. Additionally, an \code{edge_symmetry_score} is
-included, which equals 1 in cases of equal contributions from both users and
+included, which equals 1 in cases of equal contributions from both accounts and
 approaches 0 as the contributions become increasingly unequal. This score,
 along with the value of contributions, can be utilized for further filtering
 or examining cases where the score is particularly low. Working with an
-undirected graph, it is plausible that the activity of highly active users
+undirected graph, it is plausible that the activity of highly active accounts
 disproportionately affects the weight of edges connecting them to less active
-users. For instance, if user A shares the same objects (\code{object_id}) 100
-times, and user B shares the same object only once, but within a time frame
-that matches the \code{time_window} defined in the parameter for all of user A's
+accounts. For instance, if account A shares the same objects (\code{object_id}) 100
+times, and account B shares the same object only once, but within a time frame
+that matches the \code{time_window} defined in the parameter for all of account A's
 100 shares, then the edge weight between A and B will be 100, although this
-weight is almost entirely influenced by the hyperactivity of user A. The
-\code{edge_symmetry_score}, along with the counts of shares by each user \code{user_id}
-and \code{user_id_y} (\code{n_content_id} and \code{n_content_id_y}), allows for monitoring
+weight is almost entirely influenced by the hyperactivity of account A. The
+\code{edge_symmetry_score}, along with the counts of shares by each account \code{account_id}
+and \code{account_id_y} (\code{n_content_id} and \code{n_content_id_y}), allows for monitoring
 and controlling this phenomenon.
 }
 \references{

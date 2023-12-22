@@ -2,40 +2,40 @@
 #'
 #' @description This function takes the results of \link{detect_groups}
 #' and generates a network from the data. It performs the second step in
-#' coordinated detection analysis by identifying users who repeatedly engage in
+#' coordinated detection analysis by identifying accounts who repeatedly engage in
 #' identical actions within a predefined time window. The function offers
 #' multiple options to identify various types of networks, allowing for
 #' filtering based on different edge weights and facilitating the extraction
 #' of distinct subgraphs. See details.
 #'
-#' @details Two users may coincidentally share the same objects within the same
+#' @details Two accounts may coincidentally share the same objects within the same
 #' time window, but it is unlikely that they do so repeatedly (Giglietto et al.,
 #' 2020). Such repetition is thus considered an indicator of potential
 #' coordination. This function utilizes percentile edge weight to represent
-#' recurrent shares by the same user pairs within a predefined time window. By
+#' recurrent shares by the same account pairs within a predefined time window. By
 #' considering the edge weight distribution across the data and setting the
 #' percentile value *p* between 0 and 1, we can identify edges that fall within
 #' the top *p* percentile of the edge weight distribution. Selecting a
-#' sufficiently high percentile (e.g., 0.99) allows us to pinpoint users who
+#' sufficiently high percentile (e.g., 0.99) allows us to pinpoint accounts who
 #' share an unusually high number of objects (for instance, more than 99% of
-#' user pairs in the network) in the same time window.
+#' account pairs in the network) in the same time window.
 #'
 #' The graph also incorporates the contribution of each node within the pair to
 #' the pair's edge weight, specifically, the number of shared `content_id` that
 #' contribute to the edge weight. Additionally, an `edge_symmetry_score` is
-#' included, which equals 1 in cases of equal contributions from both users and
+#' included, which equals 1 in cases of equal contributions from both accounts and
 #' approaches 0 as the contributions become increasingly unequal. This score,
 #' along with the value of contributions, can be utilized for further filtering
 #' or examining cases where the score is particularly low. Working with an
-#' undirected graph, it is plausible that the activity of highly active users
+#' undirected graph, it is plausible that the activity of highly active accounts
 #' disproportionately affects the weight of edges connecting them to less active
-#' users. For instance, if user A shares the same objects (`object_id`) 100
-#' times, and user B shares the same object only once, but within a time frame
-#' that matches the `time_window` defined in the parameter for all of user A's
+#' accounts. For instance, if account A shares the same objects (`object_id`) 100
+#' times, and account B shares the same object only once, but within a time frame
+#' that matches the `time_window` defined in the parameter for all of account A's
 #' 100 shares, then the edge weight between A and B will be 100, although this
-#' weight is almost entirely influenced by the hyperactivity of user A. The
-#' `edge_symmetry_score`, along with the counts of shares by each user `user_id`
-#' and `user_id_y` (`n_content_id` and `n_content_id_y`), allows for monitoring
+#' weight is almost entirely influenced by the hyperactivity of account A. The
+#' `edge_symmetry_score`, along with the counts of shares by each account `account_id`
+#' and `account_id_y` (`n_content_id` and `n_content_id_y`), allows for monitoring
 #' and controlling this phenomenon.
 #'
 #' @param x a data.table (result from \link{detect_groups}) with the
@@ -69,7 +69,7 @@
 #' difference might be negligible. However, for very large datasets, or in scenarios
 #' where optimal performance is crucial, you might experience a more significant slowdown.
 #'
-#' @return A weighted, undirected network (igraph object) where the vertices (nodes) are users and
+#' @return A weighted, undirected network (igraph object) where the vertices (nodes) are accounts and
 #' edges (links) are the membership in coordinated groups (`object_id`).
 #'
 #' @references
@@ -108,9 +108,9 @@ generate_coordinated_network <- function(x,
         }
     }
 
-    if ("id_user" %in% colnames(x)) {
-        data.table::setnames(x, "id_user", "account_id")
-        warning("Your data contained the column `id_user`, this name is deprecated, renamed it to `account_id`")
+    if ("id_account" %in% colnames(x)) {
+        data.table::setnames(x, "id_account", "account_id")
+        warning("Your data contained the column `id_account`, this name is deprecated, renamed it to `account_id`")
     }
 
     # standardize the order of the vertices
@@ -118,20 +118,20 @@ generate_coordinated_network <- function(x,
 
     # Aggregate edges and compute weight and edge_symmetry_score
     x_aggregated <- x[, .(
-        # weight: Counts the number of connections (edges) between each pair of users
+        # weight: Counts the number of connections (edges) between each pair of accounts
         weight = .N,
 
-        # avg_time_delta: Calculates the average time difference across all connections for each user pair
+        # avg_time_delta: Calculates the average time difference across all connections for each account pair
         avg_time_delta = mean(time_delta),
 
-        # n_content_id: Counts the number of unique content_ids for each user pair
+        # n_content_id: Counts the number of unique content_ids for each account pair
         n_content_id = uniqueN(content_id),
 
-        # n_content_id_y: Counts the number of unique content_id_ys for each user pair
+        # n_content_id_y: Counts the number of unique content_id_ys for each account pair
         n_content_id_y = uniqueN(content_id_y),
 
-        # edge_symmetry_score: Computes a score representing the symmetry of content sharing between users.
-        # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both users),
+        # edge_symmetry_score: Computes a score representing the symmetry of content sharing between accounts.
+        # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both accounts),
         # and approaches 0 as the contribution becomes more unequal.
         edge_symmetry_score = {
             n_cid <- uniqueN(content_id)
@@ -140,7 +140,7 @@ generate_coordinated_network <- function(x,
         }
     ),
     by = .(account_id, account_id_y)
-    ] # Grouping by pairs of users for the aggregation
+    ] # Grouping by pairs of accounts for the aggregation
 
     if (objects == TRUE) {
         # Aggregate edges and compute weight and edge_symmetry_score
@@ -169,20 +169,20 @@ generate_coordinated_network <- function(x,
 
         # Aggregate edges and compute weight and edge_symmetry_score
         fast_x_aggregated <- fast_x[, .(
-            # weight: Counts the number of connections (edges) between each pair of users
+            # weight: Counts the number of connections (edges) between each pair of accounts
             weight = .N,
 
-            # avg_time_delta: Calculates the average time difference across all connections for each user pair
+            # avg_time_delta: Calculates the average time difference across all connections for each account pair
             avg_time_delta = mean(time_delta),
 
-            # n_content_id: Counts the number of unique content_ids for each user pair
+            # n_content_id: Counts the number of unique content_ids for each account pair
             n_content_id = uniqueN(content_id),
 
-            # n_content_id_y: Counts the number of unique content_id_ys for each user pair
+            # n_content_id_y: Counts the number of unique content_id_ys for each account pair
             n_content_id_y = uniqueN(content_id_y),
 
-            # edge_symmetry_score: Computes a score representing the symmetry of content sharing between users.
-            # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both users),
+            # edge_symmetry_score: Computes a score representing the symmetry of content sharing between accounts.
+            # This score is 1 when the sharing is perfectly symmetrical (equal contributions from both accounts),
             # and approaches 0 as the contribution becomes more unequal.
             edge_symmetry_score = {
                 n_cid <- uniqueN(content_id)
@@ -191,7 +191,7 @@ generate_coordinated_network <- function(x,
             }
         ),
         by = .(account_id, account_id_y)
-        ] # Grouping by pairs of users for the aggregation
+        ] # Grouping by pairs of accounts for the aggregation
 
         if (objects == TRUE) {
             # Aggregate edges and compute weight and edge_symmetry_score

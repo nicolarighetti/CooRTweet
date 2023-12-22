@@ -13,6 +13,6 @@ do_remove_loops(result)
 The result with loops removed.
 }
 \description{
-This function is a private utility function that removes loops (i.e., users
+This function is a private utility function that removes loops (i.e., accounts
 sharing their own content) from the result.
 }

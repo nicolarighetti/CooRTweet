@@ -19,5 +19,5 @@ a \code{data.table} with summary statistics
 }
 \description{
 Calculate the list of objects shared in a coordinated manner and the total
-number of unique users sharing them.
+number of unique accounts sharing them.
 }

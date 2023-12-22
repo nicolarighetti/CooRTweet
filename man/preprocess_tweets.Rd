@@ -22,7 +22,7 @@ a named \code{list} with 5 data.tables:
 tweets (contains all tweets and their meta-data),
 referenced (information on referenced tweets),
 urls (all urls mentioned in tweets),
-mentions (other users mentioned in tweets),
+mentions (other accounts mentioned in tweets),
 hashtags (hashtags mentioned in tweets)
 }
 \description{
@@ -36,7 +36,7 @@ Restructure your nested Twitter data that you loaded with
 \link{load_tweets_json}. The function unnests the following columns:
 \code{public_metrics} (likes, retweets, quotes),
 \code{referenced_tweets} (IDs of "replied to" and "retweet"),
-\code{entities} (hashtags, URLs, other users).
+\code{entities} (hashtags, URLs, other accounts).
 Returns a named list with several \code{data.tables},
 each \code{data.table} represents one aspect of the nested data.
 The function also expects that the following additional

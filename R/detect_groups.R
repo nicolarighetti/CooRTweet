@@ -1,37 +1,37 @@
 #' detect_groups
 #'
 #' @description
-#' Function to perform the initial stage in detecting coordinated behavior, identify pairs of users
+#' Function to perform the initial stage in detecting coordinated behavior, identify pairs of accounts
 #' that share the same objects in a time_window.
 #' See details.
 #'
 #' @details This function achieves the initial stage in detecting coordinated behavior
-#' by identifying users who share identical objects within the same temporal window, and is
+#' by identifying accounts who share identical objects within the same temporal window, and is
 #' preliminary to the network analysis conducted using the `generate_network` function.
 #' The function groups the data by `object_id` (uniquely identifies
 #' coordinated content) and calculates the time differences between all
-#' `content_id` (ids of user generated contents) within their groups.
+#' `content_id` (ids of account generated contents) within their groups.
 #' It then filters out all `content_id` that are higher than the `time_window`
 #' (in seconds). It returns a `data.table` with all IDs of coordinated
 #' contents. The `object_id` can be for example: hashtags, IDs of tweets being
 #' retweeted, or URLs being shared.
 #'
 #' @param x a data.table with the columns: `object_id` (uniquely identifies
-#' coordinated content), `account_id` (unique ids for users), `content_id`
-#' (id of user generated content), `timestamp_share` (integer)
+#' coordinated content), `account_id` (unique ids for accounts), `content_id`
+#' (id of account generated content), `timestamp_share` (integer)
 #'
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
 #' @param min_participation The minimum number of actions within a specified timeframe
-#' required for a user to be included in subsequent analysis (default set at two).
+#' required for a account to be included in subsequent analysis (default set at two).
 #' This criterion in network analysis corresponds with the concept of degree.
 #' It is important to differentiate this from the frequency of repeated interactions
-#' a user has with a particular other user, which is represented by edge weight.
+#' a account has with a particular other account, which is represented by edge weight.
 #' The edge weight parameter is utilized in the `generate_network` function as a
 #' concluding step in identifying coordinated behavior.
 #'
-#' @param remove_loops Should loops (shares of the same objects made by the same user
+#' @param remove_loops Should loops (shares of the same objects made by the same account
 #' within the time window) be removed? (default to TRUE).
 #'
 #' @param ... keyword arguments for backwards compatibility.
@@ -40,7 +40,7 @@
 #' `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
 #' `timedelta`. The `account_id` and `content_id` represent the "older"
 #' data points, `account_id_y` and `content_id_y` represent the "newer"
-#' data points. For example, User A retweets from User B, then User A's
+#' data points. For example, account A retweets from account B, then account A's
 #' content is newer (i.e., `account_id_y`).
 #'
 #' @import data.table
@@ -61,9 +61,9 @@ detect_groups <- function(x,
   }
   required_cols <- c("object_id", "account_id", "content_id", "timestamp_share")
 
-  if ("id_user" %in% colnames(x)) {
-    data.table::setnames(x, "id_user", "account_id")
-    warning("Your data contained the column `id_user`, this name is deprecated, renamed it to `account_id`")
+  if ("id_account" %in% colnames(x)) {
+    data.table::setnames(x, "id_account", "account_id")
+    warning("Your data contained the column `id_account`, this name is deprecated, renamed it to `account_id`")
   }
 
   for (cname in required_cols) {
@@ -99,14 +99,14 @@ detect_groups <- function(x,
 #' Private function that actually performs \link{detect_groups}.
 #'
 #' @param x a data.table with the columns: `object_id` (uniquely identifies
-#' coordinated content), `account_id` (unique ids for users), `content_id`
-#' (id of user generated content), `timestamp_share` (integer)
+#' coordinated content), `account_id` (unique ids for accounts), `content_id`
+#' (id of account generated content), `timestamp_share` (integer)
 #'
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
 #' @param min_participation the minimum number of published coordinated
-#' contents necessary for a user to be included it in the coordinated
+#' contents necessary for a account to be included it in the coordinated
 #' network. (defaults to 2)
 #'
 #' @return a data.table with ids of coordinated contents. Columns:
@@ -127,7 +127,7 @@ do_detect_groups <- function(x,
   # --------------------------
   # Pre-filter
   # pre-filter based on minimum repetitions
-  # a user must have tweeted a minimum number of times
+  # a account must have tweeted a minimum number of times
   # before they can be considered coordinated
   x <- x[, if (.N >= min_participation) .SD, by = account_id]
 
@@ -182,7 +182,7 @@ do_detect_groups <- function(x,
 
 #' Remove loops from the result.
 #'
-#' This function is a private utility function that removes loops (i.e., users
+#' This function is a private utility function that removes loops (i.e., accounts
 #' sharing their own content) from the result.
 #'
 #' @param result The result of the previous filtering steps.
@@ -210,7 +210,7 @@ do_remove_loops <- function(result) {
 #'
 #' @param x A data table from a coordination detection function
 #' @param result A data table containing the result data.
-#' @param min_participation The minimum repetition threshold. Users with repetition count
+#' @param min_participation The minimum repetition threshold. accounts with repetition count
 #'                          greater than this threshold will be retained.
 #'
 #' @return A data table with filtered rows based on the specified minimum participation.

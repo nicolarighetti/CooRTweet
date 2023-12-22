@@ -11,7 +11,7 @@ flag_speed_share(x, result, min_participation, time_window)
 
 \item{result}{A data table containing the result data.}
 
-\item{min_participation}{The minimum repetition threshold. Users with repetition count
+\item{min_participation}{The minimum repetition threshold. Accounts with repetition count
 greater than this threshold will be retained (default parameter equal to
 the one used in the \link{detect_groups} function).}
 

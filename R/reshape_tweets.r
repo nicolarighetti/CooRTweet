@@ -14,7 +14,7 @@
 #' `"urls_domain"` to detect coordinated link sharing behaviour
 #' at the domain level.
 #' `"cotweet"` to detect coordinated cotweeting behaviour
-#' (users posting same text).
+#' (accounts posting same text).
 #' The output of this function is a reshaped `data.table` that
 #' can be passed to \link{detect_groups}.
 #'
@@ -286,7 +286,7 @@ reshape_tweets <- function(
 #' Normalize text
 #'
 #' @description
-#' Utility function that normalizes text by removing mentions of other users, removing "RT",
+#' Utility function that normalizes text by removing mentions of other accounts, removing "RT",
 #' converting to lower case, and trimming whitespace.
 #'
 #' @param x The text to be normalized.

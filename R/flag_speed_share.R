@@ -8,7 +8,7 @@
 #'
 #' @param x A data table from a coordination detection function
 #' @param result A data table containing the result data.
-#' @param min_participation The minimum repetition threshold. Users with repetition count
+#' @param min_participation The minimum repetition threshold. Accounts with repetition count
 #'                       greater than this threshold will be retained (default parameter equal to
 #'                       the one used in the \link{detect_groups} function).
 #' @param time_window The number of seconds within which shared contents are to be considered as

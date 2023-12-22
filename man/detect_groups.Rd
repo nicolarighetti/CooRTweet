@@ -14,21 +14,21 @@ detect_groups(
 }
 \arguments{
 \item{x}{a data.table with the columns: \code{object_id} (uniquely identifies
-coordinated content), \code{account_id} (unique ids for users), \code{content_id}
-(id of user generated content), \code{timestamp_share} (integer)}
+coordinated content), \code{account_id} (unique ids for accounts), \code{content_id}
+(id of account generated content), \code{timestamp_share} (integer)}
 
 \item{time_window}{the number of seconds within which shared contents
 are to be considered as coordinated (default to 10 seconds).}
 
 \item{min_participation}{The minimum number of actions within a specified timeframe
-required for a user to be included in subsequent analysis (default set at two).
+required for a account to be included in subsequent analysis (default set at two).
 This criterion in network analysis corresponds with the concept of degree.
 It is important to differentiate this from the frequency of repeated interactions
-a user has with a particular other user, which is represented by edge weight.
+a account has with a particular other account, which is represented by edge weight.
 The edge weight parameter is utilized in the \code{generate_network} function as a
 concluding step in identifying coordinated behavior.}
 
-\item{remove_loops}{Should loops (shares of the same objects made by the same user
+\item{remove_loops}{Should loops (shares of the same objects made by the same account
 within the time window) be removed? (default to TRUE).}
 
 \item{...}{keyword arguments for backwards compatibility.}
@@ -38,21 +38,21 @@ a data.table with ids of coordinated contents. Columns:
 \code{object_id}, \code{account_id}, \code{account_id_y}, \code{content_id}, \code{content_id_y},
 \code{timedelta}. The \code{account_id} and \code{content_id} represent the "older"
 data points, \code{account_id_y} and \code{content_id_y} represent the "newer"
-data points. For example, User A retweets from User B, then User A's
+data points. For example, account A retweets from account B, then account A's
 content is newer (i.e., \code{account_id_y}).
 }
 \description{
-Function to perform the initial stage in detecting coordinated behavior, identify pairs of users
+Function to perform the initial stage in detecting coordinated behavior, identify pairs of accounts
 that share the same objects in a time_window.
 See details.
 }
 \details{
 This function achieves the initial stage in detecting coordinated behavior
-by identifying users who share identical objects within the same temporal window, and is
+by identifying accounts who share identical objects within the same temporal window, and is
 preliminary to the network analysis conducted using the \code{generate_network} function.
 The function groups the data by \code{object_id} (uniquely identifies
 coordinated content) and calculates the time differences between all
-\code{content_id} (ids of user generated contents) within their groups.
+\code{content_id} (ids of account generated contents) within their groups.
 It then filters out all \code{content_id} that are higher than the \code{time_window}
 (in seconds). It returns a \code{data.table} with all IDs of coordinated
 contents. The \code{object_id} can be for example: hashtags, IDs of tweets being

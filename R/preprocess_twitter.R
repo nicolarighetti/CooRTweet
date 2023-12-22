@@ -11,7 +11,7 @@
 #' \link{load_tweets_json}. The function unnests the following columns:
 #' `public_metrics` (likes, retweets, quotes),
 #' `referenced_tweets` (IDs of "replied to" and "retweet"),
-#' `entities` (hashtags, URLs, other users).
+#' `entities` (hashtags, URLs, other accounts).
 #' Returns a named list with several `data.tables`,
 #' each `data.table` represents one aspect of the nested data.
 #' The function also expects that the following additional
@@ -29,7 +29,7 @@
 #' tweets (contains all tweets and their meta-data),
 #' referenced (information on referenced tweets),
 #' urls (all urls mentioned in tweets),
-#' mentions (other users mentioned in tweets),
+#' mentions (other accounts mentioned in tweets),
 #' hashtags (hashtags mentioned in tweets)
 #'
 #' @import data.table
