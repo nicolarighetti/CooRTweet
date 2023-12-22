@@ -4,7 +4,8 @@
 #' Function to update result based on a narrower time_window.
 #'
 #' @details
-#' This function identifies and marks the subset of results that match a more stringent time window.
+#' This function identifies and marks the subset of results that match a more
+#' stringent time window.
 #'
 #' @param x A data table from a coordination detection function
 #' @param result A data table containing the result data.

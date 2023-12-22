@@ -42,7 +42,7 @@
 #' Columns: `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
 #' `timedelta`
 #' @param fast_net If the data.table x has been updated with the
-#' restrict_time_window function and this parameter is set to TRUE, two columns
+#' \link{flag_speed_share} function and this parameter is set to TRUE, two columns
 #' weight_full and weight_fast are created, the first containing the edge weights
 #' of the full graph, the second those of the subgraph that includes the shares
 #' made in the narrower time window.
@@ -56,11 +56,11 @@
 #' - If 1 reduces the graph to the subgraph whose edges have a value that exceeds
 #' the threshold given in the edge_weight parameter (weighted subgraph).
 #' - If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the
-#' narrowest time window, as established with the restrict_time_window function,
+#' narrowest time window, as established with the \link{flag_speed_share} function,
 #' to the subgraph whose edges have a value that exceeds the threshold given in
 #' the edge_weight parameter (fast weighted subgraph).
 #' - If 3 reduces the graph to the subgraph whose nodes exhibit coordinated
-#' behavior in the narrowest time window established with the restrict_time_window
+#' behavior in the narrowest time window established with the \link{flag_speed_share}
 #' function (fast subgraph). The default value is 0, meaning that no subgraph is
 #' created.
 #' @param objects Keep track of the IDs of shared objects for further analysis with
@@ -69,14 +69,15 @@
 #' difference might be negligible. However, for very large datasets, or in scenarios
 #' where optimal performance is crucial, you might experience a more significant slowdown.
 #'
-#' @return A weighted, undirected network (igraph object) where the vertices (nodes) are accounts and
-#' edges (links) are the membership in coordinated groups (`object_id`).
+#' @return A weighted, undirected network (igraph object) where the vertices (nodes)
+#' are accounts and edges (links) are the membership in coordinated groups (`object_id`).
 #'
 #' @references
-#' Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. *Information, Communication & Society*, 23(6), 867-891.
+#' Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village 
+#' to manipulate the media: coordinated link sharing behavior during 2018 and 2019 
+#' Italian elections. *Information, Communication & Society*, 23(6), 867-891.
 #'
 #' @import data.table
-#' @import Matrix
 #' @import igraph
 #' @importFrom stats quantile
 #' @export
@@ -159,7 +160,7 @@ generate_coordinated_network <- function(x,
     coord_graph <- graph_from_data_frame(x_aggregated, directed = FALSE)
 
     # Optional attributes and subsets -------------------------
-    # Add the restrict_time_window attribute to the graph
+    # Add the flag_speed_share attribute to the graph
     if (fast_net == TRUE) {
         fast_net_col_name <- names(x)[grep("time_window_", names(x))]
         fast_x <- x[get(fast_net_col_name) == 1]

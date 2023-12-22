@@ -18,7 +18,7 @@ Columns: \code{object_id}, \code{account_id}, \code{account_id_y}, \code{content
 \code{timedelta}}
 
 \item{fast_net}{If the data.table x has been updated with the
-restrict_time_window function and this parameter is set to TRUE, two columns
+\link{flag_speed_share} function and this parameter is set to TRUE, two columns
 weight_full and weight_fast are created, the first containing the edge weights
 of the full graph, the second those of the subgraph that includes the shares
 made in the narrower time window.}
@@ -35,11 +35,11 @@ network.}
 \item If 1 reduces the graph to the subgraph whose edges have a value that exceeds
 the threshold given in the edge_weight parameter (weighted subgraph).
 \item If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the
-narrowest time window, as established with the restrict_time_window function,
+narrowest time window, as established with the \link{flag_speed_share} function,
 to the subgraph whose edges have a value that exceeds the threshold given in
 the edge_weight parameter (fast weighted subgraph).
 \item If 3 reduces the graph to the subgraph whose nodes exhibit coordinated
-behavior in the narrowest time window established with the restrict_time_window
+behavior in the narrowest time window established with the \link{flag_speed_share}
 function (fast subgraph). The default value is 0, meaning that no subgraph is
 created.
 }}
@@ -51,8 +51,8 @@ difference might be negligible. However, for very large datasets, or in scenario
 where optimal performance is crucial, you might experience a more significant slowdown.}
 }
 \value{
-A weighted, undirected network (igraph object) where the vertices (nodes) are accounts and
-edges (links) are the membership in coordinated groups (\code{object_id}).
+A weighted, undirected network (igraph object) where the vertices (nodes)
+are accounts and edges (links) are the membership in coordinated groups (\code{object_id}).
 }
 \description{
 This function takes the results of \link{detect_groups}
@@ -95,5 +95,7 @@ and \code{account_id_y} (\code{n_content_id} and \code{n_content_id_y}), allows 
 and controlling this phenomenon.
 }
 \references{
-Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. \emph{Information, Communication & Society}, 23(6), 867-891.
+Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village
+to manipulate the media: coordinated link sharing behavior during 2018 and 2019
+Italian elections. \emph{Information, Communication & Society}, 23(6), 867-891.
 }

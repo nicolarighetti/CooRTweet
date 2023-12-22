@@ -15,13 +15,14 @@ detect_groups(
 \arguments{
 \item{x}{a data.table with the columns: \code{object_id} (uniquely identifies
 coordinated content), \code{account_id} (unique ids for accounts), \code{content_id}
-(id of account generated content), \code{timestamp_share} (integer)}
+(id of account generated content), \code{timestamp_share} (integer). See also
+\link{reshape_tweets} and \link{prep_data}}
 
 \item{time_window}{the number of seconds within which shared contents
 are to be considered as coordinated (default to 10 seconds).}
 
 \item{min_participation}{The minimum number of actions within a specified timeframe
-required for a account to be included in subsequent analysis (default set at two).
+required for a account to be included in subsequent analysis (default set at 2).
 This criterion in network analysis corresponds with the concept of degree.
 It is important to differentiate this from the frequency of repeated interactions
 a account has with a particular other account, which is represented by edge weight.
@@ -49,12 +50,12 @@ See details.
 \details{
 This function achieves the initial stage in detecting coordinated behavior
 by identifying accounts who share identical objects within the same temporal window, and is
-preliminary to the network analysis conducted using the \code{generate_network} function.
-The function groups the data by \code{object_id} (uniquely identifies
+preliminary to the network analysis conducted using the \link{generate_coordinated_network} function.
+\code{detect_groups} groups the data by \code{object_id} (uniquely identifies
 coordinated content) and calculates the time differences between all
 \code{content_id} (ids of account generated contents) within their groups.
 It then filters out all \code{content_id} that are higher than the \code{time_window}
 (in seconds). It returns a \code{data.table} with all IDs of coordinated
 contents. The \code{object_id} can be for example: hashtags, IDs of tweets being
-retweeted, or URLs being shared.
+retweeted, or URLs being shared. For twitter data, best use \link{reshape_tweets}.
 }

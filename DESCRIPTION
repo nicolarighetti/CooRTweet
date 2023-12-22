@@ -27,7 +27,6 @@ Imports:
   data.table,
   tidytable,
   RcppSimdJson,
-  Matrix,
   lubridate,
   igraph,
   stringi

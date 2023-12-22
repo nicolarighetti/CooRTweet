@@ -11,7 +11,7 @@ flag_speed_share(x, result, min_participation, time_window)
 
 \item{result}{A data table containing the result data.}
 
-\item{min_participation}{The minimum repetition threshold. Accounts with repetition count
+\item{min_participation}{The minimum participation threshold. Accounts with participation count
 greater than this threshold will be retained (default parameter equal to
 the one used in the \link{detect_groups} function).}
 
@@ -27,5 +27,6 @@ corresponds with the new time_window, and 0 otherwise.
 Function to update result based on a narrower time_window.
 }
 \details{
-This function identifies and marks the subset of results that match a more stringent time window.
+This function identifies and marks the subset of results that match a more
+stringent time window.
 }
