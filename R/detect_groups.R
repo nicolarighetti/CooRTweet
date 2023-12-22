@@ -259,8 +259,13 @@ filter_min_participation <- function(x, result, min_participation) {
 #'   - object_id: The text of the social media post
 #'   - account_id: The ID of the user who shared the content
 #'   - timestamp_share: The timestamp when the content was shared
-#' @param min_participation the minimum number of repeated coordinated
-#'   actions a user has to perform (defaults to 2 times)
+#' @param min_participation The minimum number of actions within a specified timeframe
+#' required for a user to be included in subsequent analysis (default set at two).
+#' This criterion in network analysis corresponds with the concept of degree.
+#' It is important to differentiate this from the frequency of repeated interactions
+#' a user has with a particular other user, which is represented by edge weight.
+#' The edge weight parameter is utilized in the `generate_network` function as a
+#' concluding step in identifying coordinated behavior.
 #' @param time_window The maximum time difference between two posts in order
 #'   for them to be considered coordinated cotweets (defaults to 10 seconds).
 #' @param min_similarity The minimum similarity score between two posts in order
@@ -272,7 +277,7 @@ filter_min_participation <- function(x, result, min_participation) {
 #' @param minhash_seed The seed that is used to generate the minhash signatures.
 #'   If NULL, a random seed will be used.
 #' @param minhash_n The number of minhash signatures that are used (see `textreuse` package for details).
-#'
+#' @param skip_short	Option passed to `textreuse`: Should short documents be skipped? Default `FALSE`
 #' @return A data.table with the following columns:
 #'   - content_id: The ID of the first post
 #'   - content_id_y: The ID of the second post
@@ -294,7 +299,8 @@ detect_similar_text <- function(x,
                                 similarity_function = textreuse::jaccard_similarity,
                                 tokenizer = textreuse::tokenize_ngrams,
                                 minhash_seed = NULL,
-                                minhash_n = 200) {
+                                minhash_n = 200,
+                                skip_short=FALSE) {
   a <- b <- score <- content_id <- account_id <-
     timestamp_share <- similarity_score <-
     time_delta <- timestamp_share_y <-
@@ -333,14 +339,13 @@ detect_similar_text <- function(x,
   # Caveats:
   # - minimum length of n-grams cannot be specified
   #   due to a bug in textreuse (see: https://github.com/ropensci/textreuse/pull/80)
-  # - short documents are currently skipped, meaning that every
-  #   document with less than 3 tokens is ignored
   corpus <- textreuse::TextReuseCorpus(
     text = texts,
     tokenizer = tokenizer,
     minhash_func = minhash,
     keep_tokens = TRUE,
     progress = TRUE,
+    skip_short = skip_short
   )
 
   buckets <- textreuse::lsh(corpus, bands = 80, progress = TRUE)
@@ -386,7 +391,7 @@ detect_similar_text <- function(x,
     time_delta := timestamp_share - timestamp_share_y
   ][abs(time_delta) <= time_window]
 
-  # filter by minimum repetition
+  # filter by minimum participation
   coordinated_cotweets <-
     filter_min_participation(x, coordinated_cotweets, min_participation)
 
