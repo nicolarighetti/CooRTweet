@@ -12,7 +12,8 @@ detect_similar_text(
   similarity_function = textreuse::jaccard_similarity,
   tokenizer = textreuse::tokenize_ngrams,
   minhash_seed = NULL,
-  minhash_n = 200
+  minhash_n = 200,
+  skip_short = FALSE
 )
 }
 \arguments{
@@ -24,8 +25,13 @@ detect_similar_text(
 \item timestamp_share: The timestamp when the content was shared
 }}
 
-\item{min_participation}{the minimum number of repeated coordinated
-actions a user has to perform (defaults to 2 times)}
+\item{min_participation}{The minimum number of actions within a specified timeframe
+required for a user to be included in subsequent analysis (default set at two).
+This criterion in network analysis corresponds with the concept of degree.
+It is important to differentiate this from the frequency of repeated interactions
+a user has with a particular other user, which is represented by edge weight.
+The edge weight parameter is utilized in the \code{generate_network} function as a
+concluding step in identifying coordinated behavior.}
 
 \item{time_window}{The maximum time difference between two posts in order
 for them to be considered coordinated cotweets (defaults to 10 seconds).}
@@ -43,6 +49,8 @@ The default function is the \link[textreuse]{tokenize_ngrams} function.}
 If NULL, a random seed will be used.}
 
 \item{minhash_n}{The number of minhash signatures that are used (see \code{textreuse} package for details).}
+
+\item{skip_short}{Option passed to \code{textreuse}: Should short documents be skipped? Default \code{FALSE}}
 }
 \value{
 A data.table with the following columns:

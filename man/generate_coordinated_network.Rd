@@ -35,13 +35,18 @@ network.}
 \item If 1 reduces the graph to the subgraph whose edges have a value that exceeds
 the threshold given in the edge_weight parameter (weighted subgraph).
 \item If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the
-narrowest time window, as established with the restrict_time_window function,
+narrowest time window, as established with the \code{flag_speed_share} function,
 to the subgraph whose edges have a value that exceeds the threshold given in
 the edge_weight parameter (fast weighted subgraph).
 \item If 3 reduces the graph to the subgraph whose nodes exhibit coordinated
-behavior in the narrowest time window established with the restrict_time_window
-function (fast subgraph). The default value is 0, meaning that no subgraph is
-created.
+behavior in the narrowest time window established with the \code{flag_speed_share}
+function (fast subgraph), and the vertices adjacent to their edges. In other
+words, this option identifies the fastest coordinated network along with a
+contextual set of accounts that shared the same objects but in a non-coordinated
+manner. It also add a vertex attribute color_v to facilitate the generation of
+the graph plot. The attribute is 1 when for the coordinated accounts and 0 for
+the contextual, neighbour accounts.
+The default value is 0, meaning that no subgraph is created.
 }}
 
 \item{objects}{Keep track of the IDs of shared objects for further analysis with
@@ -80,10 +85,13 @@ The graph also incorporates the contribution of each node within the pair to
 the pair's edge weight, specifically, the number of shared \code{content_id} that
 contribute to the edge weight. Additionally, an \code{edge_symmetry_score} is
 included, which equals 1 in cases of equal contributions from both users and
-approaches 0 as the contributions become increasingly unequal. This score,
-along with the value of contributions, can be utilized for further filtering
-or examining cases where the score is particularly low. Working with an
-undirected graph, it is plausible that the activity of highly active users
+approaches 0 as the contributions become increasingly unequal.
+The edge_symmetry_score is determined as the proportion of the unique
+content_ids (unique content) shared by each vertex to the total content_ids
+shared by both users.
+This score, along with the value of contributions, can be utilized for further
+filtering or examining cases where the score is particularly low. Working with
+an undirected graph, it is plausible that the activity of highly active users
 disproportionately affects the weight of edges connecting them to less active
 users. For instance, if user A shares the same objects (\code{object_id}) 100
 times, and user B shares the same object only once, but within a time frame
