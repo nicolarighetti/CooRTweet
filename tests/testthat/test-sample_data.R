@@ -20,10 +20,10 @@ testthat::test_that("Self-coordinated posts are filtered out", {
 
     coord_graph <- generate_coordinated_network(result)
 
-    # Generate summary of user statistics
-    summary_users <- user_stats(coord_graph, weight_threshold = "none")
-    user_self_coord <- summary_users[account_id == "9fa51ef17278c01d13d313741eddfc0b"]
-    testthat::expect_equal(nrow(user_self_coord), 0)
+    # Generate summary of account statistics
+    summary_accounts <- account_stats(coord_graph, weight_threshold = "none")
+    account_self_coord <- summary_accounts[account_id == "9fa51ef17278c01d13d313741eddfc0b"]
+    testthat::expect_equal(nrow(account_self_coord), 0)
 })
 
 testthat::test_that("Self-coordinated posts are not filtered out", {
@@ -35,8 +35,8 @@ testthat::test_that("Self-coordinated posts are not filtered out", {
 
     coord_graph <- generate_coordinated_network(result)
 
-    # Generate summary of user statistics
-    summary_users <- user_stats(coord_graph, weight_threshold = "none")
-    user_self_coord <- summary_users[account_id == "9fa51ef17278c01d13d313741eddfc0b"]
-    testthat::expect_gt(nrow(user_self_coord), 0)
+    # Generate summary of account statistics
+    summary_accounts <- account_stats(coord_graph, weight_threshold = "none")
+    account_self_coord <- summary_accounts[account_id == "9fa51ef17278c01d13d313741eddfc0b"]
+    testthat::expect_gt(nrow(account_self_coord), 0)
 })

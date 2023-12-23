@@ -4,11 +4,12 @@
 #' Function to update result based on a narrower time_window.
 #'
 #' @details
-#' This function identifies and marks the subset of results that match a more stringent time window.
+#' This function identifies and marks the subset of results that match a more
+#' stringent time window.
 #'
 #' @param x A data table from a coordination detection function
 #' @param result A data table containing the result data.
-#' @param min_participation The minimum repetition threshold. Users with repetition count
+#' @param min_participation The minimum participation threshold. Accounts with participation count
 #'                       greater than this threshold will be retained (default parameter equal to
 #'                       the one used in the \link{detect_groups} function).
 #' @param time_window The number of seconds within which shared contents are to be considered as
@@ -31,7 +32,7 @@ flag_speed_share <- function(x, result, min_participation, time_window) {
   # update time window
   result_update <- result[result$time_delta <= time_window]
 
-  # filter by minimum repetition
+  # filter by minimum participation
   result_update <-
     filter_min_participation(x, result_update, min_participation)
 

@@ -46,7 +46,7 @@ You can choose the intent for reshaping the data. Use
 \code{"urls_domain"} to detect coordinated link sharing behaviour
 at the domain level.
 \code{"cotweet"} to detect coordinated cotweeting behaviour
-(users posting same text).
+(accounts posting same text).
 The output of this function is a reshaped \code{data.table} that
 can be passed to \link{detect_groups}.
 }

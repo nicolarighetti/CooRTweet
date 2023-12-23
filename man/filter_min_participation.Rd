@@ -11,7 +11,7 @@ filter_min_participation(x, result, min_participation)
 
 \item{result}{A data table containing the result data.}
 
-\item{min_participation}{The minimum repetition threshold. Users with repetition count
+\item{min_participation}{The minimum repetition threshold. accounts with repetition count
 greater than this threshold will be retained.}
 }
 \value{

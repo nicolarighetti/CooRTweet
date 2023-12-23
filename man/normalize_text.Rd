@@ -13,6 +13,6 @@ normalize_text(x)
 The normalized text.
 }
 \description{
-Utility function that normalizes text by removing mentions of other users, removing "RT",
+Utility function that normalizes text by removing mentions of other accounts, removing "RT",
 converting to lower case, and trimming whitespace.
 }
