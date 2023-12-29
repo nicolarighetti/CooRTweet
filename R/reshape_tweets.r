@@ -6,7 +6,7 @@
 #' @details
 #' This function takes the pre-processed Twitter data
 #' (output of \link{preprocess_tweets}) and reshapes it
-#' for coordination detection (\link{detect_coordinated_groups}).
+#' for coordination detection (\link{detect_groups}).
 #' You can choose the intent for reshaping the data. Use
 #' `"retweets"` to detect coordinated retweeting behaviour;
 #' `"hashtags"` for coordinated usage of hashtags;
@@ -14,9 +14,9 @@
 #' `"urls_domain"` to detect coordinated link sharing behaviour
 #' at the domain level.
 #' `"cotweet"` to detect coordinated cotweeting behaviour
-#' (users posting same text).
+#' (accounts posting same text).
 #' The output of this function is a reshaped `data.table` that
-#' can be passed to \link{detect_coordinated_groups}.
+#' can be passed to \link{detect_groups}.
 #'
 #' @param tweets a named list of Twitter data
 #' (output of \link{preprocess_tweets})
@@ -45,41 +45,39 @@ reshape_tweets <- function(
     drop_retweets = TRUE,
     drop_replies = TRUE,
     drop_hashtags = FALSE) {
-    start <- tweet_id <- type <- referenced_tweet_id <- object_id <- id_user <-
+    start <- tweet_id <- type <- referenced_tweet_id <- object_id <- account_id <-
         text <- text_normalized <- domain <- content_id <- NULL
     if (!inherits(tweets, "list")) {
         stop("Provided data probably not preprocessed yet.")
     }
 
-    required_elements <- c(
-        "tweets",
-        "referenced",
-        "urls",
-        "mentions",
-        "hashtags"
-    )
-
-    for (el in required_elements) {
-        if (!el %in% names(tweets)) {
-            stop(
-                paste("Provided data does not have the right structure.
-                Please ensure the list contains:", el)
-            )
-        }
-    }
-
-    output_cols <- c("object_id", "id_user", "content_id", "timestamp_share")
+    output_cols <- c("object_id", "account_id", "content_id", "timestamp_share")
 
     if (intent == "retweets") {
         # Mapping overview
         # referenced_tweet_id --> object_id
-        # author_id --> id_user
+        # author_id --> account_id
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
 
         # filter only mentions that start at position 3
         # these are direct retweets:
         # "RT @username"
+
+        required_elements <- c(
+            "tweets",
+            "referenced",
+            "mentions"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
 
         candidates <- tweets$mentions[start == 3, tweet_id]
         retweets <- tweets$referenced[tweet_id %in% candidates]
@@ -109,16 +107,30 @@ reshape_tweets <- function(
 
         data.table::setnames(retweets, tweet_cols, output_cols)
         data.table::setindex(retweets, object_id)
-        data.table::setindex(retweets, id_user)
+        data.table::setindex(retweets, account_id)
         data.table::setindex(retweets, content_id)
 
         return(retweets)
     } else if (intent == "hashtags") {
         # Mapping overview
         # hashtag --> object_id
-        # author_id --> id_user
+        # author_id --> account_id
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
+
+        required_elements <- c(
+            "tweets",
+            "hashtags"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
 
         # join meta data with hashtags table
         hashtags <- tweets$tweets[tweets$hashtags, on = "tweet_id"]
@@ -128,7 +140,7 @@ reshape_tweets <- function(
 
         data.table::setnames(hashtags, tweet_cols, output_cols)
         data.table::setindex(hashtags, object_id)
-        data.table::setindex(hashtags, id_user)
+        data.table::setindex(hashtags, account_id)
         data.table::setindex(hashtags, content_id)
 
 
@@ -136,9 +148,22 @@ reshape_tweets <- function(
     } else if (intent == "urls") {
         # Mapping overview
         # expanded_url --> object_id
-        # author_id --> id_user
+        # author_id --> account_id
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
+        required_elements <- c(
+            "tweets",
+            "urls"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
 
         # remove Twitter's internal URLs
         filt <- startsWith(tweets$urls$expanded_url, "https://twitter.com")
@@ -158,16 +183,30 @@ reshape_tweets <- function(
 
         data.table::setnames(urls, tweet_cols, output_cols)
         data.table::setindex(urls, object_id)
-        data.table::setindex(urls, id_user)
+        data.table::setindex(urls, account_id)
         data.table::setindex(urls, content_id)
 
         return(urls)
     } else if (intent == "urls_domains") {
         # Mapping overview
         # domain --> object_id
-        # author_id --> id_user
+        # author_id --> account_id
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
+
+        required_elements <- c(
+            "tweets",
+            "urls"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
 
         # remove Twitter's internal URLs
         filt <- startsWith(tweets$urls$expanded_url, "https://twitter.com")
@@ -184,16 +223,31 @@ reshape_tweets <- function(
 
         data.table::setnames(domains, tweet_cols, output_cols)
         data.table::setindex(domains, object_id)
-        data.table::setindex(domains, id_user)
+        data.table::setindex(domains, account_id)
         data.table::setindex(domains, content_id)
 
         return(domains)
     } else if (intent == "cotweet") {
         # Mapping overview
         # text_normalized --> object_id
-        # author_id --> id_user
+        # author_id --> account_id
         # tweet_id --> content_id:
         # created_timestamp --> timestamp_share
+
+        required_elements <- c(
+            "tweets",
+            "referenced"
+        )
+
+        for (el in required_elements) {
+            if (!el %in% names(tweets)) {
+                stop(
+                    paste("Provided data does not have the right structure.
+                    Please ensure the list contains:", el)
+                )
+            }
+        }
+
         referenced_tweets <- tweets$referenced
         cotweets <- tweets$tweets
 
@@ -219,7 +273,7 @@ reshape_tweets <- function(
 
         data.table::setnames(cotweets, tweet_cols, output_cols)
         data.table::setindex(cotweets, object_id)
-        data.table::setindex(cotweets, id_user)
+        data.table::setindex(cotweets, account_id)
         data.table::setindex(cotweets, content_id)
 
         return(cotweets)
@@ -232,7 +286,7 @@ reshape_tweets <- function(
 #' Normalize text
 #'
 #' @description
-#' Utility function that normalizes text by removing mentions of other users, removing "RT",
+#' Utility function that normalizes text by removing mentions of other accounts, removing "RT",
 #' converting to lower case, and trimming whitespace.
 #'
 #' @param x The text to be normalized.

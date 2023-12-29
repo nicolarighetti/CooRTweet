@@ -38,7 +38,7 @@ Reshape twitter data for coordination detection.
 \details{
 This function takes the pre-processed Twitter data
 (output of \link{preprocess_tweets}) and reshapes it
-for coordination detection (\link{detect_coordinated_groups}).
+for coordination detection (\link{detect_groups}).
 You can choose the intent for reshaping the data. Use
 \code{"retweets"} to detect coordinated retweeting behaviour;
 \code{"hashtags"} for coordinated usage of hashtags;
@@ -46,7 +46,7 @@ You can choose the intent for reshaping the data. Use
 \code{"urls_domain"} to detect coordinated link sharing behaviour
 at the domain level.
 \code{"cotweet"} to detect coordinated cotweeting behaviour
-(users posting same text).
+(accounts posting same text).
 The output of this function is a reshaped \code{data.table} that
-can be passed to \link{detect_coordinated_groups}.
+can be passed to \link{detect_groups}.
 }
