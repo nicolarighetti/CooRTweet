@@ -18,46 +18,48 @@ Columns: \code{object_id}, \code{account_id}, \code{account_id_y}, \code{content
 \code{timedelta}}
 
 \item{fast_net}{If the data.table x has been updated with the
-restrict_time_window function and this parameter is set to TRUE, two columns
+\link{flag_speed_share} function and this parameter is set to TRUE, two columns
 weight_full and weight_fast are created, the first containing the edge weights
 of the full graph, the second those of the subgraph that includes the shares
 made in the narrower time window.}
 
-\item{edge_weight}{The edges with weight that exceeds a threshold are marked
-with 0 (not exceeding) or 1 (exceeding). The threshold is expressed in
-percentiles of the edge weight distribution in the full network and in the
-faster network, and any numeric value between 0 and 1 can be assigned. The
-default value is "0.5" which represents the median value of the edges in the
-network.}
+\item{edge_weight}{This parameter defines the edge weight threshold, expressed
+as a percentile of the edge weight distribution within the network. This applies
+also to the faster network, if 'fast_net' is set to TRUE (and the data is updated
+using the \link{flag_speed_share} function). Edges with a weight exceeding this
+threshold are marked as 0 (not exceeding) or 1 (exceeding). The parameter accepts
+any numeric value between 0 and 1. The default value is set to "0.5", representing
+the median value of edge weights in the network.}
 
-\item{subgraph}{Generate and return the following subgraph
+\item{subgraph}{Generate and return the following subgraph (default value is 0,
+meaning that no subgraph is created):
 \itemize{
 \item If 1 reduces the graph to the subgraph whose edges have a value that exceeds
 the threshold given in the edge_weight parameter (weighted subgraph).
 \item If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the
-narrowest time window, as established with the \code{flag_speed_share} function,
+narrowest time window (as established with the \link{flag_speed_share} function),
 to the subgraph whose edges have a value that exceeds the threshold given in
 the edge_weight parameter (fast weighted subgraph).
 \item If 3 reduces the graph to the subgraph whose nodes exhibit coordinated
-behavior in the narrowest time window established with the \code{flag_speed_share}
+behavior in the narrowest time window established with the \link{flag_speed_share}
 function (fast subgraph), and the vertices adjacent to their edges. In other
-words, this option identifies the fastest coordinated network along with a
-contextual set of accounts that shared the same objects but in a non-coordinated
-manner. It also add a vertex attribute color_v to facilitate the generation of
-the graph plot. The attribute is 1 when for the coordinated accounts and 0 for
-the contextual, neighbour accounts.
-The default value is 0, meaning that no subgraph is created.
+words, this option identifies the fastest network, along with a contextual set
+of accounts that shared the same objects but in the wider time window. It
+also add a  vertex attribute color_v to facilitate further analyses or the
+generation of the graph plot. This attribute is 1 when for the coordinated
+accounts and 0 for the neighbor accounts.
 }}
 
 \item{objects}{Keep track of the IDs of shared objects for further analysis with
-\code{group_stats} (default FALSE). There could be a performance impact when this option
-is set to TRUE, although the actual impact may vary. For smaller datasets, the
-difference might be negligible. However, for very large datasets, or in scenarios
-where optimal performance is crucial, you might experience a more significant slowdown.}
+\code{group_stats} (default FALSE). There could be a performance impact when this
+option is set to TRUE, although the actual impact may vary. For smaller datasets,
+the difference might be negligible. However, for very large datasets, or in
+scenarios where optimal performance is crucial, you might experience a more
+significant slowdown.}
 }
 \value{
-A weighted, undirected network (igraph object) where the vertices (nodes) are users and
-edges (links) are the membership in coordinated groups (\code{object_id}).
+A weighted, undirected network (igraph object) where the vertices (nodes)
+are users and edges (links) are the membership in coordinated groups (\code{object_id}).
 }
 \description{
 This function takes the results of \link{detect_groups}

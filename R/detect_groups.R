@@ -1,8 +1,8 @@
 #' detect_groups
 #'
 #' @description
-#' Function to perform the initial stage in detecting coordinated behavior, identify pairs of accounts
-#' that share the same objects in a time_window.
+#' Function to perform the initial stage in detecting coordinated behavior.
+#' It identifies pairs of accounts that share the same objects in a time_window.
 #' See details.
 #'
 #' @details This function achieves the initial stage in detecting coordinated behavior
@@ -19,7 +19,7 @@
 #' @param x a data.table with the columns: `object_id` (uniquely identifies
 #' coordinated content), `account_id` (unique ids for accounts), `content_id`
 #' (id of account generated content), `timestamp_share` (integer). See also
-#' \link{reshape_tweets} and \link{prep_data}
+#' \link{reshape_tweets} and \link{prep_data}.
 #'
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
@@ -27,8 +27,8 @@
 #' @param min_participation The minimum number of actions within a specified timeframe
 #' required for a account to be included in subsequent analysis (default set at 2).
 #' This criterion in network analysis corresponds with the concept of degree.
-#' It is important to differentiate this from the frequency of repeated interactions
-#' a account has with a particular other account, which is represented by edge weight.
+#' It is important to distinguish this from the frequency of repeated interactions
+#' an account has with another specific account, as represented by edge weight.
 #' The edge weight parameter is utilized in the `generate_network` function as a
 #' concluding step in identifying coordinated behavior.
 #'
