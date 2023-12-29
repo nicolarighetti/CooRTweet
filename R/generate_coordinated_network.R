@@ -84,7 +84,6 @@
 #' Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. *Information, Communication & Society*, 23(6), 867-891.
 #'
 #' @import data.table
-#' @import Matrix
 #' @import igraph
 #' @importFrom stats quantile
 #' @export
