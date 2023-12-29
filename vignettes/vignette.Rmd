@@ -20,15 +20,15 @@ library(CooRTweet)
 
 # Introduction
 
-We introduce `CooRTweet` an R-Package for detecting coordinated behavior on social media. 
+We introduce `CooRTweet` an R-Package for detecting coordinated behavior on social media. Named after Twitter (now X), a prototypical social media platform for coordinated message amplification through its hashtags and trending topics affordances, `CooRTweet` is a general-purpose tool whose functionalities apply to any social media platform and even extend beyond social media. It enables the analysis of coordinated behavior employed by any entity to disseminate any content (e.g., hashtags, URLs, images, messages, or any other identifiable objects) via any media. It further opens up the possibility of cross-platform analysis.
 
 Coordinated behavior has been defined as "the act of making people and/or things involved in organized cooperation" [@Giglietto2020, p. 872]. Coordinated behavior on social media has been used for political astroturfing [@Keller2020], spreading inappropriate content [@Giglietto2020], and activism. Detecting such behavior is crucial for academic research and investigative journalism.
 
 Software for academic research and investigative journalism has been developed in the last few years to detect coordinated behavior, such as the CooRnet R package [@Giglietto2020], which detects Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Instagram ([CooRnet website](http://coornet.org/)).
 
-The `CooRTweet` package builds on the existing literature on coordinated behavior and the experience of previous software to provide an easy-to-use tool for detecting various coordinated networks on Twitter. The package is powered by `data.table` [@datatable] which makes efficient use of memory and is considerably fast.
+The `CooRTweet` package builds on the existing literature on coordinated behavior and the experience of previous software to provide an easy-to-use tool for detecting various coordinated networks. The package is powered by `data.table` [@datatable] which makes efficient use of memory and is considerably fast.
 
-The package is compatible with any social media, as long as the data set contains the required variables. It offers native support for the Twitter Academic API V2 in JSON format and includes a convenience function (`prep_data`) for preparing other types of data in the format necessary for the package.
+The package is compatible with any social media, as long as the data set contains the required variables. It offers native support for the Twitter Academic API V2 in JSON format and includes a simple convenience function (`prep_data`) for preparing other types of data in the format necessary for the package.
 
 Regarding the Twitter data gathered using the R package `academictwitteR` and its `get_all_tweets` function, which simultaneously retrieves tweets and user information, the `CooRTweet` convenience function `load_data` employs the leading-edge method for parsing large volumes of JSON data in the most rapid manner achievable [@RcppSimdJson].
 
@@ -134,7 +134,7 @@ result_update <- flag_speed_share(russian_coord_tweets, result, min_participatio
 
 This function creates a new column marking the edges that meet the new condition. 
 
-Using special options of the `generate_coordinated_network` function, we can get the graph of accounts who have shared content faster (`subgraph = 2`). Other options allow for the general network filtered by edge weight (`subgraph = 1`) or the fastest network unfiltered by edge weight (`subgraph = 3`).
+Using special options of the `generate_coordinated_network` function, we can get the graph of accounts who have shared content faster and whose edge are above the threshold (`subgraph = 2`). Other options allow for the general network filtered by edge weight (`subgraph = 1`) or the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the `flag_speed_share` function (fast subgraph), and the vertices adjacent to their edges (`subgraph = 3`).
 
 ```{r}
 coord_graph_fast <-
