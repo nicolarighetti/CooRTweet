@@ -11,7 +11,7 @@ group_stats(coord_graph, network = c("full", "fast"))
 
 \item{network}{The level of the network for which to calculate the statistic.
 It can be either "full" or "fast". The latter is applicable only if the data
-includes information on a faster network, as calculated with the \link{flag_fast_share}
+includes information on a faster network, as calculated with the \link{flag_speed_share}
 function.}
 }
 \value{
