@@ -1,22 +1,8 @@
 ---
 title: "Introduction to CooRTweet"
 author: "Nicola Righetti & Paul Balluff"
-date: "`r Sys.Date()`"
-output: rmarkdown::github_document
-vignette: >
-  %\VignetteIndexEntry{Introduction to CooRTweet}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 bibliography: references.bib
 ---
-
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-library(CooRTweet)
-```
 
 # Introduction
 
