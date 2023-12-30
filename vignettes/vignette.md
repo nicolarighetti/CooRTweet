@@ -1,9 +1,3 @@
----
-title: "Introduction to CooRTweet"
-author: "Nicola Righetti & Paul Balluff"
-bibliography: references.bib
----
-
 # Introduction
 
 We introduce `CooRTweet` an R-Package for detecting coordinated behavior on social media. Named after Twitter (now X), a prototypical social media platform for coordinated message amplification through its hashtags and trending topics affordances, `CooRTweet` is a general-purpose tool whose functionalities apply to any social media platform and even extend beyond social media. It enables the analysis of coordinated behavior employed by any entity to disseminate any content (e.g., hashtags, URLs, images, messages, or any other identifiable objects) via any media. It further opens up the possibility of cross-platform analysis.
