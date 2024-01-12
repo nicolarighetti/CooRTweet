@@ -23,9 +23,9 @@ the network. When applied to a network for which a narrower \code{time_window} h
 been calculated using the \link{flag_speed_share} function, the summary statistics
 are computed separately for both the full and faster networks. It is possible
 to further refine the analysis by considering only the nodes that exceed the
-edge weight threshold (reccomended). This filter can be applied to the full
+edge weight threshold (recommended). This filter can be applied to the full
 network when no faster network is identified by the \link{flag_speed_share} function,
 or when the network to be filtered is the full network. Alternatively, it can
-be applied to the fast network when this is preliminarily identified via the
+be applied to the fast network when this is preliminary identified via the
 \link{flag_speed_share} function.
 }
