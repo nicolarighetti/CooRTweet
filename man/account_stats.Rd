@@ -29,23 +29,25 @@ average edge symmetry score.
 With this helper function, you can obtain summary statistics for the accounts in
 the network. When applied to a network for which a narrower \code{time_window} has
 been calculated using the \link{flag_speed_share} function, the summary statistics
-are computed separately for both the full and faster networks. It is possible
-to further refine the analysis by considering only the nodes that exceed the
-edge weight threshold. This filter can be applied to the full network when no
-faster network is identified by the \link{flag_speed_share} function,
-or when the network to be filtered is the full network. Alternatively, it can
-be applied to the fast network when this is preliminary identified via the
-\link{flag_speed_share} function.
+are computed separately for the full and faster networks depending on the
+'weight_threshold' option. When this option is set to "full", metrics are
+computed on the set of nodes and edges surpassing the user-defined
+edge_weight threshold in the \link{generate_coordinated_network} function. Also,
+metrics for nodes and edges in the fastest network are returned, but they are
+calculated on the specified subgraph. The same applies when the 'weight_threshold'
+option is set to "fast". In this case, metrics are calculated on the fast subgraph.
+When the option is set to "null", the entire inputted graph without further
+subsetting is considered.
 
-The share count is performed thanks to the table resulting from the
+The node share count is performed thanks to the table resulting from the
 \link{detect_groups} function. If the user has used the optional
-\link{flag_speed_share} function and decides to calculate the statistics on
-the fastest graph (by indicating weight_threshold = "fast"), the share count
-is calculated considering only the shares made in the fastest time window.
-Alternatively, the shares in the largest time window are considered (option
+\link{flag_speed_share} function and decides to calculate statistics on
+the fastest graph (by setting weight_threshold = "fast"), the share count
+is calculated considering only shares made in the fastest time window.
+Alternatively, shares in the largest time window are considered (option
 weight_threshold = "full" or weight_threshold = "none"). When calculating the
-share count, all shares made by the accounts are considered, regardless of
-whether they are shares of posts resulting to be shared in a coordinated
-fashion or not according to the edge weight threshold. In other words, this
-is a measure of an account's activity in the time window under consideration.
+share count, all shares made by accounts are considered, regardless of
+whether they are shares of posts shared in a coordinated fashion or not,
+according to the edge weight threshold. In other words, this is a measure of
+an account's activity in the time window under consideration.
 }
