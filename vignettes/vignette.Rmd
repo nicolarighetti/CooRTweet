@@ -113,7 +113,7 @@ Edge weight is not a perfect measure in an undirected graph, as it can be influe
 We can quickly get some summary statistics by using the provided convenience functions `group_stats()` and `account_stats()`. If we are interested in the content that accounts share in a coordinated fashion, we can call `group_stats()` and pass in our `igraph` object from the `generate_coordinated_network` function:
 
 ```{r results='hide'}
-summary_groups <- group_stats(coord_graph, network = "full")
+summary_groups <- group_stats(coord_graph, weight_threshold = "full")
 ```
 
 `summary_groups` shows how many accounts (column `num_accounts`) participated for each unique shared object (`object_id`).
@@ -121,10 +121,10 @@ summary_groups <- group_stats(coord_graph, network = "full")
 If you are interested in understanding more about the users you can call `account_stats()`:
 
 ```{r results='hide'}
-summary_accounts <- account_stats(coord_graph, weight_threshold = "full")
+summary_accounts <- account_stats(coord_graph, result, weight_threshold = "full")
 ```
 
-`summary_accounts` shows that the user with the ID `017ae089cdee16bb4a240a0547457ed4` shared a total of 6 coordinated posts and within an average time window of 104.16 seconds (evaluated on the network filtered by edge_weight, as indicated by the `weight_threshold = "full"` option. The documentation for each function includes details and possible options).
+The documentation for each function includes details and possible options).
 
 You can focus on a narrower time window by updating the result of the `detect_group` function via the `flag_speed_share` function. 
 

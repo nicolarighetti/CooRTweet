@@ -40,22 +40,22 @@ group_stats <- function(coord_graph, weight_threshold = c("full", "fast", "none"
     # weight_threshold 'full' --------
     if (weight_threshold == "full") {
 
-        if (!any(grepl("_full", igraph::edge_attr_names(coord_graph)))) {
-            stop("weight_threshold = 'full' has been selected, but the provided network was not created using a table updated with the 'flag_speed_share' function. Please use the weight_threshold = 'none' option or provide a table containing the necessary information.")
-        }
-
         if(length(object_ids_column) > 1){
             object_ids_column <- "object_ids_full"
         }
 
         # Filter by edge weight threshold
-        x <- x[weight_threshold_full == 1]
+        if (any(grepl("_full", names(x)))) {
+            x <- x[weight_threshold_full == 1]
+        } else {
+            x <- x[weight_threshold == 1]
+        }
     }
 
     # weight_threshold 'fast' --------
     if (weight_threshold == "fast") {
 
-        if (!any(grepl("_fast", igraph::edge_attr_names(coord_graph)))) {
+        if (!any(grepl("_fast", names(x)))) {
             stop("weight_threshold = 'fast' has been selected, but the provided network was not created using a table updated with the 'flag_speed_share' function. Please use the weight_threshold = 'none' option or provide a table containing the necessary information.")
         }
 
