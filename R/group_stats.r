@@ -24,7 +24,7 @@
 #'
 
 group_stats <- function(coord_graph, weight_threshold = c("full", "fast", "none")) {
-    object_id_list <- from <- to <- object_id <- num_accounts <- object_ids_fast <- NULL
+    object_id_list <- from <- to <- object_id <- num_accounts <- object_ids_fast <- weight_threshold_fast <- weight_threshold_full <- NULL
 
     x <- data.table::as.data.table(igraph::as_data_frame(coord_graph))
 

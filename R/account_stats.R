@@ -48,7 +48,7 @@ account_stats <- function(coord_graph, result, weight_threshold = c("full", "fas
         n_content_id_fast <- avg_time_delta_full <- avg_time_delta_fast <- edge_symmetry_score_full <-
         edge_symmetry_score_fast <- to <- n_content_id_y_full <- n_content_id_y_fast <- n_content_full <-
         n_content_fast <- account_id <- n_content_id <- avg_time_delta <- edge_symmetry_score <- n_content_id_y <-
-        n_content <- NULL
+        n_content <- shares <- NULL
 
 
     # Check if "_fast" and "_full" are in column names
