@@ -148,6 +148,7 @@ generate_coordinated_network <- function(x,
     # create a true duplicate of result and avoid overwriting
     result <- x
     x <- data.table::copy(result)
+    rm(result)
 
     # standardize the order of the vertices
     x[, `:=`(
