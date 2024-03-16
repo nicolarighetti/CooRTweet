@@ -146,6 +146,7 @@ generate_coordinated_network <- function(x,
     # as coordinated, in the course of their coordinated activity.
 
     # create a true duplicate of result and avoid overwriting
+    result <- x
     x <- data.table::copy(result)
 
     # standardize the order of the vertices
