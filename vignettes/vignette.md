@@ -104,7 +104,7 @@ If you are interested in understanding more about the users you can call `accoun
 summary_accounts <- account_stats(coord_graph, weight_threshold = "full")
 ```
 
-`summary_accounts` shows that the user with the ID `017ae089cdee16bb4a240a0547457ed4` shared a total of 6 coordinated posts and within an average time window of 104.16 seconds (evaluated on the network filtered by edge_weight, as indicated by the `weight_threshold = "full"` option. The documentation for each function includes details and possible options).
+The documentation for each function includes details and possible options).
 
 You can focus on a narrower time window by updating the result of the `detect_group` function via the `flag_speed_share` function. 
 
