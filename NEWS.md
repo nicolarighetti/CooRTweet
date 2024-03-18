@@ -1,3 +1,7 @@
+# CooRTweet 2.0.1
+
+Fixed a bug that under certain circumstances prevented the number of shares from being calculated correctly with the accounts_stats function.
+
 # CooRTweet 2.0.0
 
 A major release with many important breaking changes. Package users upgrading to version 2.0.0
