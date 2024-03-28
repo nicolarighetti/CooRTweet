@@ -1,3 +1,7 @@
+# CooRTweet 2.0.2
+
+Edit the function documentation to address specific issues and enhance clarity. This includes removing obsolete information about min_repetition in the detect_groups documentation and correcting typos in the vignettes.
+
 # CooRTweet 2.0.1
 
 Fixed a bug that under certain circumstances prevented the number of shares from being calculated correctly with the accounts_stats function.
