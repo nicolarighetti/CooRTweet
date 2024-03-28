@@ -1,9 +1,3 @@
----
-title: "Introduction to CooRTweet"
-author: "Nicola Righetti & Paul Balluff"
-bibliography: references.bib
----
-
 # Introduction
 
 We introduce `CooRTweet` an R-Package for detecting coordinated behavior on social media. Named after Twitter (now X), a prototypical social media platform for coordinated message amplification through its hashtags and trending topics affordances, `CooRTweet` is a general-purpose tool whose functionalities apply to any social media platform and even extend beyond social media. It enables the analysis of coordinated behavior employed by any entity to disseminate any content (e.g., hashtags, URLs, images, messages, or any other identifiable objects) via any media. It further opens up the possibility of cross-platform analysis.
@@ -250,5 +244,3 @@ summary_accounts <- account_stats(coord_graph = coord_graph, result = result, we
 ```
 
 It provides summary statistics for each account in the network: total coordinated posts shared (`content_id`), and average time delta (more specifically, this value represents the average of the mean time_delta values of each account). High number of posts shared and low average time delta might suggest highly coordinated (and potentially automated) account behavior.
-
-# References
