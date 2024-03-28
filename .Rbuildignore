@@ -5,3 +5,5 @@
 ^sample_data
 ^\.github
 ^.lintr
+^doc$
+^Meta$

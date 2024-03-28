@@ -53,7 +53,7 @@ We group all posts according to all uniquely identifiable actions. $n(A) = N$ is
 
 Coordination detection in CooRTweet is executed through two sequential steps, facilitated by the functions `detect_groups` and `generate_coordinated_network`.
 
-The `detect_groups()` function enables the identification of accounts who shared the same objects (denoted as `object_id`) within a predefined time interval, `time_window` (represented by $\tau$). Additionally, the function includes a parameter, `min_participation` (denoted as $r$, corresponding to the `degree` metric in Social Network Analysis), which allows for filtering accounts based on a minimum participation threshold in the network.
+The `detect_groups()` function enables the identification of accounts who shared the same objects (denoted as `object_id`) within a predefined time interval, `time_window` (represented by $\tau$). Additionally, the function includes a parameter, `min_participation` that ensures that only accounts with a minimum level of activity in the original dataset are included in the subsequent analysis.
 
 This function returns a data.table object, which is subsequently processed by the `generate_coordinated_network` function. This function completes the final stage of coordinated analysis. It involves filtering accounts who performed identical actions within the same timeframe, in accordance with the degree of repetition. The underlying assumption is that two accounts may coincidentally share the same objects within the same time window; however, the likelihood of them repeatedly sharing the same object within the same time window is considerably lower [@Giglietto2020]. The degree metric serves to operationalize the concept of repetition. Furthermore, the function computes an `edge_symmetry_score`, which aids in evaluating the impact of the number of shares contributed by each user on the edge.
 
@@ -81,7 +81,6 @@ The length of `content_id` should be the same as the number of rows of your inpu
 
 ```{r results='hide'}
 length(russian_coord_tweets$content_id) == nrow(russian_coord_tweets)
-
 ```
 
 Let's assume that we want to detect coordinated behavior with a `min_participation` of 2 shares and a `time_window` of 600 seconds. We can call the first function `detect_groups()` as follows:
@@ -93,6 +92,21 @@ result <- detect_groups(russian_coord_tweets,
 ```
 
 The `result` is a `data.table` that only includes the accounts and their contents that were shared within the given parameters. The `result` is in a wide-format, where it shows the time difference (`time_delta`) between two posts (`content_id` and `content_id_y`). `result` is sorted in such a way that the "older" posts are represented by `content_id` and the "newer" posts by `content_id_y`. For example, if User A retweets a post of User B, then the Tweet by User A is the "newer" post. Sorting the `result` this way has the advantage that the direction of cascaded coordination can be tracked.
+
+We set the minimum participation filter to 2 to ensure that only accounts that have contributed at least two pieces of content in the activity under scrutiny are included in subsequent analyses.
+
+```{r}
+combined_accounts <- c(result$account_id, result$account_id_y)
+combined_accounts_dt <- data.table::data.table(account_id = combined_accounts)
+account_counts <- combined_accounts_dt[, .N, by = account_id]
+
+russian_coord_tweets <- data.table::as.data.table(russian_coord_tweets)
+raw_counts <- russian_coord_tweets[, .N, by = account_id]
+raw_counts_included <- raw_counts[account_id %in% combined_accounts] 
+
+# min_participation
+min(raw_counts_included$N)
+```
 
 The coordinated detection is then completed by applying the other function. We set the "objects" option to TRUE so that the graph keeps the list of objects shared by accounts, for later inspection via the `group_stats` function. We also set a filter on the graph that identifies edges with a weight greater than 99% of the edges weight in the graph. This is used to identify accounts who repeatedly share `object_id` (i.e, any type of identified content) in the same `time_window`.
 
@@ -113,7 +127,7 @@ Edge weight is not a perfect measure in an undirected graph, as it can be influe
 We can quickly get some summary statistics by using the provided convenience functions `group_stats()` and `account_stats()`. If we are interested in the content that accounts share in a coordinated fashion, we can call `group_stats()` and pass in our `igraph` object from the `generate_coordinated_network` function:
 
 ```{r results='hide'}
-summary_groups <- group_stats(coord_graph, weight_threshold = "full")
+summary_groups <- group_stats(coord_graph = coord_graph, weight_threshold = "full")
 ```
 
 `summary_groups` shows how many accounts (column `num_accounts`) participated for each unique shared object (`object_id`).
@@ -121,7 +135,7 @@ summary_groups <- group_stats(coord_graph, weight_threshold = "full")
 If you are interested in understanding more about the users you can call `account_stats()`:
 
 ```{r results='hide'}
-summary_accounts <- account_stats(coord_graph, result, weight_threshold = "full")
+summary_accounts <- account_stats(coord_graph = coord_graph, result = result, weight_threshold = "full")
 ```
 
 The documentation for each function includes details and possible options).
@@ -239,7 +253,7 @@ There are two functions that give summaries of the `igraph` data resulting from 
 To get insights on the objects shared in the network (groups), use `group_stats()`.Depending on whether you want statistics for the general network, or for the fastest network if it has been computed via the `flag_speed_share` function, you can specify "fast" or "full" in the "network" argument.
 
 ```{r results='hide', eval=FALSE}
-summary_groups <- group_stats(result, network = "full")
+summary_groups <- group_stats(coord_graph = coord_graph, weight_threshold = "full")
 
 ```
 
@@ -248,7 +262,7 @@ It returns a `data.table` which shows the group statistics for total count of un
 If you are interested in the account statistics, you can pass the `igraph` resulting from `generate_coordinated_network` into `account_stats()`. Depending on whether you want statistics for the general network, or for the fastest network, if it has been calculated via the `flag_speed_share` function, you can spefic "fast," or you need to specify "full," or "none," in the "weight_threshold" argument.
 
 ```{r results='hide', eval=FALSE}
-summary_accounts <- account_stats(result, weight_threshold = "fast")
+summary_accounts <- account_stats(coord_graph = coord_graph, result = result, weight_threshold = "fast")
 ```
 
 It provides summary statistics for each account in the network: total coordinated posts shared (`content_id`), and average time delta (more specifically, this value represents the average of the mean time_delta values of each account). High number of posts shared and low average time delta might suggest highly coordinated (and potentially automated) account behavior.

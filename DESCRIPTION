@@ -1,6 +1,6 @@
 Package: CooRTweet
-Version: 2.0.1
-Date: 2024-03-18
+Version: 2.0.2
+Date: 2024-03-28
 Type: Package
 Title: Coordinated Networks Detection on Social Media
 Description: Detects a variety of coordinated actions on social media and outputs the network of coordinated users along with related information.

@@ -21,16 +21,17 @@ coordinated content), \code{account_id} (unique ids for accounts), \code{content
 \item{time_window}{the number of seconds within which shared contents
 are to be considered as coordinated (default to 10 seconds).}
 
-\item{min_participation}{The minimum number of actions within a specified timeframe
-required for a account to be included in subsequent analysis (default set at 2).
-This criterion in network analysis corresponds with the concept of degree.
-It is important to distinguish this from the frequency of repeated interactions
-an account has with another specific account, as represented by edge weight.
-The edge weight parameter is utilized in the \code{generate_network} function as a
-concluding step in identifying coordinated behavior.}
+\item{min_participation}{The minimum number of actions required for a account
+to be included in subsequent analysis (default set at 2). This ensures that
+only accounts with a minimum level of activity in the original dataset are
+included in subsequent analysis. It is important to distinguish this from the
+frequency of repeated interactions an account has with another specific account,
+as represented by edge weight. The edge weight parameter is utilized in the
+\code{generate_coordinated_network} function as a concluding step in identifying
+coordinated behavior.}
 
-\item{remove_loops}{Should loops (shares of the same objects made by the same account
-within the time window) be removed? (default to TRUE).}
+\item{remove_loops}{Should loops (shares of the same objects made by the same
+account within the time window) be removed? (default to TRUE).}
 
 \item{...}{keyword arguments for backwards compatibility.}
 }
@@ -48,11 +49,12 @@ It identifies pairs of accounts that share the same objects in a time_window.
 See details.
 }
 \details{
-This function achieves the initial stage in detecting coordinated behavior
-by identifying accounts who share identical objects within the same temporal window, and is
-preliminary to the network analysis conducted using the \link{generate_coordinated_network} function.
+This function achieves the initial stage in detecting coordinated
+behavior by identifying accounts who share identical objects within the same
+temporal window, and is preliminary to the network analysis conducted using
+the \link{generate_coordinated_network} function.
 \code{detect_groups} groups the data by \code{object_id} (uniquely identifies
-coordinated content) and calculates the time differences between all
+content) and calculates the time differences between all
 \code{content_id} (ids of account generated contents) within their groups.
 It then filters out all \code{content_id} that are higher than the \code{time_window}
 (in seconds). It returns a \code{data.table} with all IDs of coordinated

@@ -5,11 +5,12 @@
 #' It identifies pairs of accounts that share the same objects in a time_window.
 #' See details.
 #'
-#' @details This function achieves the initial stage in detecting coordinated behavior
-#' by identifying accounts who share identical objects within the same temporal window, and is
-#' preliminary to the network analysis conducted using the \link{generate_coordinated_network} function.
+#' @details This function achieves the initial stage in detecting coordinated
+#' behavior by identifying accounts who share identical objects within the same
+#' temporal window, and is preliminary to the network analysis conducted using
+#' the \link{generate_coordinated_network} function.
 #' `detect_groups` groups the data by `object_id` (uniquely identifies
-#' coordinated content) and calculates the time differences between all
+#' content) and calculates the time differences between all
 #' `content_id` (ids of account generated contents) within their groups.
 #' It then filters out all `content_id` that are higher than the `time_window`
 #' (in seconds). It returns a `data.table` with all IDs of coordinated
@@ -24,16 +25,17 @@
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
-#' @param min_participation The minimum number of actions within a specified timeframe
-#' required for a account to be included in subsequent analysis (default set at 2).
-#' This criterion in network analysis corresponds with the concept of degree.
-#' It is important to distinguish this from the frequency of repeated interactions
-#' an account has with another specific account, as represented by edge weight.
-#' The edge weight parameter is utilized in the `generate_network` function as a
-#' concluding step in identifying coordinated behavior.
+#' @param min_participation The minimum number of actions required for a account
+#' to be included in subsequent analysis (default set at 2). This ensures that
+#' only accounts with a minimum level of activity in the original dataset are
+#' included in subsequent analysis. It is important to distinguish this from the
+#' frequency of repeated interactions an account has with another specific account,
+#' as represented by edge weight. The edge weight parameter is utilized in the
+#' `generate_coordinated_network` function as a concluding step in identifying
+#' coordinated behavior.
 #'
-#' @param remove_loops Should loops (shares of the same objects made by the same account
-#' within the time window) be removed? (default to TRUE).
+#' @param remove_loops Should loops (shares of the same objects made by the same
+#' account within the time window) be removed? (default to TRUE).
 #'
 #' @param ... keyword arguments for backwards compatibility.
 #'
@@ -104,13 +106,12 @@ detect_groups <- function(x,
 #' (id of account generated content), `timestamp_share` (integer)
 #'
 #' @param time_window the number of seconds within which shared contents
-#' are to be considered as coordinated (default to 10 seconds).
+#' might be considered as coordinated (default to 10 seconds).
 #'
-#' @param min_participation the minimum number of published coordinated
-#' contents necessary for a account to be included it in the coordinated
-#' network. (defaults to 2)
+#' @param min_participation the minimum number of published contents necessary
+#' for a account to be included it in subsequent analysis (defaults to 2).
 #'
-#' @return a data.table with ids of coordinated contents. Columns:
+#' @return a data.table with ids of contents. Columns:
 #' `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
 #' `timedelta`
 #'
@@ -127,9 +128,9 @@ do_detect_groups <- function(x,
 
   # --------------------------
   # Pre-filter
-  # pre-filter based on minimum repetitions
+  # pre-filter based on minimum participation
   # a account must have tweeted a minimum number of times
-  # before they can be considered coordinated
+  # before they can be considered in subsequent analysis
   x <- x[, if (.N >= min_participation) .SD, by = account_id]
 
   # --------------------------
@@ -161,7 +162,7 @@ do_detect_groups <- function(x,
   }
 
   # ---------------------------
-  # filter by minimum repetition
+  # refine the filtering by minimum participation
   if (min_participation >= 1) {
     result <- filter_min_participation(x, result, min_participation)
   }
@@ -209,10 +210,10 @@ do_remove_loops <- function(result) {
 #'
 #' This private function filters the result by the minimum number of participation required.
 #'
-#' @param x A data table from a coordination detection function
-#' @param result A data table containing the result data.
-#' @param min_participation The minimum repetition threshold. accounts with repetition count
-#'                          greater than this threshold will be retained.
+#' @param x The original data table where a preliminary filter is applied
+#' @param result A data table containing the result data from calc_group_combinations.
+#' @param min_participation The minimum activity threshold. accounts with participation count
+#'                          greater than this threshold will be retained in the final 'result' table.
 #'
 #' @return A data table with filtered rows based on the specified minimum participation.
 #'

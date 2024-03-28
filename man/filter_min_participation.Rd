@@ -7,12 +7,12 @@
 filter_min_participation(x, result, min_participation)
 }
 \arguments{
-\item{x}{A data table from a coordination detection function}
+\item{x}{The original data table where a preliminary filter is applied}
 
-\item{result}{A data table containing the result data.}
+\item{result}{A data table containing the result data from calc_group_combinations.}
 
-\item{min_participation}{The minimum repetition threshold. accounts with repetition count
-greater than this threshold will be retained.}
+\item{min_participation}{The minimum activity threshold. accounts with participation count
+greater than this threshold will be retained in the final 'result' table.}
 }
 \value{
 A data table with filtered rows based on the specified minimum participation.
