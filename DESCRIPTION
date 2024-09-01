@@ -1,6 +1,6 @@
 Package: CooRTweet
-Version: 2.0.2
-Date: 2024-03-28
+Version: 2.1.0
+Date: 2024-09-01
 Type: Package
 Title: Coordinated Networks Detection on Social Media
 Description: Detects a variety of coordinated actions on social media and outputs the network of coordinated users along with related information.
@@ -22,7 +22,7 @@ BugReports: https://github.com/nicolarighetti/CooRTweet/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Imports:
   data.table,
   tidytable,
