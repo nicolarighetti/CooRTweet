@@ -90,7 +90,7 @@ simulate_data <- function(
     time_window = 10,
     lambda_coord = 2,
     lambda_noncoord = 0.5) {
-  N <- object_id <- share_time_A <- share_time_B <- delta <- coordinated <-
+  N <- object_id <- share_time_A <- share_time_B <- time_delta <- coordinated <-
     content_id <- content_id_y <- account_id <- account_id_y <- NULL
   # Create Account IDs --------------------------
   # create sets of IDs for both coordinated and non-coordinated accounts
@@ -218,8 +218,8 @@ simulate_data <- function(
   df_coord[, share_time_A := seq(from = t0, by = sampling_interval, length.out = nrow(df_coord))]
 
   # add share time to B adding number of seconds < time_interval
-  df_coord[, delta := sample(0:time_window, nrow(df_coord), replace = TRUE)]
-  df_coord[, share_time_B := share_time_A + delta]
+  df_coord[, time_delta := sample(0:time_window, nrow(df_coord), replace = TRUE)]
+  df_coord[, share_time_B := share_time_A + time_delta]
 
   # mark as coordinated
   df_coord[, coordinated := TRUE]
@@ -251,7 +251,7 @@ simulate_data <- function(
     length.out = nrow(df_noncoord)
   )]
   df_noncoord[, share_time_B := share_time_A + noise]
-  df_noncoord[, delta := abs(share_time_A - share_time_B)]
+  df_noncoord[, time_delta := abs(share_time_A - share_time_B)]
 
   # mark as non coordinated
   df_noncoord$coordinated <- as.logical("FALSE")
@@ -270,7 +270,7 @@ simulate_data <- function(
     ,
     c(
       "object_id", "content_id", "content_id_y",
-      "delta", "account_id", "account_id_y", "coordinated",
+      "time_delta", "account_id", "account_id_y", "coordinated",
       "share_time_A", "share_time_B"
     )
   ]
