@@ -5,21 +5,14 @@
 #' \code{\link{detect_groups}} function.
 #'
 #' @details
-#' This function generates a simulated dataset of coordinated and non-coordinated
-#' content, using fixed numbers for coordinated accounts, uncoordinated accounts,
-#' and shared objects. The user can set minimum participation and time window
-#' parameters, and the coordinated accounts will "act" randomly within these restrictions.
-#' The size of the resulting dataset can be adjusted with the dataset_size parameter.
+#' This function generates a simulated dataset with fixed
+#' numbers for coordinated accounts, uncoordinated accounts, and
+#' shared objects. The user can set minimum participation and time window parameters
+#' and the coordinated accounts will "act" randomly within these restrictions.
 #'
-#' Some random variation with respect to the dataset_size and occasional failure to generate the
-#' dataset are expected for specific combinations of parameters. In that case, we suggest varying
-#' the parameters and preferring rounded values (e.g., dataset_size = 1000, prop_coord_size = 0.5)
-#' over overly specific values (e.g., dataset_size = 12317, prop_coord_size = 0.432).
-#'
-#' @param dataset_size the desired size of the simulated dataset.
-#'
-#' @param prop_coord_size the proportion of coordinated content in relation to the
-#' total dataset_size.
+#' The size of the resulting dataset can be adjusted with the lambda parameters.
+#' If lambda is between 0.0 and 1.0, the dataset will be much smaller than
+#' choosing lambdas greater than 1.
 #'
 #' @param n_accounts_coord the desired number of coordinated accounts
 #'
@@ -31,6 +24,14 @@
 #' action to define two accounts as coordinated.
 #'
 #' @param time_window the time window of coordination.
+#'
+#' @param lambda_coord `lambda` parameter for coordinated accounts passed to
+#' `rpois()`, which is the expected rate of occurrences
+#' (higher lambda means more coordinated shares).
+#'
+#' @param lambda_noncoord `lambda` parameter for non-coordinated accounts passed to
+#' `rpois()`, which is the expected rate of occurrences
+#' (higher lambda means more non-coordinated shares).
 #'
 #' @return a list with two data frames: a data frame
 #' with the columns required by the function detect_
@@ -49,11 +50,9 @@
 #' \dontrun{
 #' set.seed(123) # For reproducibility
 #' simulated_data <- simulate_data(
-#'   dataset_size = 100,
-#'   prop_coord_size = 0.5,
-#'   n_accounts_coord = 10,
-#'   n_accounts_noncoord = 20,
-#'   n_objects = 10,
+#'   n_accounts_coord = 100,
+#'   n_accounts_noncoord = 50,
+#'   n_objects = 20,
 #'   min_participation = 2,
 #'   time_window = 10
 #' )
@@ -84,40 +83,19 @@
 #'
 
 simulate_data <- function(
-    dataset_size = 100,
-    prop_coord_size = 0.5,
     n_accounts_coord = 5,
     n_accounts_noncoord = 4,
     n_objects = 5,
     min_participation = 3,
-    time_window = 10) {
+    time_window = 10,
+    lambda_coord = 2,
+    lambda_noncoord = 0.5) {
   N <- object_id <- share_time_A <- share_time_B <- time_delta <- coordinated <-
     content_id <- content_id_y <- account_id <- account_id_y <- NULL
   # Create Account IDs --------------------------
   # create sets of IDs for both coordinated and non-coordinated accounts
 
   # TODO: assert that parameters are valid
-
-  # Determine parameters ------------------------
-
-  # The input table has size dataset_size, the coordinated and non_coordinated
-  # tables have size dataset_size/2 each
-  dataset_size <- dataset_size/2
-
-  # Number of pairs
-  num_pairs_coord <- (n_accounts_coord * (n_accounts_coord - 1)) / 2
-  num_pairs_noncoord <- (n_accounts_noncoord * (n_accounts_noncoord - 1)) / 2
-
-  # Distribute target size equally or according to some ratio
-  dataset_size_coord <- round(dataset_size * prop_coord_size)
-  dataset_size_noncoord <- round(dataset_size * (1-prop_coord_size))
-
-  # Calculate lambdas
-  lambda_coord <- dataset_size_coord / num_pairs_coord
-  lambda_noncoord <- dataset_size_noncoord / num_pairs_noncoord
-
-  # Create Account IDs --------------------------
-  # create sets of IDs for both coordinated and non-coordinated accounts
 
   # account_ids ----
 
@@ -141,42 +119,27 @@ simulate_data <- function(
 
   # symmetric matrix of size n = n_accounts_coord and names in account_ids_coord
   coord_matrix <- matrix(0,
-                         nrow = n_accounts_coord, ncol = n_accounts_coord,
-                         dimnames = list(account_ids_coord, account_ids_coord)
+    nrow = n_accounts_coord, ncol = n_accounts_coord,
+    dimnames = list(account_ids_coord, account_ids_coord)
   )
 
-  # Generate rows in batches until the target size is reached
+  # Repetitions sampled with Poisson distribution
+  # which minimum is 0, so we add `min_participation`
+  coord_matrix[upper.tri(coord_matrix)] <- rpois(
+    sum(upper.tri(coord_matrix)), lambda_coord
+  ) + min_participation
 
-  df_coord <- data.table()  # Initialize an empty data.table to store all generated data
+  # to data.table
+  coord_matrix[lower.tri(coord_matrix)] <- NA
+  diag(coord_matrix) <- NA
+  # 0 to NAs, because they don't have any posts in common
+  coord_matrix[coord_matrix == 0] <- NA
 
-  while (nrow(df_coord) < dataset_size_coord) {
-    # Repetitions sampled with Poisson distribution
-    # which minimum is 0, so we add `min_participation`
-    coord_matrix[upper.tri(coord_matrix)] <- rpois(sum(upper.tri(coord_matrix)), lambda_coord) + min_participation
-
-    # to data.table
-    coord_matrix[lower.tri(coord_matrix)] <- NA
-    diag(coord_matrix) <- NA
-    # 0 to NAs, because they don't have any posts in common
-    coord_matrix[coord_matrix == 0] <- NA
-
-    temp_df <- na.omit(as.data.table(as.table(coord_matrix)))
-
-    if (nrow(temp_df) > 0) {
-      temp_df <- temp_df[rep(seq_len(nrow(temp_df)), temp_df$N), ]
-      suppressWarnings(temp_df[, N := NULL])
-
-      if (all(c("V1", "V2") %in% colnames(temp_df))) {
-        setnames(temp_df, c("V1", "V2"), c("account_id", "account_id_y"))
-      }
-      df_coord <- rbind(df_coord, temp_df)
-
-      # If exceeded, truncate to the target size
-      if (nrow(df_coord) > dataset_size_coord) {
-        df_coord <- df_coord[1:dataset_size_coord]
-      }
-    }
-  }
+  df_coord <- na.omit(as.data.table(as.table(coord_matrix)))
+  df_coord <- df_coord[rep(seq_len(nrow(df_coord)), df_coord$N), ]
+  df_coord[, N := NULL]
+  # rownames(df_coord) <- NULL
+  setnames(df_coord, c("V1", "V2"), c("account_id", "account_id_y"))
 
   # add object ID
   df_coord[, object_id := sample(
@@ -192,46 +155,41 @@ simulate_data <- function(
   # and names in account_ids_noncoord
 
   noncoord_matrix <- matrix(0,
-                            nrow = n_accounts_noncoord, ncol = n_accounts_noncoord,
-                            dimnames = list(account_ids_noncoord, account_ids_noncoord)
+    nrow = n_accounts_noncoord, ncol = n_accounts_noncoord,
+    dimnames = list(account_ids_noncoord, account_ids_noncoord)
   )
 
   # number of repeated tweets sampled with a poisson distribution
   # non-coordinated accounts can theoretically still have a high number
   # of repeated content. But they must not share it within a short
   # time window
-  # Generate rows in batches until the target size is reached
-  df_noncoord <- data.table()  # Initialize an empty data.table to store all generated data
+  noncoord_matrix[upper.tri(noncoord_matrix)] <- rpois(
+    sum(upper.tri(noncoord_matrix)), lambda_noncoord
+  )
 
-  while (nrow(df_noncoord) < dataset_size_noncoord) {
-    # Repetitions sampled with Poisson distribution
-    # which minimum is 0, so we add `min_participation`
-    noncoord_matrix[upper.tri(noncoord_matrix)] <- rpois(sum(upper.tri(noncoord_matrix)), lambda_noncoord)
+  # to data.table
+  noncoord_matrix[lower.tri(noncoord_matrix)] <- NA
+  diag(noncoord_matrix) <- NA
+  # 0 to NAs (because these accounts have no content_ids in common)
+  noncoord_matrix[noncoord_matrix == 0] <- NA
+  df_noncoord <- na.omit(as.data.table(as.table(noncoord_matrix)))
 
-    # to data.table
-    noncoord_matrix[lower.tri(noncoord_matrix)] <- NA
-    diag(noncoord_matrix) <- NA
-    # 0 to NAs, because they don't have any posts in common
-    noncoord_matrix[noncoord_matrix == 0] <- NA
+  df_noncoord <- df_noncoord[rep(
+    seq_len(nrow(df_noncoord)), df_noncoord$N
+  ), ]
 
-    temp_df <- na.omit(as.data.table(as.table(noncoord_matrix)))
+  df_noncoord[, N := NULL]
+  # rownames(df_noncoord) <- NULL
+  setnames(df_noncoord, c("V1", "V2"), c("account_id", "account_id_y"))
 
-    if (nrow(temp_df) > 0) {
-      temp_df <- df_coord[rep(seq_len(nrow(temp_df)), temp_df$N), ]
-      suppressWarnings(temp_df[, N := NULL])
+  # add object ID
 
-      if (all(c("V1", "V2") %in% colnames(temp_df))) {
-        setnames(temp_df, c("V1", "V2"), c("account_id", "account_id_y"))
-      }
+  df_noncoord[, object_id := sample(
+    object_ids,
+    size = nrow(df_noncoord),
+    replace = TRUE
+  )]
 
-      df_noncoord <- rbind(df_noncoord, temp_df)
-
-      # If exceeded, truncate to the target size
-      if (nrow(df_noncoord) > dataset_size_noncoord) {
-        df_noncoord <- df_noncoord[1:dataset_size_noncoord]
-      }
-    }
-  }
 
   # Timestamps -----------------------
 
@@ -318,8 +276,8 @@ simulate_data <- function(
   ]
 
   output_table[,
-               c("object_id", "content_id", "content_id_y", "account_id", "account_id_y") := lapply(.SD, as.character),
-               .SDcols = c("object_id", "content_id", "content_id_y", "account_id", "account_id_y")
+    c("object_id", "content_id", "content_id_y", "account_id", "account_id_y") := lapply(.SD, as.character),
+    .SDcols = c("object_id", "content_id", "content_id_y", "account_id", "account_id_y")
   ]
 
   # emergency check in case simulated data contains errors
