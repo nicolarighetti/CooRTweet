@@ -10,8 +10,9 @@ simulate_data(
   n_objects = 5,
   min_participation = 3,
   time_window = 10,
-  lambda_coord = 2,
-  lambda_noncoord = 0.5
+  approx_size = 200,
+  lambda_coord = NULL,
+  lambda_noncoord = NULL
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ simulate_data(
 action to define two accounts as coordinated.}
 
 \item{time_window}{the time window of coordination.}
+
+\item{approx_size}{the approximate size of the desired dataset. It automatically calculates the
+lambdas passed to \code{rpois()}, which is the expected rate of occurrences. It only works when
+lambda_coord and lambda_noncoord are NULL (default).}
 
 \item{lambda_coord}{\code{lambda} parameter for coordinated accounts passed to
 \code{rpois()}, which is the expected rate of occurrences

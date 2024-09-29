@@ -97,24 +97,28 @@ simulate_data <- function(
     lambda_noncoord = NULL) {
   N <- object_id <- share_time_A <- share_time_B <- time_delta <- coordinated <-
     content_id <- content_id_y <- account_id <- account_id_y <- NULL
+  
   # Determine lambdas ---------------------------
   if (!is.null(lambda_coord) && !is.null(lambda_noncoord) && !is.null(approx_size)) {
     warning("lambda_coord and lambda_noncoord are specified: approx_size parameter disabled")
   }
 
-  if(is.null(lambda_coord) & is.null(lambda_noncoord)){
-    pairs_coord <- (n_accounts_coord * (n_accounts_coord-1)) / 2
-    pairs_noncoord <- (n_accounts_noncoord * (n_accounts_noncoord-1)) / 2
+  # assert that parameters are valid
+  if (n_accounts_coord < 1 || n_accounts_noncoord < 1 || n_objects < 1 || time_window < 1) {
+    stop("One input parameter is 0 or negative, please check.")
+  }
 
-    lambda_coord <- (approx_size/4) / pairs_coord
-    lambda_noncoord <- (approx_size/4) / pairs_noncoord
+  if (is.null(lambda_coord) & is.null(lambda_noncoord)) {
+    pairs_coord <- (n_accounts_coord * (n_accounts_coord - 1)) / 2
+    pairs_noncoord <- (n_accounts_noncoord * (n_accounts_noncoord - 1)) / 2
+
+    lambda_coord <- (approx_size / 4) / pairs_coord
+    lambda_noncoord <- (approx_size / 4) / pairs_noncoord
   }
 
 
   # Create Account IDs --------------------------
   # create sets of IDs for both coordinated and non-coordinated accounts
-
-  # TODO: assert that parameters are valid
 
   # account_ids ----
 
