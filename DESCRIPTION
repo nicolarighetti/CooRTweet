@@ -1,6 +1,6 @@
 Package: CooRTweet
-Version: 2.0.2
-Date: 2024-03-28
+Version: 2.1.9000
+Date: 2024-09-30
 Type: Package
 Title: Coordinated Networks Detection on Social Media
 Description: Detects a variety of coordinated actions on social media and outputs the network of coordinated users along with related information.
@@ -22,20 +22,20 @@ BugReports: https://github.com/nicolarighetti/CooRTweet/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Imports:
   data.table,
   tidytable,
   RcppSimdJson,
   lubridate,
   igraph,
-  stringi
+  stringi,
+  polars
 Suggests: 
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Depends: 
-    R (>= 2.10)
+Depends: R (>= 4.2)
 LazyData: true
 VignetteBuilder: knitr

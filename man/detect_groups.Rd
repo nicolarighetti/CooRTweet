@@ -13,7 +13,7 @@ detect_groups(
 )
 }
 \arguments{
-\item{x}{a data.table with the columns: \code{object_id} (uniquely identifies
+\item{x}{a data.frame (or comparable) with the columns: \code{object_id} (uniquely identifies
 coordinated content), \code{account_id} (unique ids for accounts), \code{content_id}
 (id of account generated content), \code{timestamp_share} (integer). See also
 \link{reshape_tweets} and \link{prep_data}.}
@@ -30,13 +30,12 @@ as represented by edge weight. The edge weight parameter is utilized in the
 \code{generate_coordinated_network} function as a concluding step in identifying
 coordinated behavior.}
 
-\item{remove_loops}{Should loops (shares of the same objects made by the same
-account within the time window) be removed? (default to TRUE).}
+\item{remove_loops}{Ignored in polars branch! (default to TRUE).}
 
 \item{...}{keyword arguments for backwards compatibility.}
 }
 \value{
-a data.table with ids of coordinated contents. Columns:
+a data.table (!) with ids of coordinated contents. Columns:
 \code{object_id}, \code{account_id}, \code{account_id_y}, \code{content_id}, \code{content_id_y},
 \code{timedelta}. The \code{account_id} and \code{content_id} represent the "older"
 data points, \code{account_id_y} and \code{content_id_y} represent the "newer"
@@ -57,7 +56,7 @@ the \link{generate_coordinated_network} function.
 content) and calculates the time differences between all
 \code{content_id} (ids of account generated contents) within their groups.
 It then filters out all \code{content_id} that are higher than the \code{time_window}
-(in seconds). It returns a \code{data.table} with all IDs of coordinated
+(in seconds). It returns a \code{data.frame} with all IDs of coordinated
 contents. The \code{object_id} can be for example: hashtags, IDs of tweets being
 retweeted, or URLs being shared. For twitter data, best use \link{reshape_tweets}.
 }

@@ -13,11 +13,11 @@
 #' content) and calculates the time differences between all
 #' `content_id` (ids of account generated contents) within their groups.
 #' It then filters out all `content_id` that are higher than the `time_window`
-#' (in seconds). It returns a `data.table` with all IDs of coordinated
+#' (in seconds). It returns a `data.frame` with all IDs of coordinated
 #' contents. The `object_id` can be for example: hashtags, IDs of tweets being
 #' retweeted, or URLs being shared. For twitter data, best use \link{reshape_tweets}.
 #'
-#' @param x a data.table with the columns: `object_id` (uniquely identifies
+#' @param x a data.frame (or comparable) with the columns: `object_id` (uniquely identifies
 #' coordinated content), `account_id` (unique ids for accounts), `content_id`
 #' (id of account generated content), `timestamp_share` (integer). See also
 #' \link{reshape_tweets} and \link{prep_data}.
@@ -34,19 +34,19 @@
 #' `generate_coordinated_network` function as a concluding step in identifying
 #' coordinated behavior.
 #'
-#' @param remove_loops Should loops (shares of the same objects made by the same
-#' account within the time window) be removed? (default to TRUE).
+#' @param remove_loops Ignored in polars branch! (default to TRUE).
 #'
 #' @param ... keyword arguments for backwards compatibility.
 #'
-#' @return a data.table with ids of coordinated contents. Columns:
+#' @return a data.table (!) with ids of coordinated contents. Columns:
 #' `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
 #' `timedelta`. The `account_id` and `content_id` represent the "older"
 #' data points, `account_id_y` and `content_id_y` represent the "newer"
 #' data points. For example, account A retweets from account B, then account A's
 #' content is newer (i.e., `account_id_y`).
 #'
-#' @import data.table
+#' @import data.table polars
+#' @importFrom polars pl
 #' @export
 
 
@@ -55,17 +55,18 @@ detect_groups <- function(x,
                           min_participation = 2,
                           remove_loops = TRUE,
                           ...) {
-  # This function is a wrapper for actual calculation
   # We validate the input data before we go ahead
-  # the actual functions are do_detect_groups and
-  # calc_group_combinations
-  if (!inherits(x, "data.table")) {
-    x <- data.table::as.data.table(x)
+  if (remove_loops == FALSE) {
+    warning("Loops are always removed in the polars branch. Ignoring parameter")
   }
+  pl <- polars::pl
+
   required_cols <- c("object_id", "account_id", "content_id", "timestamp_share")
 
+  x <- pl$DataFrame(x)
+
   if ("id_account" %in% colnames(x)) {
-    data.table::setnames(x, "id_account", "account_id")
+    x <- x$rename(id_account="account_id")
     warning("Your data contained the column `id_account`, this name is deprecated, renamed it to `account_id`")
   }
 
@@ -85,126 +86,90 @@ detect_groups <- function(x,
     min_participation <- additional_args$min_repetition
   }
 
-  # TODO: add more assertions here. E.g., content_id is unique
-
-  x <- do_detect_groups(x,
-    time_window = time_window,
-    min_participation = min_participation,
-    remove_loops = remove_loops
-  )
-
-  return(x)
-}
-
-#' do_detect_groups
-#'
-#' @description
-#' Private function that actually performs \link{detect_groups}.
-#'
-#' @param x a data.table with the columns: `object_id` (uniquely identifies
-#' coordinated content), `account_id` (unique ids for accounts), `content_id`
-#' (id of account generated content), `timestamp_share` (integer)
-#'
-#' @param time_window the number of seconds within which shared contents
-#' might be considered as coordinated (default to 10 seconds).
-#'
-#' @param min_participation the minimum number of published contents necessary
-#' for a account to be included it in subsequent analysis (defaults to 2).
-#'
-#' @return a data.table with ids of contents. Columns:
-#' `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
-#' `timedelta`
-#'
-#' @import data.table
-#' @noRd
-
-
-do_detect_groups <- function(x,
-                             time_window = 10,
-                             min_participation = 2,
-                             remove_loops = TRUE) {
-  object_id <- account_id <- content_id <- content_id_y <-
-    account_id_y <- time_delta <- NULL
-
   # --------------------------
   # Pre-filter
   # pre-filter based on minimum participation
-  # a account must have tweeted a minimum number of times
+  # an account must have tweeted a minimum number of times
   # before they can be considered in subsequent analysis
-  x <- x[, if (.N >= min_participation) .SD, by = account_id]
+  # yes, this expression is more complicatated in polars
+
+  x <- x$filter(pl$col("account_id")$is_in(
+    x$select(
+      pl$col("account_id")$value_counts()
+    )$unnest()$filter(
+      pl$col("count") >= min_participation)$get_column("account_id")
+  ))
 
   # --------------------------
   # strings to factors
-  x[,
-    c("object_id", "account_id", "content_id") := lapply(.SD, as.factor),
-    .SDcols = c("object_id", "account_id", "content_id")
-  ]
-
+  x <- x$with_columns(
+    pl$col(c("account_id", "object_id", "content_id"))$cast(pl$Categorical()),
+    pl$col("timestamp_share")$cast(pl$Int64)
+  )
 
   # ---------------------------
   # calculate time differences per group
+  x <- x$with_row_index("index")$lazy() # switch to lazy evaluation of polars
+  result <- x$join(
+    x, 
+    on = "object_id", 
+    suffix = "_y"
+    )$filter(pl$col("account_id") != pl$col("account_id_y")
+    )$filter(pl$col("index") > pl$col("index_y")
+    )$with_columns(
+        (pl$col("timestamp_share") - pl$col("timestamp_share_y"))$alias("time_delta")
+    )$filter(
+      pl$col("time_delta")$abs() <= time_window
+    )$drop("timestamp_share", "timestamp_share_y", "index", "index_y")
 
-  result <- x[,
-    calc_group_combinations(.SD, time_window = time_window),
-    by = object_id
-  ]
-
-  # ----------------------------
-  # factors back to string
-  result[, c("object_id", "content_id", "content_id_y", "account_id", "account_id_y") := lapply(.SD, as.character),
-    .SDcols = c("object_id", "content_id", "content_id_y", "account_id", "account_id_y")
-  ]
-
-  # ---------------------------
-  # remove loops
-  if (remove_loops == TRUE) {
-    result <- do_remove_loops(result)
-  }
+  # Executes the query
+  result <- result$collect()
 
   # ---------------------------
   # refine the filtering by minimum participation
-  if (min_participation >= 1) {
-    result <- filter_min_participation(x, result, min_participation)
-  }
+  content_ids <- pl$concat(
+    result$get_column("content_id"), result$get_column("content_id_y"), how = "vertical"
+    )$unique()
+
+  account_ids <- x$filter(
+      pl$col("content_id")$is_in(content_ids)
+    )$select(
+      pl$col("account_id")$value_counts()
+    )$unnest(
+    )$filter(
+        pl$col("count") >= min_participation
+    )$collect()$get_column("account_id")
+  
+  result <- result$filter(pl$col("account_id")$is_in(account_ids) | pl$col("account_id_y")$is_in(account_ids))
 
   # ---------------------------
   # Sort output: content_id should be older than content_id_y
   # Therefore, we swap all values with positive time_delta
   # and return the absolute value
 
-  result[
-    time_delta > 0,
-    c("content_id", "content_id_y", "account_id", "account_id_y") :=
-      .(content_id_y, content_id, account_id_y, account_id)
-  ]
-  result[, time_delta := abs(time_delta)]
+  result <- pl$concat(
+      result$filter(pl$col("time_delta") > 0)$rename(
+          content_id = "content_id_y", 
+          account_id = "account_id_y", 
+          content_id_y = "content_id", 
+          account_id_y = "account_id"
+          ),
+      result$filter(pl$col("time_delta") <= 0
+          )$with_columns(pl$col("time_delta")$abs()),
+      how = "diagonal"
+  )
 
-  return(result)
+  # ----------------------------
+  # factors back to string
+  result <- result$with_columns(
+    pl$col(
+      c("object_id", "content_id", "content_id_y", "account_id", "account_id_y")
+    )$cast(pl$String))
+
+
+  return(data.table::as.data.table(result$to_data_frame()))
 }
 
-#' Remove loops from the result.
-#'
-#' This function is a private utility function that removes loops (i.e., accounts
-#' sharing their own content) from the result.
-#'
-#' @param result The result of the previous filtering steps.
-#'
-#' @return The result with loops removed.
-#'
-#'
-
-do_remove_loops <- function(result) {
-  object_id <- content_id <- account_id <- content_id_y <- account_id_y <- NULL
-  # remove loops
-  if ("object_id" %in% colnames(result)) {
-    result <- result[object_id != content_id]
-    result <- result[object_id != content_id_y]
-  }
-  result <- result[content_id != content_id_y]
-  result <- result[account_id != account_id_y]
-
-  return(result)
-}
 
 #' Filter the result by minimum participation
 #'

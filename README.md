@@ -1,5 +1,37 @@
-# CooRTweet
+# CooRTweet@Polars
 *[Nicola Righetti](https://github.com/nicolarighetti), [Paul Balluff](https://github.com/mrwunderbar666)*
+
+**High Performance Branch based on [R-Polars](https://pola-rs.github.io/r-polars/index.html)**
+
+# Notes on Polars Usage
+
+[Polars](https://pola.rs/) is a dataframe library which can handle larger-than-memory data. This is an experimental branch and should be used with care. There are certain advantages and considerations when using this edition of CooRTweet:
+
+- Only makes sense to use if your dataset has more than 5 million rows
+- Polars can stream the data and execute computations in parallel, this makes it very efficient in terms of memory usage and also completely utilizes all your CPU cores
+- It probably gives a 10x-50x speedup compared to `data.table`, depending on your use case
+- **But** `r-polars` is **not** hosted on CRAN, and under certain circumstances harder to install
+- `r-polars` is still under active development and is not as feature rich as the Python version of Polars
+- Currently, only the `detect_groups` function is implemented with `r-polars`, other functions will follow
+- There is only limited support available from the CooRTweet developers when using this branch
+
+## Installing Polars
+
+Quoted from the `r-polars` documentation:
+
+The recommended way to install `r-polars` is via R-multiverse:
+
+``` r
+Sys.setenv(NOT_CRAN = "true")
+install.packages("polars", repos = "https://community.r-multiverse.org")
+```
+
+[The “Install”
+vignette](https://pola-rs.github.io/r-polars/vignettes/install.html)
+(`vignette("install", "polars")`) gives more details on how to install
+this package and other ways to install it.
+
+# Introduction
 
 Coordinated behavior is a relevant social media strategy employed for political astroturfing (Keller et al., 2020), the spread of inappropriate content online (Giglietto et al., 2020), and activism. Software for academic research and investigative journalism has been developed in the last few years to detect coordinated behavior, such as the [CooRnet R package](https://github.com/fabiogiglietto/CooRnet) (Giglietto, Righetti, Rossi, 2020), which detects Coordinated Link Sharing Behavior (CLSB) and Coordinated Image Sharing on Facebook and Instagram ([CooRnet website](http://coornet.org)), and the [Coordination Network Toolkit](https://github.com/QUT-Digital-Observatory/coordination-network-toolkit/blob/main/README.md) by Timothy Graham (Graham, QUT Digital Observatory, 2020).
 
@@ -8,10 +40,14 @@ The **CooRTweet** package builds on the existing literature on coordinated behav
 
 # Install
 
-## Install from CRAN
+## Install from Github
 
 ```r
-install.packages("CooRTweet")
+Sys.setenv(NOT_CRAN = "true")
+install.packages("polars", repos = "https://community.r-multiverse.org")
+
+install.packages("pak")
+pak::pkg_install("nicolarighetti/CooRTweet@polars")
 ```
 
 # Quick Start
