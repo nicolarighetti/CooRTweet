@@ -7,9 +7,9 @@
 flag_speed_share(x, result, min_participation, time_window)
 }
 \arguments{
-\item{x}{A data table from a coordination detection function}
+\item{x}{The original data used to run the \link{detect_groups} function.}
 
-\item{result}{A data table containing the result data.}
+\item{result}{A data table containing the result data from the \link{detect_groups} function.}
 
 \item{min_participation}{The minimum participation threshold. Accounts with participation count
 greater than this threshold will be retained (default parameter equal to

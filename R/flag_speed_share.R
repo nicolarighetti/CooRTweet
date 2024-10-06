@@ -7,8 +7,8 @@
 #' This function identifies and marks the subset of results that match a more
 #' stringent time window.
 #'
-#' @param x A data table from a coordination detection function
-#' @param result A data table containing the result data.
+#' @param x The original data used to run the \link{detect_groups} function.
+#' @param result A data table containing the result data from the \link{detect_groups} function.
 #' @param min_participation The minimum participation threshold. Accounts with participation count
 #'                       greater than this threshold will be retained (default parameter equal to
 #'                       the one used in the \link{detect_groups} function).
