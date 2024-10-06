@@ -10,13 +10,23 @@
 #' shared objects. The user can set minimum participation and time window parameters
 #' and the coordinated accounts will "act" randomly within these restrictions.
 #'
-#' The size of the resulting dataset can be adjusted with the lambda parameters.
-#' If lambda is between 0.0 and 1.0, the dataset will be much smaller than
-#' choosing lambdas greater than 1.
+#' The size of the resulting dataset can be adjusted using the `approx_size`
+#' parameter, and the function will return approximately a dataset of the required
+#' size. Additionally, the size of the dataset can also be adjusted with the
+#' `lambda_coord` and `lambda_noncoord` parameters. These correspond to the lambda
+#' for the `rpois` Poisson distribution used to populate the coordination matrix.
+#' If lambda is between 0.0 and 1.0, the dataset will be smaller compared to
+#' choosing lambdas greater than 1. The `approx_size` parameter also serves to
+#' set the lambda of the `rpois` function in a more intuitive way.
 #'
-#' @param n_accounts_coord the desired number of coordinated accounts
+#' @param approx_size the approximate size of the desired dataset.
+#' It automatically calculates the lambdas passed to `rpois()`, which is the
+#' expected rate of occurrences. It only works when `lambda_coord` and
+#' `lambda_noncoord` are NULL (default).
 #'
-#' @param n_accounts_noncoord the desired number of non-coordinated accounts
+#' @param n_accounts_coord the desired number of coordinated accounts.
+#'
+#' @param n_accounts_noncoord the desired number of non-coordinated accounts.
 #'
 #' @param n_objects the desired number of objects.
 #'
@@ -24,10 +34,6 @@
 #' action to define two accounts as coordinated.
 #'
 #' @param time_window the time window of coordination.
-#'
-#' @param approx_size the approximate size of the desired dataset. It automatically calculates the
-#' lambdas passed to `rpois()`, which is the expected rate of occurrences. It only works when
-#' lambda_coord and lambda_noncoord are NULL (default).
 #'
 #' @param lambda_coord `lambda` parameter for coordinated accounts passed to
 #' `rpois()`, which is the expected rate of occurrences
@@ -87,17 +93,17 @@
 #'
 
 simulate_data <- function(
+    approx_size = 200,
     n_accounts_coord = 5,
     n_accounts_noncoord = 4,
     n_objects = 5,
     min_participation = 3,
     time_window = 10,
-    approx_size = 200,
     lambda_coord = NULL,
     lambda_noncoord = NULL) {
   N <- object_id <- share_time_A <- share_time_B <- time_delta <- coordinated <-
     content_id <- content_id_y <- account_id <- account_id_y <- NULL
-  
+
   # Determine lambdas ---------------------------
   if (!is.null(lambda_coord) && !is.null(lambda_noncoord) && !is.null(approx_size)) {
     warning("lambda_coord and lambda_noncoord are specified: approx_size parameter disabled")

@@ -5,20 +5,25 @@
 \title{simulate_data}
 \usage{
 simulate_data(
+  approx_size = 200,
   n_accounts_coord = 5,
   n_accounts_noncoord = 4,
   n_objects = 5,
   min_participation = 3,
   time_window = 10,
-  approx_size = 200,
   lambda_coord = NULL,
   lambda_noncoord = NULL
 )
 }
 \arguments{
-\item{n_accounts_coord}{the desired number of coordinated accounts}
+\item{approx_size}{the approximate size of the desired dataset.
+It automatically calculates the lambdas passed to \code{rpois()}, which is the
+expected rate of occurrences. It only works when \code{lambda_coord} and
+\code{lambda_noncoord} are NULL (default).}
 
-\item{n_accounts_noncoord}{the desired number of non-coordinated accounts}
+\item{n_accounts_coord}{the desired number of coordinated accounts.}
+
+\item{n_accounts_noncoord}{the desired number of non-coordinated accounts.}
 
 \item{n_objects}{the desired number of objects.}
 
@@ -26,10 +31,6 @@ simulate_data(
 action to define two accounts as coordinated.}
 
 \item{time_window}{the time window of coordination.}
-
-\item{approx_size}{the approximate size of the desired dataset. It automatically calculates the
-lambdas passed to \code{rpois()}, which is the expected rate of occurrences. It only works when
-lambda_coord and lambda_noncoord are NULL (default).}
 
 \item{lambda_coord}{\code{lambda} parameter for coordinated accounts passed to
 \code{rpois()}, which is the expected rate of occurrences
@@ -58,9 +59,14 @@ numbers for coordinated accounts, uncoordinated accounts, and
 shared objects. The user can set minimum participation and time window parameters
 and the coordinated accounts will "act" randomly within these restrictions.
 
-The size of the resulting dataset can be adjusted with the lambda parameters.
-If lambda is between 0.0 and 1.0, the dataset will be much smaller than
-choosing lambdas greater than 1.
+The size of the resulting dataset can be adjusted using the \code{approx_size}
+parameter, and the function will return approximately a dataset of the required
+size. Additionally, the size of the dataset can also be adjusted with the
+\code{lambda_coord} and \code{lambda_noncoord} parameters. These correspond to the lambda
+for the \code{rpois} Poisson distribution used to populate the coordination matrix.
+If lambda is between 0.0 and 1.0, the dataset will be smaller compared to
+choosing lambdas greater than 1. The \code{approx_size} parameter also serves to
+set the lambda of the \code{rpois} function in a more intuitive way.
 }
 \examples{
 # Example usage of simulate_data
