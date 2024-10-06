@@ -7,8 +7,7 @@
 #' This function identifies and marks the subset of results that match a more
 #' stringent time window.
 #'
-#' @param x A data table from a coordination detection function
-#' @param result A data table containing the result data.
+#' @param x A data table from the coordination detection function \link{detect_groups}
 #' @param min_participation The minimum participation threshold. Accounts with participation count
 #'                       greater than this threshold will be retained (default parameter equal to
 #'                       the one used in the \link{detect_groups} function).
@@ -28,6 +27,8 @@ flag_speed_share <- function(x, result, min_participation, time_window) {
   if (!inherits(x, "data.table")) {
     x <- data.table::as.data.table(x)
   }
+
+  result <- data.table::copy(x)
 
   # update time window
   result_update <- result[result$time_delta <= time_window]
