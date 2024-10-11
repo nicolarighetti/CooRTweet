@@ -37,4 +37,6 @@ Graham, Timothy; QUT Digital Observatory; (2020): Coordination Network Toolkit. 
 
 Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2020). Political astroturfing on Twitter: How to coordinate a disinformation campaign. *Political Communication*, 37(2), 256-280. https://doi.org/10.1080/10584609.2019.1661888 
 
-Kulichkina, Aytalina, Nicola Righetti, and Annie Waldherr. 2022. Pro-Democracy and Pro-Regime Coordination in Russian Protests: The Role of Social Media. In *72nd Annual ICA Conference, One World, One Network‽*.
+Kulichkina, A., Righetti, N., & Waldherr, A. (2024). Protest and repression on social media: Pro-Navalny and pro-government mobilization dynamics and coordination patterns on Russian Twitter. New Media & Society, 14614448241254126.
+
+Righetti, N., Giglietto, F., Kakavand, A. E., Kulichkina, A., Marino, G., & Terenzi, M. (2022). Political advertisement and coordinated behavior on social media in the lead-up to the 2021 German federal elections. Dusseldorf: Media Authority of North Rhine-Westphalia, 6.
