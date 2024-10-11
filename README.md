@@ -37,6 +37,6 @@ Graham, Timothy; QUT Digital Observatory; (2020): Coordination Network Toolkit. 
 
 Keller, F. B., Schoch, D., Stier, S., & Yang, J. (2020). Political astroturfing on Twitter: How to coordinate a disinformation campaign. *Political Communication*, 37(2), 256-280. https://doi.org/10.1080/10584609.2019.1661888 
 
-Kulichkina, A., Righetti, N., & Waldherr, A. (2024). Protest and repression on social media: Pro-Navalny and pro-government mobilization dynamics and coordination patterns on Russian Twitter. New Media & Society, 14614448241254126.
+Kulichkina, A., Righetti, N., & Waldherr, A. (2024). Protest and repression on social media: Pro-Navalny and pro-government mobilization dynamics and coordination patterns on Russian Twitter. New Media & Society, https://doi.org/10.1177/146144482412541.
 
-Righetti, N., Giglietto, F., Kakavand, A. E., Kulichkina, A., Marino, G., & Terenzi, M. (2022). Political advertisement and coordinated behavior on social media in the lead-up to the 2021 German federal elections. Dusseldorf: Media Authority of North Rhine-Westphalia, 6.
+Righetti, N., Giglietto, F., Kakavand, A. E., Kulichkina, A., Marino, G., & Terenzi, M. (2022). Political advertisement and coordinated behavior on social media in the lead-up to the 2021 German federal elections. Dusseldorf: Media Authority of North Rhine-Westphalia, 6. https://www.medienanstalt-nrw.de/fileadmin/user_upload/NeueWebsite_0120/Zum_Nachlesen/BTW22_Political_Advertisement.PDF
