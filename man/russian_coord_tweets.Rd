@@ -18,7 +18,11 @@ Twitter API calls this "referenced_tweet_id".}
 }
 }
 \source{
-Kulichkina (in Press).
+Kulichkina, A., Righetti, N., & Waldherr, A. (2024).
+Protest and repression on social media: Pro-Navalny and
+pro-government mobilization dynamics and coordination
+patterns on Russian Twitter. New Media & Society.
+https://doi.org/10.1177/14614448241254126
 }
 \usage{
 russian_coord_tweets
