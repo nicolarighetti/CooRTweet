@@ -7,11 +7,11 @@ Description: Detects a variety of coordinated actions on social media and output
 Authors@R: 
   c(
       person("Nicola", "Righetti", 
-              email = "nicola.righetti@univie.ac.at", 
+              email = "nicola.righetti@uniurb.it", 
               role = c("aut", "cre"),
               comment = c(ORCID="0000-0002-9257-5113")),
       person("Paul", "Balluff", 
-              email = "paul.balluff@univie.ac.at", 
+              email = "paul.balluff@gesis.org", 
               role = c("aut"),
               comment = c(ORCID="0000-0001-9548-3225"))
     )
