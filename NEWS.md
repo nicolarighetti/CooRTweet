@@ -1,3 +1,9 @@
+# CooRTweet 2.1.0
+
+- Added a new multi-modal and multi-platform dataset for testing and demonstration purposes (see documentation for "german_elections" data).
+- Updated the vignette
+- New function to simulate data
+
 # CooRTweet 2.0.2
 
 Edit the function documentation to address specific issues and enhance clarity. This includes removing obsolete information about min_repetition in the detect_groups documentation and correcting typos in the vignettes.
