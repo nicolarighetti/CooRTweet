@@ -1,6 +1,6 @@
 Package: CooRTweet
 Version: 2.1.0
-Date: 2024-09-29
+Date: 2024-12-18
 Type: Package
 Title: Coordinated Networks Detection on Social Media
 Description: Detects a variety of coordinated actions on social media and outputs the network of coordinated users along with related information.
@@ -16,7 +16,7 @@ Authors@R:
               comment = c(ORCID="0000-0001-9548-3225"))
     )
 Author: Nicola Righetti [aut, cre] (<https://orcid.org/0000-0002-9257-5113>), Paul Balluff [aut] (<https://orcid.org/0000-0001-9548-3225>)
-Maintainer: Nicola Righetti <nicola.righetti@univie.ac.at>
+Maintainer: Nicola Righetti <nicola.righetti@uniurb.it>
 URL: https://github.com/nicolarighetti/CooRTweet
 BugReports: https://github.com/nicolarighetti/CooRTweet/issues
 License: MIT + file LICENSE
