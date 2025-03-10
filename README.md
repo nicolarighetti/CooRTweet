@@ -26,10 +26,7 @@ Sys.setenv(NOT_CRAN = "true")
 install.packages("polars", repos = "https://community.r-multiverse.org")
 ```
 
-[The “Install”
-vignette](https://pola-rs.github.io/r-polars/vignettes/install.html)
-(`vignette("install", "polars")`) gives more details on how to install
-this package and other ways to install it.
+[The “Install” vignette](https://pola-rs.github.io/r-polars/vignettes/install.html) gives more details on how to install this package and other ways to install it.
 
 # Introduction
 
