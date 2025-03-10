@@ -171,61 +171,16 @@ Visualize the coordination network using `igraph`:
 
 ```{r visualize-network, eval = FALSE}
 library(igraph)
-
-min(E(coord_graph)$weight[E(coord_graph)$weight_threshold == 1])
-```
-
-Edge weight is not a perfect measure in an undirected graph, as it can be influenced by extreme values from a user. Therefore, an equilibrium measure, balancing the contributions of each of the two nodes on every edge, is concurrently computed. This measure, called `edge_symmetry_score`, equals 1 when the contribution is perfectly even and approaches zero in other cases.
-
-We can quickly get some summary statistics by using the provided convenience functions `group_stats()` and `account_stats()`. If we are interested in the content that accounts share in a coordinated fashion, we can call `group_stats()` and pass in our `igraph` object from the `generate_coordinated_network` function:
-
-```{r results='hide'}
-summary_groups <- group_stats(coord_graph = coord_graph, weight_threshold = "full")
-```
-
-`summary_groups` shows how many accounts (column `num_accounts`) participated for each unique shared object (`object_id`).
-
-If you are interested in understanding more about the users you can call `account_stats()`:
-
-```{r results='hide'}
-summary_accounts <- account_stats(coord_graph = coord_graph, result = result, weight_threshold = "full")
-```
-
-The documentation for each function includes details and possible options).
-
-You can focus on a narrower time window by updating the result of the `detect_group` function via the `flag_speed_share` function. 
-
-```{r}
-result_update <- flag_speed_share(russian_coord_tweets, result, min_participation = 2, time_window = 120)
-```
-
-This function creates a new column marking the edges that meet the new condition. 
-
-Using special options of the `generate_coordinated_network` function, we can get the graph of accounts who have shared content faster and whose edge are above the threshold (`subgraph = 2`). Other options allow for the general network filtered by edge weight (`subgraph = 1`) or the subgraph whose nodes exhibit coordinated behavior in the narrowest time window established with the `flag_speed_share` function (fast subgraph), and the vertices adjacent to their edges (`subgraph = 3`).
-
-```{r}
-coord_graph_fast <-
-  generate_coordinated_network(
-    result_update,
-    fast_net = TRUE,
-    edge_weight = 0.99,
-    subgraph = 2
-  )
-```
-
-
-# Using your own data
-
-Any dataset can be utilized with CooRTweet, provided it includes the necessary data. The convenience function `prep_data` facilitates the creation of an appropriate data format for further processing. Users need only to specify the columns in their dataset corresponding to the required ones, namely, a column with the desired object to be tracked (`object_id`), the account (or user) IDs (`account_id`), the IDs of the content featuring the object (`content_id`), and the timestamps of the shares (`timestamp_share`).
-
-```{r eval=FALSE}
-prep_data <-
-  function(x,
-           object_id = NULL,
-           account_id = NULL,
-           content_id = NULL,
-           timestamp_share = NULL
-  )
+plot.igraph(
+    graph,
+    layout = layout.fruchterman.reingold,
+    edge.width = 0.5,
+    edge.curved = 0.3,
+    vertex.size = 3,
+    vertex.frame.color = "grey",
+    vertex.frame.width = 0.1,
+    vertex.label = NA
+)
 ```
 
 ## Additional features

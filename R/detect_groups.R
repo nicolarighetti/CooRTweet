@@ -63,7 +63,7 @@ detect_groups <- function(x,
 
   required_cols <- c("object_id", "account_id", "content_id", "timestamp_share")
 
-  x <- pl$DataFrame(x)
+  x <- polars::as_polars_df(x)
 
   if ("id_account" %in% colnames(x)) {
     x <- x$rename(id_account="account_id")
@@ -103,7 +103,7 @@ detect_groups <- function(x,
   # --------------------------
   # strings to factors
   x <- x$with_columns(
-    pl$col(c("account_id", "object_id", "content_id"))$cast(pl$Categorical()),
+    pl$col(c("account_id", "object_id", "content_id"))$cast(pl$String)$cast(pl$Categorical()),
     pl$col("timestamp_share")$cast(pl$Int64)
   )
 
