@@ -1,8 +1,8 @@
 ---
 title: "Introduction to CooRTweet"
 author: "Nicola Righetti & Paul Balluff"
-date: ", March 2025"
-output: rmarkdown::github_document
+date: "11, March 2025"
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to CooRTweet}
   %\VignetteEngine{knitr::rmarkdown}
