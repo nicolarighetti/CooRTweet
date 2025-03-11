@@ -20,7 +20,7 @@ library(CooRTweet)
 
 ## Overview
 
-The `CooRTweet` package is a powerful R tool for detecting and analyzing coordinated behavior across social media platforms. Named after Twitter, a quintessential site for coordinated message amplification through its features like hashtags and trending topics, CooRTweet is a versatile tool applicable to any social media platform, enabling analysis on mono-platform, multi-platform, and cross-platform datasets. Besides being platform-independent, it is also content-independent, supporting a wide range of content types (including hashtags, URLs, images, and any other objects of interest to the researcher). The package allows for flexible thresholds to identify coordination while also accounting for the uncoordinated network in which the coordination is contextualized. CooRTweet is one of the first software tools for coordinated detection to have undergone rigorous validation. With its output, researchers can effectively explore networks of coordinated activity.
+The `CooRTweet` package is a R tool for detecting and analyzing coordinated behavior across social media platforms. Named after Twitter, a quintessential site for coordinated message amplification through its features like hashtags and trending topics, CooRTweet is applicable to any social media platform, enabling analysis on mono-platform, multi-platform, and cross-platform datasets. Besides being platform-independent, it is also content-independent, supporting a wide range of content types (including hashtags, URLs, images, and any other objects of interest to the researcher). The package allows for flexible thresholds to identify coordination while also accounting for the uncoordinated network in which the coordination is contextualized. CooRTweet is one of the first software tools for coordinated detection to have undergone rigorous validation. With its output, researchers can effectively explore networks of coordinated activity.
 
 ## Installation
 
@@ -90,7 +90,7 @@ graph
 
 To analyze multiple types of content (e.g., URLs, hashtags), run `detect_groups()` separately for each type and combine the results.
 
-We provide an authentic dataset from @Righetti2022 that showcases coordinated behavior during the German federal elections in 2021.
+We provide an anonymized sample from the authentic dataset by @Righetti2022 that showcases coordinated behavior during the German federal elections in 2021.
 
 ```{r german-elections}
 # Example datasets for different content types
