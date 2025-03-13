@@ -40,6 +40,17 @@
 #' @param remove_loops Should loops (shares of the same objects made by the same
 #' account within the time window) be removed? (default to TRUE).
 #'
+#' @param intent Specifies the network projection to generate. By default, it is
+#' set to "account", which produces a network where nodes represent accounts that
+#' share common objects within the specified time window. Alternatively, setting
+#' intent to "objects", the resulting network consists of objects. In the "objects"
+#' projection, an edge is formed between two objects if they are shared by the same
+#' account(s) within the given time window. Note that for this projection, using
+#' a wider time window might be more appropriate, as the precise coordination in
+#' time becomes less relevant compared to the account-level coordinated behavior.
+#' However, using a narrow time window may still be useful if the goal is to detect
+#' cases where objects are shared in rapid succession by the same account(s).
+#'
 #' @param ... keyword arguments for backwards compatibility.
 #'
 #' @return a data.table with ids of coordinated contents. Columns:
@@ -58,6 +69,7 @@ detect_groups <- function(x,
                           time_window_low = 0,
                           min_participation = 2,
                           remove_loops = TRUE,
+                          intent = c("account", "objects"),
                           ...) {
   # This function is a wrapper for actual calculation
   # We validate the input data before we go ahead
@@ -87,6 +99,16 @@ detect_groups <- function(x,
   if ("min_repetition" %in% names(additional_args)) {
     warning("The argument 'min_repetition' is deprecated. Use 'min_participation' instead.")
     min_participation <- additional_args$min_repetition
+  }
+
+  # intent ---------------------
+  # by default, if no intent is specified, the function performs coordinated
+  # detection at the account level. If intent is set to "object", the function
+  # swaps the account and object columns to generate an object projection.
+  intent <- match.arg(intent, choices = c("account", "objects"))
+
+  if (intent == "objects"){
+    setnames(x, old = c("account_id", "object_id"), new = c("object_id", "account_id"))
   }
 
   # TODO: add more assertions here. E.g., content_id is unique

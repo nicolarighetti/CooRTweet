@@ -7,8 +7,10 @@
 detect_groups(
   x,
   time_window = 10,
+  time_window_low = 0,
   min_participation = 2,
   remove_loops = TRUE,
+  intent = c("account", "objects"),
   ...
 )
 }
@@ -21,6 +23,9 @@ coordinated content), \code{account_id} (unique ids for accounts), \code{content
 \item{time_window}{the number of seconds within which shared contents
 are to be considered as coordinated (default to 10 seconds).}
 
+\item{time_window_low}{the lower boundary of the time window within which
+shared contents are to be considered as coordinated (default to 0 seconds).}
+
 \item{min_participation}{The minimum number of actions required for a account
 to be included in subsequent analysis (default set at 2). This ensures that
 only accounts with a minimum level of activity in the original dataset are
@@ -32,6 +37,17 @@ coordinated behavior.}
 
 \item{remove_loops}{Should loops (shares of the same objects made by the same
 account within the time window) be removed? (default to TRUE).}
+
+\item{intent}{Specifies the network projection to generate. By default, it is
+set to "account", which produces a network where nodes represent accounts that
+share common objects within the specified time window. Alternatively, setting
+intent to "objects", the resulting network consists of objects. In the "objects"
+projection, an edge is formed between two objects if they are shared by the same
+account(s) within the given time window. Note that for this projection, using
+a wider time window might be more appropriate, as the precise coordination in
+time becomes less relevant compared to the account-level coordinated behavior.
+However, using a narrow time window may still be useful if the goal is to detect
+cases where objects are shared in rapid succession by the same account(s).}
 
 \item{...}{keyword arguments for backwards compatibility.}
 }
