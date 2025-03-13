@@ -25,6 +25,9 @@
 #' @param time_window the number of seconds within which shared contents
 #' are to be considered as coordinated (default to 10 seconds).
 #'
+#' @param time_window_low the lower boundary of the time window within which
+#' shared contents are to be considered as coordinated (default to 0 seconds).
+#'
 #' @param min_participation The minimum number of actions required for a account
 #' to be included in subsequent analysis (default set at 2). This ensures that
 #' only accounts with a minimum level of activity in the original dataset are
@@ -52,6 +55,7 @@
 
 detect_groups <- function(x,
                           time_window = 10,
+                          time_window_low = 0,
                           min_participation = 2,
                           remove_loops = TRUE,
                           ...) {
@@ -89,6 +93,7 @@ detect_groups <- function(x,
 
   x <- do_detect_groups(x,
     time_window = time_window,
+    time_window_low = time_window_low,
     min_participation = min_participation,
     remove_loops = remove_loops
   )
@@ -121,6 +126,7 @@ detect_groups <- function(x,
 
 do_detect_groups <- function(x,
                              time_window = 10,
+                             time_window_low = 0,
                              min_participation = 2,
                              remove_loops = TRUE) {
   object_id <- account_id <- content_id <- content_id_y <-
@@ -145,7 +151,9 @@ do_detect_groups <- function(x,
   # calculate time differences per group
 
   result <- x[,
-    calc_group_combinations(.SD, time_window = time_window),
+    calc_group_combinations(.SD,
+                            time_window = time_window,
+                            time_window_low = time_window_low),
     by = object_id
   ]
 

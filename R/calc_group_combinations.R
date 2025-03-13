@@ -16,25 +16,26 @@
 #' @import data.table
 #' @noRd
 
-calc_group_combinations <- function(group, time_window = 10) {
+calc_group_combinations <- function(group, time_window = 10, time_window_low = 0) {
   id <- object_id <- content_id <- i.content_id <- NULL
   timestamp_share <- i.timestamp_share <- account_id <- NULL
   i.account_id <- time_delta <- NULL
 
   group$id <- seq_along(group$content_id)
 
-  group <- group[group,
-    on = .(id < id),
-    .(
-      object_id = object_id,
-      content_id = content_id,
-      content_id_y = i.content_id,
-      time_delta = timestamp_share - i.timestamp_share,
-      account_id = account_id,
-      account_id_y = i.account_id
-    ),
-    allow.cartesian = TRUE
-  ][abs(time_delta) <= time_window]
+    group <- group[group,
+                   on = .(id < id),
+                   .(
+                     object_id = object_id,
+                     content_id = content_id,
+                     content_id_y = i.content_id,
+                     time_delta = timestamp_share - i.timestamp_share,
+                     account_id = account_id,
+                     account_id_y = i.account_id
+                   ),
+                   allow.cartesian = TRUE
+    ][abs(time_delta) <= time_window & abs(time_delta) >= time_window_low]
+
 
   return(group)
 }
