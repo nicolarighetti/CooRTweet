@@ -1,7 +1,7 @@
 ---
 title: "Introduction to CooRTweet"
 author: "Nicola Righetti & Paul Balluff"
-date: "11, March 2025"
+date: "14, March 2025"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to CooRTweet}
@@ -74,12 +74,13 @@ head(result)
 
 ### Generate Coordination Networks
 
-Convert detected groups into a coordination network using `generate_coordinated_network()`.
+Convert detected groups into a coordination network using `generate_coordinated_network()`. Notice the option `subgraph = 1`, which is required to return the graph filtered by edge weight. The default option, `subgraph = 0`, returns the non-filtered graph with an additional edge attribute, `weight_threshold`, set to 0 if the edge does not exceed the `edge_weight` threshold and 1 otherwise.
 
 ```{r generate-network}
 graph <- generate_coordinated_network(
   result,
-  edge_weight = 0.5
+  edge_weight = 0.5,
+  subgraph = 1
 )
 graph
 ```
@@ -161,7 +162,9 @@ Now we can let the network analysis run with the default settings to find accoun
 
 ```{r multimodal-generate-network}
 # Generate the coordinated multi-modal network  --------------------
-graph <- generate_coordinated_network(combined_results, edge_weight = 0.5)
+graph <- generate_coordinated_network(combined_results, 
+                                      edge_weight = 0.5,
+                                      subgraph = 1)
 graph
 ```
 
