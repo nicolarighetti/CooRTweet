@@ -1,0 +1,429 @@
+---
+title: "Reproduce Examples in Righetti & Balluff 2025"
+author: "Nicola Righetti & Paul Balluff"
+date: "14, March 2025"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to CooRTweet}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(CooRTweet)
+```
+
+
+This script runs examples and create network plots for the paper: 'CooRTweet: A Generalized R Software for Coordinated Network' [@Righetti2025].
+
+The code generating the names in the plot is not working and thus commented out in this version to preserve anonymity. The data consists of climate-related posts on Facebook and Twitter during the German 2021 election campaign, subset to posts with an image where collection was possible. The data is anonymized and available in the package under the name `german_elections`.
+
+# Threshold graphs
+
+```{r}
+library(CooRTweet)
+library(data.table)
+library(igraph)
+
+# load the german_elections data 
+# contains the following columns:
+# - account_id (string, with shorthand for platform)
+# - post_id (integer)
+# - url_id (integer, anonymized url contained in post)
+# - hashtag_id (integer, anonymized hashtag contained in post)
+# - domain_id (integer, anonymized domain of url)
+# - phash_id (integer, anonymized perceptual hash of shared image)
+# - timestamp (numeric, timestamp of post)
+
+# urls ----------------------
+urls_data <- prep_data(german_elections,
+                       object_id = "url_id",
+                       account_id = "account_id",
+                       content_id = "post_id",
+                       timestamp_share = "timestamp")
+
+urls_data <- unique(urls_data,
+                    by = c("object_id", "account_id", "content_id", "timestamp_share"))
+
+urls_data <- urls_data[!is.na(object_id)]
+
+urls_data$object_id <- paste0("url_", urls_data$object_id)
+
+# domains ----------------------
+domains_data <- prep_data(german_elections,
+                          object_id = "domain_id",
+                          account_id = "account_id",
+                          content_id = "post_id",
+                          timestamp_share = "timestamp")
+
+domains_data <- unique(domains_data,
+                       by = c("object_id", "account_id", "content_id", "timestamp_share"))
+
+domains_data <- domains_data[!is.na(object_id)]
+
+domains_data$object_id <- paste0("url_", domains_data$object_id)
+
+# hashtags ------------------
+hashtag_data <- prep_data(german_elections,
+                          object_id = "hashtag_id",
+                          account_id = "account_id",
+                          content_id = "post_id",
+                          timestamp_share = "timestamp")
+
+hashtag_data <- unique(hashtag_data,
+                       by = c("object_id", "account_id", "content_id", "timestamp_share"))
+
+hashtag_data <- hashtag_data[!is.na(object_id)]
+
+hashtag_data$object_id <- paste0("hashtag_", hashtag_data$object_id)
+
+# images --------------------
+img_data <- prep_data(german_elections,
+                      object_id = "phash_id",
+                      account_id = "account_id",
+                      content_id = "post_id",
+                      timestamp_share = "timestamp")
+
+img_data <- unique(img_data,
+                   by = c("object_id", "account_id", "content_id", "timestamp_share"))
+
+img_data <- img_data[!is.na(object_id)]
+
+img_data$object_id <- paste0("hash_", img_data$object_id)
+
+# thresholds plots -------------------------------------------------------------
+
+fb_urls <- urls_data[grepl("fb", urls_data$account_id),]
+
+result_urls_fb <- detect_groups(fb_urls, time_window = 60,
+                                min_participation = 2)
+
+g_urls_fb <- generate_coordinated_network(result_urls_fb,
+                                          edge_weight = 0.5,
+                                          objects = TRUE)
+
+g_urls_fb
+
+
+# privacy-protected -----------------------------------------------------------#
+# add accounts names -----
+# data not publicly available in the public version of the script 
+
+# deanonim <- readRDS("data/german_elections_sample_non-anon.rds")
+# 
+# igraph::V(g_urls_fb)$username_complete <-
+#   as.character(sapply(igraph::V(g_urls_fb)$name,
+#                       function(x)
+#                         unique(deanonim$username[deanonim$account_id == x])))
+# 
+# igraph::V(g_urls_fb)$username  <- substr(igraph::V(g_urls_fb)$username_complete, 1, 15)
+# -----------------------------------------------------------------------------#
+
+if (!dir.exists("graphs")) {
+  dir.create("graphs")
+}
+
+pdf("graphs/threshold-graphs.pdf", paper = "A4r", width = 11.7, height = 5)
+
+par(mar = c(2, 1, 2, 2))  
+par(oma = c(0, 0, 0, 0))  
+
+par(family = "Helvetica")
+
+par(mfrow=c(1,3))
+
+plot.igraph(
+  g_urls_fb,
+  layout = layout.fruchterman.reingold,
+  edge.width = 0.5,
+  edge.curved = 0.4,
+  vertex.color = ifelse(E(g_urls_fb)$weight_threshold == 1, "orange", "tomato"),
+  vertex.size = 3,
+  vertex.frame.width = 0.05,
+  vertex.frame.color = "grey",
+  vertex.label = NA
+)
+
+mtext("Edge-weight Threshold Network", side = 1, line = 0.01, cex = 0.8, adj = 0.5)  
+
+legend(
+  "topright",
+  y = 3,  
+  legend = c("meets edge-weight threshold", "does not meet edge-weight threshold"),
+  col = c("orange", "tomato"),
+  pch = 19,
+  pt.cex = 1.5,
+  bty = "n",
+  y.intersp = 1
+) 
+
+# privacy-protected -----------------------------------------------------------#
+# de-anonimized data unavailable in the public version of this script
+
+# Subset to "FOCUS" accounts ----
+
+# focus_vertices <- V(g_urls_fb)[grepl("focus online", V(g_urls_fb)$username, ignore.case = T)]
+# 
+# g_components <- components(g_urls_fb) 
+# community_id <- g_components$membership[focus_vertices]
+# community_vertices <- V(g_urls_fb)[g_components$membership == community_id[1]]
+# focus_subgraph <- subgraph(g_urls_fb, community_vertices)
+
+
+# # Plot the subgraph
+# plot.igraph(
+#   focus_subgraph,
+#   layout = layout.fruchterman.reingold,
+#   edge.width = 0.2,
+#   edge.alpha = 0.1,
+#   edge.curved = 0.4,
+#   vertex.color = ifelse(E(focus_subgraph)$weight_threshold == 1, "orange", "tomato"),
+#   vertex.size = 6,
+#   vertex.frame.width = 0.1,
+#   vertex.frame.color = "grey",
+#   vertex.label = V(focus_subgraph)$username_complete,
+#   vertex.label.family = "sans",
+#   vertex.label.cex = 0.3,
+#   vertex.label.color = "grey20"
+# )
+# 
+# mtext("Edge-weight Threshold Network (Subset)", side = 1, line = 0.01, cex = 0.8, adj = 0.5)  # Move title closer
+# -----------------------------------------------------------------------------#
+
+## fast network -----
+
+results_urls_fb_fast <- flag_speed_share(fb_urls, 
+                                   result = result_urls_fb,
+                                   time_window = 10,
+                                   min_participation = 2)
+
+g_urls_fb_fast <- generate_coordinated_network(results_urls_fb_fast,
+                                               fast_net = TRUE,
+                                               edge_weight = 0.5,
+                                               subgraph = 0)
+
+
+edge_ids <- E(g_urls_fb_fast)[E(g_urls_fb_fast)$weight_threshold_full == 1]
+g_urls_fb_fast <- subgraph.edges(g_urls_fb_fast, edge_ids)
+
+# privacy-protected -----------------------------------------------------------#
+# Subset to "FOCUS" accounts
+# de-anonimized data unavailable in the public version of the script
+# igraph::V(g_urls_fb_fast)$username_complete <-
+#   as.character(sapply(igraph::V(g_urls_fb_fast)$name,
+#                       function(x)
+#                         unique(deanonim$username[deanonim$account_id == x])))
+
+# igraph::V(g_urls_fb_fast)$username  <- substr(igraph::V(g_urls_fb_fast)$username_complete, 1, 15)
+
+# focus_vertices <- V(g_urls_fb_fast)[grepl("Focus online", V(g_urls_fb_fast)$username, ignore.case = T)]
+
+# g_components <- components(g_urls_fb_fast) 
+# community_id <- g_components$membership[focus_vertices]
+# community_vertices <- V(g_urls_fb_fast)[g_components$membership == community_id[1]]
+# focus_subgraph_fast <- subgraph(g_urls_fb_fast, community_vertices)
+
+# plot.igraph(
+#   focus_subgraph_fast,
+#   layout = layout.fruchterman.reingold,
+#   edge.width = 0.2,
+#   edge.curved = 0.4,
+#   vertex.color = ifelse(E(focus_subgraph_fast)$weight_threshold_fast == 1, "gold", 
+#                         ifelse(E(focus_subgraph_fast)$weight_threshold_full == 1, "orange",
+#                                "navy")),
+#   vertex.size = 6,
+#   vertex.frame.width = 0.1,
+#   vertex.frame.color = "grey",
+#   # vertex.label.color = "grey20",
+#   # vertex.label.cex = 0.3,
+#   vertex.label = NA
+#   # vertex.label = V(focus_subgraph_fast)$username_complete
+# )
+# 
+# mtext("Time Threshold Network (Subset)", side = 1, line = 0.01, cex = 0.8, adj = 0.5)  
+# 
+# legend(
+#   "topright",
+#   y = 3, 
+#   legend = c("<= 10 secs", "<= 30 secs"),
+#   col = c("gold", "orange"),
+#   pch = 19,
+#   pt.cex = 1.5,
+#   bty = "n",
+#   y.intersp = 1
+# ) 
+# 
+# dev.off()
+# -----------------------------------------------------------------------------#
+
+```
+
+# Multi-platform and multi-modal graphs
+
+```{r}
+
+result_urls <- detect_groups(urls_data, time_window = 30,
+                             min_participation = 2)
+
+result_domains <- detect_groups(domains_data, time_window = 30,
+                                min_participation = 2)
+
+result_hashtags <- detect_groups(hashtag_data, time_window = 30,
+                                 min_participation = 2)
+
+result_images <- detect_groups(img_data, time_window = 30,
+                               min_participation = 2)
+
+
+combined_results <- rbindlist( 
+  list(result_urls, result_domains, result_hashtags, result_images),
+  use.names = TRUE,
+  fill = TRUE
+)
+
+# combined graph
+g <- generate_coordinated_network(combined_results,
+                                  edge_weight = 0.5,
+                                  subgraph = 0)
+
+
+V(g)$platform <- ifelse(gsub("_.*", "", V(g)$name) == "fb", "Facebook", "Twitter")
+
+# distinct graphs
+g_urls <- generate_coordinated_network(result_urls,
+                                       edge_weight = 0.25,
+                                       subgraph = 1)
+
+g_domains <- generate_coordinated_network(result_domains,
+                                          edge_weight = 0.25,
+                                          subgraph = 1)
+
+g_hashtags <- generate_coordinated_network(result_hashtags,
+                                           edge_weight = 0.25,
+                                           subgraph = 1)
+
+g_images <- generate_coordinated_network(result_images,
+                                         edge_weight = 0.25,
+                                         subgraph = 1)
+
+V(g_urls)$platform <- ifelse(grepl("fb", V(g_urls)$name), "Facebook", 
+                             ifelse(grepl("tw", V(g_urls)$name), "Twitter", "Instagram"))
+
+V(g_domains)$platform <- ifelse(grepl("fb", V(g_domains)$name), "Facebook", 
+                                ifelse(grepl("tw", V(g_domains)$name), "Twitter", "Instagram"))
+
+V(g_hashtags)$platform <- ifelse(grepl("fb", V(g_hashtags)$name), "Facebook", 
+                                 ifelse(grepl("tw", V(g_hashtags)$name), "Twitter", "Instagram"))
+
+V(g_images)$platform <- ifelse(grepl("fb", V(g_images)$name), "Facebook", 
+                               ifelse(grepl("tw", V(g_images)$name), "Twitter", "Instagram"))
+
+
+pdf("graphs/multimodal-multiplatform.pdf", paper = "A4r", width = 11.7, height = 6)
+
+par(mar = c(2, 2, 2, 2))  
+par(oma = c(0, 0, 0, 0))  
+
+par(family = "Helvetica")
+
+layout(matrix(c(1,1,1,1,
+                2,3,4,5), nrow = 2, ncol = 4))
+
+min_degree <- 2
+g_small <- induced_subgraph(g, vids = V(g)[degree(g) > min_degree])
+
+
+plot.igraph(
+  g_small,
+  layout = layout.fruchterman.reingold,
+  edge.width = 0.5,
+  edge.curved = 0.3,
+  vertex.color = c("Twitter" = "skyblue", "Facebook" = "navy")[V(g_small)$platform],
+  vertex.size = 3,
+  vertex.frame.color = "grey",
+  vertex.frame.width = 0.1,
+  vertex.label = NA
+)
+
+mtext("combined", side = 1, line = 0.1, cex = 1, adj = 0.5)
+
+# Add the legend
+legend(
+  "topleft",
+  legend = c("Twitter", "Facebook"),
+  col = c("skyblue", "navy"),
+  y = 1,
+  pch = 19,
+  pt.cex = 2,
+  bty = "n",
+  y.intersp = 1
+) 
+
+plot.igraph(
+  g_urls,
+  layout = layout.fruchterman.reingold,
+  edge.width = 0.5,
+  edge.curved = 0.3,
+  vertex.color = c("Twitter" = "skyblue", "Facebook" = "navy")[V(g_urls)$platform],
+  vertex.size = 3,
+  vertex.frame.color = "grey",
+  vertex.frame.width = 0.1,
+  vertex.label = NA
+)
+
+mtext("urls", side = 1, line = 0.1, cex = 1, adj = 0.5)
+
+plot.igraph(
+  g_domains,
+  layout = layout.fruchterman.reingold,
+  edge.width = 0.5,
+  edge.curved = 0.3,
+  vertex.color = c("Twitter" = "skyblue", "Facebook" = "navy")[V(g_domains)$platform],
+  vertex.size = 3,
+  vertex.frame.color = "grey",
+  vertex.frame.width = 0.1,
+  vertex.label = NA
+)
+
+mtext("domains", side = 1, line = 0.1, cex = 1, adj = 0.5)
+
+plot.igraph(
+  g_hashtags,
+  layout = layout.fruchterman.reingold,
+  edge.width = 0.5,
+  edge.curved = 0.3,
+  vertex.color = c("Twitter" = "skyblue", "Facebook" = "navy")[V(g_hashtags)$platform],
+  vertex.size = 3,
+  vertex.frame.color = "grey",
+  vertex.frame.width = 0.1,
+  vertex.label = NA
+)
+
+mtext("hashtags", side = 1, line = 0.1, cex = 1, adj = 0.5)
+
+plot.igraph(
+  g_images,
+  layout = layout.fruchterman.reingold,
+  edge.width = 0.5,
+  edge.curved = 0.3,
+  vertex.color = c("Twitter" = "skyblue", "Facebook" = "navy")[V(g_images)$platform],
+  vertex.size = 3,
+  vertex.frame.color = "grey",
+  vertex.frame.width = 0.1,
+  vertex.label = NA
+)
+
+mtext("images", side = 1, line = 0.1, cex = 1, adj = 0.5)
+
+dev.off()
+
+rm(list = ls())
+gc()
+```
+
+## References
