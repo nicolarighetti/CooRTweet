@@ -24,6 +24,7 @@ For a walk-through see the [vignette](https://cran.r-project.org/package=CooRTwe
 
 Righetti N., Balluff P. (2023). CooRTweet: Coordinated Networks Detection on Social Media. R package version 2.1.0. https://CRAN.R-project.org/package=CooRTweet.
 
+Righetti, N., & Balluff, P. (2025). CooRTweet: A Generalized R Software for Coordinated Network Detection. Computational Communication Research, 7(1), 1. https://doi.org/10.5117/CCR2025.1.7.RIGH
 
 ## References
 
