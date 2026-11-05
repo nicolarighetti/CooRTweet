@@ -28,5 +28,7 @@ Function to update result based on a narrower time_window.
 }
 \details{
 This function identifies and marks the subset of results that match a more
-stringent time window.
+stringent time window. If \code{result} was created with a positive
+\code{time_window_low} in \code{detect_groups()}, only pairs already present in that
+interval can be flagged; pairs below the original lower bound are not restored.
 }

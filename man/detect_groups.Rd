@@ -9,6 +9,7 @@ detect_groups(
   time_window = 10,
   min_participation = 2,
   remove_loops = TRUE,
+  time_window_low = 0,
   ...
 )
 }
@@ -18,8 +19,8 @@ coordinated content), \code{account_id} (unique ids for accounts), \code{content
 (id of account generated content), \code{timestamp_share} (integer). See also
 \link{reshape_tweets} and \link{prep_data}.}
 
-\item{time_window}{the number of seconds within which shared contents
-are to be considered as coordinated (default to 10 seconds).}
+\item{time_window}{Upper inclusive limit, in seconds, for the absolute time
+difference between shares (default 10).}
 
 \item{min_participation}{The minimum number of actions required for a account
 to be included in subsequent analysis (default set at 2). This ensures that
@@ -33,19 +34,23 @@ coordinated behavior.}
 \item{remove_loops}{Should loops (shares of the same objects made by the same
 account within the time window) be removed? (default to TRUE).}
 
+\item{time_window_low}{Lower inclusive limit, in seconds, for the absolute
+time difference between shares (default 0). Both limits must be single,
+finite, non-negative numbers, and the lower limit cannot exceed \code{time_window}.}
+
 \item{...}{keyword arguments for backwards compatibility.}
 }
 \value{
 a data.table with ids of coordinated contents. Columns:
 \code{object_id}, \code{account_id}, \code{account_id_y}, \code{content_id}, \code{content_id_y},
-\code{timedelta}. The \code{account_id} and \code{content_id} represent the "older"
+\code{time_delta}. The \code{account_id} and \code{content_id} represent the "older"
 data points, \code{account_id_y} and \code{content_id_y} represent the "newer"
 data points. For example, account A retweets from account B, then account A's
 content is newer (i.e., \code{account_id_y}).
 }
 \description{
 Function to perform the initial stage in detecting coordinated behavior.
-It identifies pairs of accounts that share the same objects in a time_window.
+It identifies pairs of accounts that share the same objects within a time interval.
 See details.
 }
 \details{
@@ -56,8 +61,20 @@ the \link{generate_coordinated_network} function.
 \code{detect_groups} groups the data by \code{object_id} (uniquely identifies
 content) and calculates the time differences between all
 \code{content_id} (ids of account generated contents) within their groups.
-It then filters out all \code{content_id} that are higher than the \code{time_window}
-(in seconds). It returns a \code{data.table} with all IDs of coordinated
-contents. The \code{object_id} can be for example: hashtags, IDs of tweets being
+It keeps pairs whose absolute time difference in seconds is between
+\code{time_window_low} and \code{time_window}, including both endpoints. The lower
+bound defaults to 0. It returns a
+\code{data.table} with all IDs of coordinated contents. The \code{object_id} can be for
+example: hashtags, IDs of tweets being
 retweeted, or URLs being shared. For twitter data, best use \link{reshape_tweets}.
+}
+\examples{
+shares <- data.table::data.table(
+  object_id = "url_1",
+  account_id = c("A", "B", "C"),
+  content_id = c("p1", "p2", "p3"),
+  timestamp_share = c(0, 10, 30)
+)
+detect_groups(shares, time_window = 20, time_window_low = 10,
+              min_participation = 1)
 }

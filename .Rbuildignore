@@ -7,3 +7,5 @@
 ^.lintr
 ^doc$
 ^Meta$
+^data-raw$
+^vignettes/reproduce_examples\.Rmd$

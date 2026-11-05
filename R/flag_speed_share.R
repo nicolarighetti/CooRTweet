@@ -5,7 +5,9 @@
 #'
 #' @details
 #' This function identifies and marks the subset of results that match a more
-#' stringent time window.
+#' stringent time window. If `result` was created with a positive
+#' `time_window_low` in `detect_groups()`, only pairs already present in that
+#' interval can be flagged; pairs below the original lower bound are not restored.
 #'
 #' @param x The original data used to run the \link{detect_groups} function.
 #' @param result A data table containing the result data from the \link{detect_groups} function.
