@@ -25,8 +25,12 @@
 #' German 2021 election campaign, from 15 August through 7 September 2021
 #' (UTC). The sample illustrates URL, hashtag, domain, and image (pHash)
 #' coordination workflows. It is a subset for examples, not the full study
-#' dataset or a representative sample of the campaign. The full anonymized
-#' dataset is in `data-raw/german_elections_full.rda` in the source repository.
+#' dataset or a representative sample of the campaign. This sample is included
+#' in the installed package. The full anonymized dataset is not installed; it
+#' is in `data-raw/german_elections_full.rda` in the source repository and loads
+#' as `german_elections`. Use the full data with the source-only
+#' `vignettes/reproduce_examples.Rmd` script to regenerate the publicly
+#' reproducible graphs from the paper; some panels require non-public data.
 #'
 #' @format ## `german_elections_sample`
 #' A data.frame with 97,413 rows and 7 columns:

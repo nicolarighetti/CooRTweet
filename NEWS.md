@@ -9,10 +9,11 @@
 - `prep_data()` now removes incomplete and duplicate shares by default. Set
   `drop_na = FALSE` and/or `drop_duplicates = FALSE` to retain them. The input
   data.table is no longer modified by reference.
-- The package now includes `german_elections_sample` (97,413 rows; under 1 MB)
-  for multi-platform and multi-modal examples. The full `german_elections` data
-  remains in the source repository under `data-raw/` for reproducing the
-  published figures, with the script in `vignettes/reproduce_examples.Rmd`.
+- The installed package now includes `german_elections_sample` (97,413 rows;
+  under 1 MB) for multi-platform and multi-modal examples. The full
+  `german_elections` data is no longer installed; the unchanged data file
+  remains in the source repository under `data-raw/`, with the paper
+  reproduction script in `vignettes/reproduce_examples.Rmd`.
   Scripts that loaded `german_elections` from the installed package should
   switch to `german_elections_sample` or load the full data from the source
   repository, depending on their purpose.

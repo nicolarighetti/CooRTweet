@@ -29,12 +29,26 @@ For a walk-through of the development version, see the [vignette source](https:/
 
 `generate_coordinated_network()` returns edges above the median edge weight by default (`subgraph = 1`). Set `subgraph = 0` to return the full network with threshold indicators on its edges.
 
-The installed package includes `german_elections_sample`, a 97,413-row
-anonymized excerpt for URL and image coordination examples. The full German
-election dataset is available in the [source repository](https://github.com/nicolarighetti/CooRTweet/blob/master/data-raw/german_elections_full.rda);
-use [the paper reproduction script](https://github.com/nicolarighetti/CooRTweet/blob/master/vignettes/reproduce_examples.Rmd)
-with that dataset to reproduce the published figures. The sample is not
-representative of the full campaign.
+## German elections data
+
+The **installed package includes** `german_elections_sample`, a 97,413-row
+anonymized temporal excerpt for URL and image coordination examples. It is not
+representative of the full campaign and cannot reproduce the paper's figures.
+Load it with `data("german_elections_sample", package = "CooRTweet")`.
+
+The **full anonymized dataset is not included in the installed package**. The
+same data previously distributed as `german_elections` is now available only in
+the source repository as [data-raw/german_elections_full.rda](data-raw/german_elections_full.rda).
+From the root of a repository checkout, load it with:
+
+```r
+load("data-raw/german_elections_full.rda") # creates german_elections
+```
+
+Use this full dataset with the [paper reproduction script](vignettes/reproduce_examples.Rmd).
+The script is kept in the source repository under `vignettes/`, but is not
+included in the installed package or built as a package vignette. Some plot
+panels require non-public data and remain commented out in the public script.
 
 ## Citation
 

@@ -40,7 +40,7 @@ devtools::install_github("nicolarighetti/CooRTweet")
 1. **Flexible Data Handling**: Works with mono-modal, multi-modal, and cross-platform datasets, and any type of object.
 2. **Customizable Thresholds**: Set time intervals and repetition/edge-weight thresholds to detect coordinated activities.
 3. **Graph-Based Analysis**: Outputs coordination networks as `igraph` objects for further analysis and visualization.
-4. **Included Data**: Comes with datasets for learning [@Kulichkina2024, @Righetti2022] and a `simulate_data` function to generate synthetic coordinated networks. `german_elections_sample` is a small, anonymized excerpt for examples; it does not reproduce the full published study.
+4. **Included Data**: Comes with datasets for learning [@Kulichkina2024, @Righetti2022] and a `simulate_data` function to generate synthetic coordinated networks. The installed package includes `german_elections_sample`, an anonymized excerpt for examples, not the full published study.
 
 ## Getting Started
 
@@ -111,7 +111,9 @@ graph
 
 To analyze multiple types of content (e.g., URLs and images), run `detect_groups()` separately for each type and combine the results.
 
-`german_elections_sample` contains 97,413 anonymized rows from 15 August through 7 September 2021 (UTC), drawn from the data used by @Righetti2022. It includes Facebook and Twitter posts and illustrates both URL and image coordination. It is a temporal excerpt for learning, not a representative sample or the full study dataset.
+`german_elections_sample` is included in the installed package. It contains 97,413 anonymized rows from 15 August through 7 September 2021 (UTC), drawn from the data used by @Righetti2022. It includes Facebook and Twitter posts and illustrates both URL and image coordination. It is a temporal excerpt for learning, not a representative sample or the full study dataset, and cannot reproduce the paper's figures.
+
+The full anonymized `german_elections` dataset is **not installed with the package**. It is available in the [CooRTweet source repository](https://github.com/nicolarighetti/CooRTweet) at `data-raw/german_elections_full.rda`. From the root of a source checkout, `load("data-raw/german_elections_full.rda")` creates the `german_elections` object. The paper reproduction script is at `vignettes/reproduce_examples.Rmd` in that checkout; it is not an installed package vignette. Some panels require non-public data and are commented out in the public script.
 
 ```{r german-elections}
 # Example datasets for different content types

@@ -14,9 +14,11 @@ library(CooRTweet)
 ```
 
 
-This script runs examples and create network plots for the paper: 'CooRTweet: A Generalized R Software for Coordinated Network' [@Righetti2025].
+This script regenerates the publicly reproducible network plots for the paper 'CooRTweet: A Generalized R Software for Coordinated Network Detection' [@Righetti2025].
 
-The code generating the names in the plot is commented out to preserve anonymity. The data consists of climate-related posts on Facebook and Twitter during the German 2021 election campaign, subset to posts with an image where collection was possible. This script uses the full anonymized dataset in `../data-raw/german_elections_full.rda`, which is retained in the source repository and excluded from the built R package. The packaged `german_elections_sample` is a temporal excerpt and will not reproduce the paper's figures.
+The data consists of climate-related posts on Facebook and Twitter during the German 2021 election campaign, subset to posts with an image where collection was possible. This source-only script uses the full anonymized dataset in `../data-raw/german_elections_full.rda`. That file is identical to the former packaged `german_elections` data and loads an object named `german_elections`. Neither the full data nor this script is included in the built R package. The packaged `german_elections_sample` is a temporal excerpt for examples and will not reproduce the paper's figures.
+
+Code for account labels and account-focused plots requiring non-public de-anonymized data remains commented out. Consequently, the public script cannot recreate every panel of the published figures.
 
 Render this file from the repository checkout with `rmarkdown::render("vignettes/reproduce_examples.Rmd")`. The generated graphs are written under `vignettes/graphs/`.
 
