@@ -8,7 +8,7 @@ generate_coordinated_network(
   x,
   fast_net = FALSE,
   edge_weight = 0.5,
-  subgraph = 0,
+  subgraph = 1,
   objects = FALSE
 )
 }
@@ -31,11 +31,13 @@ threshold are marked as 0 (not exceeding) or 1 (exceeding). The parameter accept
 any numeric value between 0 and 1. The default value is set to "0.5", representing
 the median value of edge weights in the network.}
 
-\item{subgraph}{Generate and return the following subgraph (default value is 0,
-meaning that no subgraph is created):
+\item{subgraph}{Generate and return the following subgraph (default value is 1):
 \itemize{
-\item If 1 reduces the graph to the subgraph whose edges have a value that exceeds
-the threshold given in the edge_weight parameter (weighted subgraph).
+\item If 0, return the full graph with threshold indicators on its edges.
+\item If 1 (the default), retain only edges whose weights exceed the threshold
+set by \code{edge_weight}. This returns the conventional coordinated-sharing
+network of accounts connected by repeated sharing (e.g., Giglietto et al.,
+2020). With \code{fast_net = TRUE}, filtering uses the full network's edge weights.
 \item If 2 reduces the subgraph whose nodes exhibit coordinated behavior in the
 narrowest time window (as established with the \link{flag_speed_share} function),
 to the subgraph whose edges have a value that exceeds the threshold given in
@@ -105,5 +107,5 @@ and \code{user_id_y} (\code{n_content_id} and \code{n_content_id_y}), allows for
 and controlling this phenomenon.
 }
 \references{
-Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. \emph{Information, Communication & Society}, 23(6), 867-891.
+Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. \emph{Information, Communication & Society}, 23(6), 867-891. \url{https://doi.org/10.1080/1369118X.2020.1739732}
 }

@@ -1,12 +1,7 @@
 ---
 title: "Reproduce Examples in Righetti & Balluff 2025"
 author: "Nicola Righetti & Paul Balluff"
-date: "14, March 2025"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Reproduce Examples in Righetti & Balluff 2025}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: html_document
 bibliography: references.bib
 ---
 
@@ -21,7 +16,9 @@ library(CooRTweet)
 
 This script runs examples and create network plots for the paper: 'CooRTweet: A Generalized R Software for Coordinated Network' [@Righetti2025].
 
-The code generating the names in the plot is not working and thus commented out in this version to preserve anonymity. The data consists of climate-related posts on Facebook and Twitter during the German 2021 election campaign, subset to posts with an image where collection was possible. The data is anonymized and available in the package under the name `german_elections`.
+The code generating the names in the plot is commented out to preserve anonymity. The data consists of climate-related posts on Facebook and Twitter during the German 2021 election campaign, subset to posts with an image where collection was possible. This script uses the full anonymized dataset in `../data-raw/german_elections_full.rda`, which is retained in the source repository and excluded from the built R package. The packaged `german_elections_sample` is a temporal excerpt and will not reproduce the paper's figures.
+
+Render this file from the repository checkout with `rmarkdown::render("vignettes/reproduce_examples.Rmd")`. The generated graphs are written under `vignettes/graphs/`.
 
 # Threshold graphs
 
@@ -29,6 +26,7 @@ The code generating the names in the plot is not working and thus commented out 
 library(CooRTweet)
 library(data.table)
 library(igraph)
+load("../data-raw/german_elections_full.rda")
 
 # load the german_elections data 
 # contains the following columns:
@@ -45,7 +43,9 @@ urls_data <- prep_data(german_elections,
                        object_id = "url_id",
                        account_id = "account_id",
                        content_id = "post_id",
-                       timestamp_share = "timestamp")
+                       timestamp_share = "timestamp",
+                       drop_na = FALSE,
+                       drop_duplicates = FALSE)
 
 urls_data <- unique(urls_data,
                     by = c("object_id", "account_id", "content_id", "timestamp_share"))
@@ -59,7 +59,9 @@ domains_data <- prep_data(german_elections,
                           object_id = "domain_id",
                           account_id = "account_id",
                           content_id = "post_id",
-                          timestamp_share = "timestamp")
+                          timestamp_share = "timestamp",
+                          drop_na = FALSE,
+                          drop_duplicates = FALSE)
 
 domains_data <- unique(domains_data,
                        by = c("object_id", "account_id", "content_id", "timestamp_share"))
@@ -73,7 +75,9 @@ hashtag_data <- prep_data(german_elections,
                           object_id = "hashtag_id",
                           account_id = "account_id",
                           content_id = "post_id",
-                          timestamp_share = "timestamp")
+                          timestamp_share = "timestamp",
+                          drop_na = FALSE,
+                          drop_duplicates = FALSE)
 
 hashtag_data <- unique(hashtag_data,
                        by = c("object_id", "account_id", "content_id", "timestamp_share"))
@@ -87,7 +91,9 @@ img_data <- prep_data(german_elections,
                       object_id = "phash_id",
                       account_id = "account_id",
                       content_id = "post_id",
-                      timestamp_share = "timestamp")
+                      timestamp_share = "timestamp",
+                      drop_na = FALSE,
+                      drop_duplicates = FALSE)
 
 img_data <- unique(img_data,
                    by = c("object_id", "account_id", "content_id", "timestamp_share"))
@@ -105,6 +111,7 @@ result_urls_fb <- detect_groups(fb_urls, time_window = 60,
 
 g_urls_fb <- generate_coordinated_network(result_urls_fb,
                                           edge_weight = 0.5,
+                                          subgraph = 0,
                                           objects = TRUE)
 
 g_urls_fb
@@ -209,7 +216,7 @@ g_urls_fb_fast <- generate_coordinated_network(results_urls_fb_fast,
 
 
 edge_ids <- E(g_urls_fb_fast)[E(g_urls_fb_fast)$weight_threshold_full == 1]
-g_urls_fb_fast <- subgraph.edges(g_urls_fb_fast, edge_ids)
+g_urls_fb_fast <- igraph::subgraph_from_edges(g_urls_fb_fast, edge_ids)
 
 # privacy-protected -----------------------------------------------------------#
 # Subset to "FOCUS" accounts

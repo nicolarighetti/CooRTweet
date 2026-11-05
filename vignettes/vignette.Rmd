@@ -1,7 +1,6 @@
 ---
 title: "Introduction to CooRTweet"
 author: "Nicola Righetti & Paul Balluff"
-date: "14, March 2025"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to CooRTweet}
@@ -22,6 +21,8 @@ library(CooRTweet)
 
 The `CooRTweet` package is a R tool for detecting and analyzing coordinated behavior across social media platforms. Named after Twitter, a quintessential site for coordinated message amplification through its features like hashtags and trending topics, CooRTweet is applicable to any social media platform, enabling analysis on mono-platform, multi-platform, and cross-platform datasets. Besides being platform-independent, it is also content-independent, supporting a wide range of content types (including hashtags, URLs, images, and any other objects of interest to the researcher). The package allows for flexible thresholds to identify coordination while also accounting for the uncoordinated network in which the coordination is contextualized. CooRTweet is one of the first software tools for coordinated detection to have undergone rigorous validation. With its output, researchers can effectively explore networks of coordinated activity.
 
+The methodological rationale and a cross-platform case study are described in the [CooRTweet paper](https://doi.org/10.5117/CCR2025.1.7.RIGH) [@Righetti2025].
+
 ## Installation
 
 You can install the `CooRTweet` package from CRAN or GitHub:
@@ -31,7 +32,7 @@ You can install the `CooRTweet` package from CRAN or GitHub:
 install.packages("CooRTweet")
 
 # Or install the development version from GitHub
-devtools::install_github("username/CooRTweet") # Replace with actual GitHub repository
+devtools::install_github("nicolarighetti/CooRTweet")
 ```
 
 ## Key Features
@@ -39,13 +40,13 @@ devtools::install_github("username/CooRTweet") # Replace with actual GitHub repo
 1. **Flexible Data Handling**: Works with mono-modal, multi-modal, and cross-platform datasets, and any type of object.
 2. **Customizable Thresholds**: Set time intervals and repetition/edge-weight thresholds to detect coordinated activities.
 3. **Graph-Based Analysis**: Outputs coordination networks as `igraph` objects for further analysis and visualization.
-4. **Included Data**: Comes with datasets for learning [@Kulichkina2024, @Righetti2022] and a `simulate_data` function to generate synthetic coordinated networks.
+4. **Included Data**: Comes with datasets for learning [@Kulichkina2024, @Righetti2022] and a `simulate_data` function to generate synthetic coordinated networks. `german_elections_sample` is a small, anonymized excerpt for examples; it does not reproduce the full published study.
 
 ## Getting Started
 
 ### Input Data Format
 
-The input dataset should include the following columns:
+The input dataset should include the following columns. `prep_data()` can rename source columns to these names and, by default, removes rows with missing values and duplicate shares. Use `drop_na = FALSE` or `drop_duplicates = FALSE` to retain them.
 
 - `object_id`: A unique identifier for the shared content (data type: character).
 - `account_id`: The user account identifier (data type: character).
@@ -72,16 +73,35 @@ result <- detect_groups(
 head(result)
 ```
 
+### Select an Inclusive Time Interval
+
+Set `time_window_low` to select one interval of time differences. Both limits
+are included. The shares below occur at 0, 10, and 30 seconds; selecting 10
+through 20 seconds keeps the pairs exactly 10 and 20 seconds apart:
+
+```{r inclusive-time-interval}
+shares <- data.table::data.table(
+  object_id = "url_1",
+  account_id = c("A", "B", "C"),
+  content_id = c("p1", "p2", "p3"),
+  timestamp_share = c(0, 10, 30)
+)
+
+interval_result <- detect_groups(
+  shares, time_window = 20, time_window_low = 10,
+  min_participation = 1
+)
+sort(interval_result$time_delta)
+```
+
+The default `time_window_low = 0` also includes pairs shared at the same second.
+
 ### Generate Coordination Networks
 
-Convert detected groups into a coordination network using `generate_coordinated_network()`. Notice the option `subgraph = 1`, which is required to return the graph filtered by edge weight. The default option, `subgraph = 0`, returns the non-filtered graph with an additional edge attribute, `weight_threshold`, set to 0 if the edge does not exceed the `edge_weight` threshold and 1 otherwise.
+Convert detected groups into a coordination network using `generate_coordinated_network()`. By default, the function returns the graph filtered by the median edge weight (`edge_weight = 0.5`, `subgraph = 1`). This is the conventional coordinated-sharing network of accounts connected by repeated sharing (e.g., @Giglietto2020); the edge-weight threshold can be adjusted. To return the full graph instead, set `subgraph = 0`; its `weight_threshold` edge attribute is 0 if an edge does not exceed the threshold and 1 otherwise.
 
 ```{r generate-network}
-graph <- generate_coordinated_network(
-  result,
-  edge_weight = 0.5,
-  subgraph = 1
-)
+graph <- generate_coordinated_network(result)
 graph
 ```
 
@@ -89,28 +109,23 @@ graph
 
 ### Multi-Modal and Multi-Platform Analysis
 
-To analyze multiple types of content (e.g., URLs, hashtags), run `detect_groups()` separately for each type and combine the results.
+To analyze multiple types of content (e.g., URLs and images), run `detect_groups()` separately for each type and combine the results.
 
-We provide an anonymized sample from the authentic dataset by @Righetti2022 that showcases coordinated behavior during the German federal elections in 2021.
+`german_elections_sample` contains 97,413 anonymized rows from 15 August through 7 September 2021 (UTC), drawn from the data used by @Righetti2022. It includes Facebook and Twitter posts and illustrates both URL and image coordination. It is a temporal excerpt for learning, not a representative sample or the full study dataset.
 
 ```{r german-elections}
 # Example datasets for different content types
-head(german_elections)
+head(german_elections_sample)
 ```
 
 First we prepare shared URLs:
 ```{r multimodal-urls}
 # URLs
-urls_data <- prep_data(german_elections,
+urls_data <- prep_data(german_elections_sample,
                        object_id = "url_id",
                        account_id = "account_id",
                        content_id = "post_id",
                        timestamp_share = "timestamp")
-
-urls_data <- unique(urls_data,
-                    by = c("object_id", "account_id", "content_id", "timestamp_share"))
-
-urls_data <- urls_data[!is.na(object_id)]
 
 urls_data$object_id <- paste0("url_", urls_data$object_id)
 ```
@@ -119,16 +134,11 @@ Next, we prepare images. We used the [pHash algorithm](https://en.wikipedia.org/
 
 ```{r multimodal-images}
 # images (pHash)
-img_data <- prep_data(german_elections,
+img_data <- prep_data(german_elections_sample,
                       object_id = "phash_id",
                       account_id = "account_id",
                       content_id = "post_id",
                       timestamp_share = "timestamp")
-
-img_data <- unique(img_data,
-                   by = c("object_id", "account_id", "content_id", "timestamp_share"))
-
-img_data <- img_data[!is.na(object_id)]
 
 img_data$object_id <- paste0("hash_", img_data$object_id)
 ```
@@ -136,7 +146,7 @@ img_data$object_id <- paste0("hash_", img_data$object_id)
 Next, we perform the first step of coordination detection on each subset of the data with the `detect_groups` function:
 
 ```{r multimodal-detect groups}
-# Detect coordinated groups for URLs and hashtags  --------------------
+# Detect coordinated groups for URLs and images  --------------------
 result_urls <- detect_groups(urls_data, time_window = 30,
                              min_participation = 2)
 
@@ -145,7 +155,18 @@ result_images <- detect_groups(img_data, time_window = 30,
 
 ```
 
-Then we can simply stack both resulting `data.tables`:
+To study only URL shares 10 to 30 seconds apart, we can make a separate call.
+Both 10 and 30 seconds are included:
+
+```{r url-time-interval}
+result_urls_10_30 <- detect_groups(
+  urls_data, time_window = 30, time_window_low = 10,
+  min_participation = 2
+)
+head(result_urls_10_30)
+```
+
+Then we can simply stack the original URL and image results:
 
 ```{r multimodal-stack}
 # Combine results  --------------------
@@ -158,13 +179,11 @@ combined_results <- rbindlist(
 )
 ```
 
-Now we can let the network analysis run with the default settings to find accounts that show coordinated behavior in terms of image and URL sharing:
+Now we can generate a filtered network with `subgraph = 1` (also the current default) to find accounts that show coordinated behavior in terms of image and URL sharing. The input includes both platforms, but the filtered graph in this example has no Facebook–Twitter edges; including two platforms does not itself establish cross-platform coordination.
 
 ```{r multimodal-generate-network}
 # Generate the coordinated multi-modal network  --------------------
-graph <- generate_coordinated_network(combined_results, 
-                                      edge_weight = 0.5,
-                                      subgraph = 1)
+graph <- generate_coordinated_network(combined_results, subgraph = 1)
 graph
 ```
 
@@ -193,5 +212,13 @@ The CooRTweet package includes several additional functions and features that en
 ## Conclusion
 
 The `CooRTweet` package enables researchers to study coordinated behaviors with a high degree of flexibility and precision. Its generalized architecture makes it adaptable to various contexts and datasets, empowering social media research and analysis.
+
+## Coordinated Sharing Detection Service powered by CooRTweet
+
+CooRTweet also powers the [Coordinated Sharing Detection Service](https://coortweet.lab.atc.gr/), a web-based service built on a streamlined version of the R package. It enables data journalists, fact-checkers, researchers, and other practitioners to analyze and visualize patterns of coordinated sharing in social media data.
+
+## Acknowledgments
+
+This work was partially supported by the vera.ai project, funded by the European Union through the Horizon Europe program (Grant Agreement ID 101070093).
 
 ## References

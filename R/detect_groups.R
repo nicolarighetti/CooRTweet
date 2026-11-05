@@ -2,7 +2,7 @@
 #'
 #' @description
 #' Function to perform the initial stage in detecting coordinated behavior.
-#' It identifies pairs of accounts that share the same objects in a time_window.
+#' It identifies pairs of accounts that share the same objects within a time interval.
 #' See details.
 #'
 #' @details This function achieves the initial stage in detecting coordinated
@@ -12,9 +12,11 @@
 #' `detect_groups` groups the data by `object_id` (uniquely identifies
 #' content) and calculates the time differences between all
 #' `content_id` (ids of account generated contents) within their groups.
-#' It then filters out all `content_id` that are higher than the `time_window`
-#' (in seconds). It returns a `data.table` with all IDs of coordinated
-#' contents. The `object_id` can be for example: hashtags, IDs of tweets being
+#' It keeps pairs whose absolute time difference in seconds is between
+#' `time_window_low` and `time_window`, including both endpoints. The lower
+#' bound defaults to 0. It returns a
+#' `data.table` with all IDs of coordinated contents. The `object_id` can be for
+#' example: hashtags, IDs of tweets being
 #' retweeted, or URLs being shared. For twitter data, best use \link{reshape_tweets}.
 #'
 #' @param x a data.table with the columns: `object_id` (uniquely identifies
@@ -22,8 +24,8 @@
 #' (id of account generated content), `timestamp_share` (integer). See also
 #' \link{reshape_tweets} and \link{prep_data}.
 #'
-#' @param time_window the number of seconds within which shared contents
-#' are to be considered as coordinated (default to 10 seconds).
+#' @param time_window Upper inclusive limit, in seconds, for the absolute time
+#' difference between shares (default 10).
 #'
 #' @param min_participation The minimum number of actions required for a account
 #' to be included in subsequent analysis (default set at 2). This ensures that
@@ -37,14 +39,28 @@
 #' @param remove_loops Should loops (shares of the same objects made by the same
 #' account within the time window) be removed? (default to TRUE).
 #'
+#' @param time_window_low Lower inclusive limit, in seconds, for the absolute
+#' time difference between shares (default 0). Both limits must be single,
+#' finite, non-negative numbers, and the lower limit cannot exceed `time_window`.
+#'
 #' @param ... keyword arguments for backwards compatibility.
 #'
 #' @return a data.table with ids of coordinated contents. Columns:
 #' `object_id`, `account_id`, `account_id_y`, `content_id`, `content_id_y`,
-#' `timedelta`. The `account_id` and `content_id` represent the "older"
+#' `time_delta`. The `account_id` and `content_id` represent the "older"
 #' data points, `account_id_y` and `content_id_y` represent the "newer"
 #' data points. For example, account A retweets from account B, then account A's
 #' content is newer (i.e., `account_id_y`).
+#'
+#' @examples
+#' shares <- data.table::data.table(
+#'   object_id = "url_1",
+#'   account_id = c("A", "B", "C"),
+#'   content_id = c("p1", "p2", "p3"),
+#'   timestamp_share = c(0, 10, 30)
+#' )
+#' detect_groups(shares, time_window = 20, time_window_low = 10,
+#'               min_participation = 1)
 #'
 #' @import data.table
 #' @export
@@ -54,11 +70,28 @@ detect_groups <- function(x,
                           time_window = 10,
                           min_participation = 2,
                           remove_loops = TRUE,
+                          time_window_low = 0,
                           ...) {
   # This function is a wrapper for actual calculation
   # We validate the input data before we go ahead
   # the actual functions are do_detect_groups and
   # calc_group_combinations
+  valid_window <- function(value) {
+    is.numeric(value) && length(value) == 1L &&
+      !is.na(value) && is.finite(value) && value >= 0
+  }
+  if (!valid_window(time_window)) {
+    stop("time_window must be a single finite, non-negative number of seconds",
+         call. = FALSE)
+  }
+  if (!valid_window(time_window_low)) {
+    stop("time_window_low must be a single finite, non-negative number of seconds",
+         call. = FALSE)
+  }
+  if (time_window_low > time_window) {
+    stop("time_window_low must not exceed time_window", call. = FALSE)
+  }
+
   if (!inherits(x, "data.table")) {
     x <- data.table::as.data.table(x)
   }
@@ -89,6 +122,7 @@ detect_groups <- function(x,
 
   x <- do_detect_groups(x,
     time_window = time_window,
+    time_window_low = time_window_low,
     min_participation = min_participation,
     remove_loops = remove_loops
   )
@@ -107,6 +141,7 @@ detect_groups <- function(x,
 #'
 #' @param time_window the number of seconds within which shared contents
 #' might be considered as coordinated (default to 10 seconds).
+#' @param time_window_low Lower inclusive limit in seconds (default 0).
 #'
 #' @param min_participation the minimum number of published contents necessary
 #' for a account to be included it in subsequent analysis (defaults to 2).
@@ -122,7 +157,8 @@ detect_groups <- function(x,
 do_detect_groups <- function(x,
                              time_window = 10,
                              min_participation = 2,
-                             remove_loops = TRUE) {
+                             remove_loops = TRUE,
+                             time_window_low = 0) {
   object_id <- account_id <- content_id <- content_id_y <-
     account_id_y <- time_delta <- NULL
 
@@ -145,7 +181,8 @@ do_detect_groups <- function(x,
   # calculate time differences per group
 
   result <- x[,
-    calc_group_combinations(.SD, time_window = time_window),
+    calc_group_combinations(.SD, time_window = time_window,
+                            time_window_low = time_window_low),
     by = object_id
   ]
 

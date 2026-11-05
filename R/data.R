@@ -19,14 +19,17 @@
 #' https://doi.org/10.1177/14614448241254126
 "russian_coord_tweets"
 
-#' German 2021 election campaign
+#' German 2021 election campaign sample
 #'
-#' An anonymized multi-platform and multi-modal dataset 
-#' of social media messages from the 2021 German election campaign.
-#' Includes Facebook and Twitter posts.
+#' An anonymized temporal sample of Facebook and Twitter posts from the
+#' German 2021 election campaign, from 15 August through 7 September 2021
+#' (UTC). The sample illustrates URL, hashtag, domain, and image (pHash)
+#' coordination workflows. It is a subset for examples, not the full study
+#' dataset or a representative sample of the campaign. The full anonymized
+#' dataset is in `data-raw/german_elections_full.rda` in the source repository.
 #'
-#' @format ## `mmmp`
-#' A data.frame with 218,971 rows and 7 columns:
+#' @format ## `german_elections_sample`
+#' A data.frame with 97,413 rows and 7 columns:
 #' \describe{
 #'  \item{account_id}{character, with shorthand for platform}
 #'  \item{post_id}{integer}
@@ -41,4 +44,4 @@
 #' Political Advertisement and Coordinated Behavior
 #' on Social Media in the Lead-Up to the 2021 German Federal
 #' Elections. Düsseldorf: Media Authority of North Rhine-Westphalia.
-"german_elections"
+"german_elections_sample"

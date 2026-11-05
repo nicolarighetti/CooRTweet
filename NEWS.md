@@ -1,3 +1,29 @@
+# CooRTweet (development version)
+
+- `detect_groups()` now accepts `time_window_low` to select a single interval
+  of absolute time differences. Both limits are included; the default lower
+  limit of 0 retains the previous behavior. Invalid or reversed limits now
+  produce an error.
+- Replaced deprecated igraph calls in network generation and the paper
+  reproduction script with their current equivalents.
+- `prep_data()` now removes incomplete and duplicate shares by default. Set
+  `drop_na = FALSE` and/or `drop_duplicates = FALSE` to retain them. The input
+  data.table is no longer modified by reference.
+- The package now includes `german_elections_sample` (97,413 rows; under 1 MB)
+  for multi-platform and multi-modal examples. The full `german_elections` data
+  remains in the source repository under `data-raw/` for reproducing the
+  published figures, with the script in `vignettes/reproduce_examples.Rmd`.
+  Scripts that loaded `german_elections` from the installed package should
+  switch to `german_elections_sample` or load the full data from the source
+  repository, depending on their purpose.
+- Updated the introductory vignette to use the sample, the new defaults, and
+  the correct GitHub installation address.
+- `generate_coordinated_network()` now defaults to `subgraph = 1`, returning only
+  edges above the `edge_weight` percentile threshold. Set `subgraph = 0` to retain
+  the previous default behavior and return the full graph with threshold indicators.
+  With `fast_net = TRUE`, the default filters the full network by its edge weights;
+  use `subgraph = 2` for the filtered fast network.
+
 # CooRTweet 2.1.0
 
 - Added a new multi-modal and multi-platform dataset for testing and demonstration purposes (see documentation for "german_elections" data).

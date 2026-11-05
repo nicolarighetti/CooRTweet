@@ -10,3 +10,19 @@ authors:
 title: "CooRTweet: Coordinated Networks Detection on Social Media"
 date-released: 2023-05-17
 url: "https://github.com/nicolarighetti/CooRTweet"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Righetti"
+    given-names: "Nicola"
+    orcid: "https://orcid.org/0000-0002-9257-5113"
+  - family-names: "Balluff"
+    given-names: "Paul"
+    orcid: "https://orcid.org/0000-0001-9548-3225"
+  title: "CooRTweet: A Generalized R Software for Coordinated Network Detection"
+  journal: "Computational Communication Research"
+  year: 2025
+  volume: 7
+  issue: 1
+  start: 1
+  doi: "10.5117/CCR2025.1.7.RIGH"

@@ -9,7 +9,9 @@ prep_data(
   object_id = NULL,
   account_id = NULL,
   content_id = NULL,
-  timestamp_share = NULL
+  timestamp_share = NULL,
+  drop_na = TRUE,
+  drop_duplicates = TRUE
 )
 }
 \arguments{
@@ -27,31 +29,44 @@ If NULL, no renaming is performed on this column.}
 
 \item{timestamp_share}{The current name of the column that should be renamed to "timestamp_share".
 The data in this column should be either in UNIX format or in a "\%Y-\%m-\%d \%H:\%M:\%S" format.
-If the data is in a different format or conversion is unsuccessful, the function stops with an error.
+If conversion is unsuccessful, the function stops with an error.
 If NULL, no renaming or conversion is performed on this column.}
+
+\item{drop_na}{Remove rows missing a value in any available standardized
+column (default TRUE). Set to FALSE to retain them.}
+
+\item{drop_duplicates}{Remove duplicate shares after renaming and timestamp
+conversion (default TRUE). With all four standardized columns present,
+duplicates are determined by those columns; otherwise, exact duplicate rows
+are removed. Set to FALSE to retain duplicates.}
 }
 \value{
-A data.table with the specified columns renamed according to the input parameters.
-If no renaming is required, the original data.table is returned unaltered.
+A data.table with standardized columns and, by default, missing and
+duplicate shares removed. The input object is not modified.
 }
 \description{
-Function to rename columns of a given data.table. This function standardizes
-column names to "object_id", "account_id", "content_id", and "timestamp_share".
-It is useful for preparing datasets for further analysis by ensuring
-consistent column naming.
+Standardize column names to "object_id", "account_id", "content_id", and
+"timestamp_share" and remove missing or duplicate shares.
 }
 \details{
 This function allows the user to specify the current names of columns in
 their data.table that they wish to rename to a standard format. The function
 checks for each parameter and renames the corresponding column in the data.table.
-If the parameter is NULL, no change is made to that column. The function
-ensures the data input is a data.table; if not, it converts it before renaming.
+If the parameter is NULL, no change is made to that column. The input is copied
+before renaming, so a supplied data.table is not changed by reference.
+By default, rows missing a value in any available standardized column are
+removed. When all four standardized columns are present, duplicates are
+identified by those four columns and the first row is kept. With a partial
+schema, only identical full rows are considered duplicates. Other columns
+are retained and their missing values do not cause rows to be removed.
 For the 'timestamp_share' column, the function expects the format to be either UNIX format
 (integer representing seconds since the Unix epoch) or "\%Y-\%m-\%d \%H:\%M:\%S". If the 'timestamp_share'
 is in a different format, the function attempts to convert it to UNIX format using base R functions.
 }
 \examples{
-dt <- data.table::data.table(old_object_id = 1:3, old_account_id_y = 4:6)
-dt <- prep_data(dt, object_id = "old_object_id", account_id = "old_account_id_y")
-
+dt <- data.table::data.table(original_object_id = c(1, 1, NA),
+                             original_account_id = c("a", "a", "b"))
+prep_data(dt, object_id = "original_object_id", account_id = "original_account_id")
+prep_data(dt, object_id = "original_object_id", account_id = "original_account_id",
+          drop_na = FALSE, drop_duplicates = FALSE)
 }

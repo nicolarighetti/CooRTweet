@@ -18,7 +18,7 @@ testthat::test_that("Self-coordinated posts are filtered out", {
         remove_loops = TRUE
     )
 
-    coord_graph <- generate_coordinated_network(result)
+    coord_graph <- generate_coordinated_network(result, subgraph = 0)
 
     # Generate summary of account statistics
     summary_accounts <- account_stats(coord_graph, result, weight_threshold = "none")
@@ -33,7 +33,7 @@ testthat::test_that("Self-coordinated posts are not filtered out", {
                             remove_loops = FALSE
     )
 
-    coord_graph <- generate_coordinated_network(result)
+    coord_graph <- generate_coordinated_network(result, subgraph = 0)
 
     # Generate summary of account statistics
     summary_accounts <- account_stats(coord_graph, result, weight_threshold = "none")
