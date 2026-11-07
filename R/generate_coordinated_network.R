@@ -85,7 +85,7 @@
 #' are users and edges (links) are the membership in coordinated groups (`object_id`).
 #'
 #' @references
-#' Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. *Information, Communication & Society*, 23(6), 867-891. https://doi.org/10.1080/1369118X.2020.1739732
+#' Giglietto, F., Righetti, N., Rossi, L., & Marino, G. (2020). It takes a village to manipulate the media: coordinated link sharing behavior during 2018 and 2019 Italian elections. *Information, Communication & Society*, 23(6), 867-891. \doi{10.1080/1369118X.2020.1739732}
 #'
 #' @import data.table
 #' @import igraph

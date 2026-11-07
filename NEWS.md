@@ -1,4 +1,4 @@
-# CooRTweet (development version)
+# CooRTweet 2.2.0
 
 - `detect_groups()` now accepts `time_window_low` to select a single interval
   of absolute time differences. Both limits are included; the default lower
